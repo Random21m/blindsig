@@ -919,12 +919,14 @@ const SECTIONS = {
       ${toggle('t_keypad', 'On-screen keypad', 'Use the built-in number pad for amounts.', st.keypad)}
       ${toggle('t_btcSymbol', 'Use ₿ symbol', 'Show ₿1,000 instead of 1,000 sat.', st.btcSymbol)}
       <h3>Sound and motion</h3>
-      ${toggle('t_sounds', 'Sounds', FX.isIOS ? 'A coin sound when money arrives, a whoosh when it leaves. On iPhone, sounds stay off while the silent switch is on.' : 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
+      ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
+      ${FX.isIOS ? toggle('t_soundsOnSilent', 'Play on silent', 'Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open.', st.soundsOnSilent) : ''}
       ${toggle('t_haptics', 'Vibration', 'A short buzz for payments, errors and key presses.', st.haptics !== false)}
       ${toggle('t_keyClicks', 'Keypad clicks', 'A faint click on each key press.', st.keyClicks)}
       ${toggle('t_motion', 'Animations', 'Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.', st.motion)}`, (b) => {
       $$('.th', b).forEach((x) => (x.onclick = () => { st.theme = x.dataset.th; save(); render(); SECTIONS.appearance(); }));
-      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'haptics', 'keyClicks', 'motion'], (k) => {
+      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'soundsOnSilent', 'haptics', 'keyClicks', 'motion'], (k) => {
+        if (k === 'soundsOnSilent') { FX.setSession(); if (st.sounds) FX.play('received'); }
         if (k === 'sounds' && st.sounds) FX.play('received');
         if (k === 'haptics' && st.haptics) FX.buzz('received');
         if (k === 'keyClicks' && st.keyClicks) FX.play('tap');

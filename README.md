@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.8.1-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.1">
+  <img src="https://img.shields.io/badge/version-1.8.2-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.2">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -28,7 +28,7 @@
 </p>
 
 <p align="center">
-  <a href="https://random21m.github.io/blindsig/"><img src="assets/hero.png" alt="blindsig in its three themes: white, green and amber" width="100%"></a>
+  <a href="https://random21m.github.io/blindsig/"><img src="assets/hero.png" alt="blindsig in its four themes: green, burnt orange, white and amber" width="100%"></a>
 </p>
 
 ## What is it?
@@ -40,6 +40,7 @@
 1. Open **<https://random21m.github.io/blindsig/>** on your phone.
 2. Add it to your home screen (Share → Add to Home Screen on iPhone, ⋮ → Install app on Android).
 3. Write down your 12-word seed phrase, pick a mint, and receive some sats over Lightning.
+4. Turn on the PIN lock under Settings → PIN lock, so the wallet is encrypted on your phone.
 
 > [!WARNING]
 > Mints hold the bitcoin behind your ecash, so they are custodians. Use small amounts and mints you trust, and keep your seed phrase offline.
@@ -62,17 +63,23 @@
     <td align="center"><img src="assets/screens/auditor.png" width="250" alt="Mint details with auditor"><br><sub><b>Mint details</b>: features, keysets and auditor results</sub></td>
     <td align="center"><img src="assets/screens/settings.png" width="250" alt="Settings"><br><sub><b>Settings</b>: backup, Nostr, NWC, privacy and more</sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/lock.png" width="250" alt="PIN lock screen"><br><sub><b>PIN lock</b>: asked when the app opens</sub></td>
+    <td align="center"><img src="assets/screens/pin-settings.png" width="250" alt="PIN lock settings"><br><sub><b>PIN settings</b>: when to ask again, change or turn off</sub></td>
+    <td align="center"><img src="assets/screens/appearance.png" width="250" alt="Appearance settings"><br><sub><b>Appearance</b>: four themes, sound, vibration and motion</sub></td>
+  </tr>
 </table>
 
-### Three themes
+### Four themes
 
 Green, white, amber and burnt orange, all on the same soft charcoal background. Change it under Settings → Appearance.
 
 <table>
   <tr>
-    <td align="center"><img src="assets/screens/home-green.png" width="250" alt="Green theme"><br><sub>Green</sub></td>
-    <td align="center"><img src="assets/screens/home-white.png" width="250" alt="White theme"><br><sub>White</sub></td>
-    <td align="center"><img src="assets/screens/home-amber.png" width="250" alt="Amber theme"><br><sub>Amber</sub></td>
+    <td align="center"><img src="assets/screens/home-green.png" width="190" alt="Green theme"><br><sub>Green</sub></td>
+    <td align="center"><img src="assets/screens/home-white.png" width="190" alt="White theme"><br><sub>White</sub></td>
+    <td align="center"><img src="assets/screens/home-amber.png" width="190" alt="Amber theme"><br><sub>Amber</sub></td>
+    <td align="center"><img src="assets/screens/home-orange.png" width="190" alt="Burnt orange theme"><br><sub>Burnt orange</sub></td>
   </tr>
 </table>
 
@@ -88,7 +95,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 **Receive**
 
-- Ecash: paste, scan (including animated QR), NFC, or auto-paste from the clipboard
+- Ecash: paste, scan (including animated QR), NFC, or auto-paste from the clipboard (not on iPhone, where Safari asks before every paste)
 - Lightning invoices, BOLT12 offers you can reuse, and on-chain deposit addresses
 - Tokens from other mints, either kept there or swapped into your mint
 - "Receive later" to park a token in your history and claim it when you're ready
@@ -119,7 +126,8 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 - 14 languages: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right to left), ไทย, 日本語 and 中文
 - On-screen keypad, optional ₿ symbol, prices in 20 currencies
-- Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off)
+- Four themes: green, white, amber and burnt orange
+- Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off). On iPhone, sounds can play even with the phone on silent, and haptics work too
 - Works offline once installed
 
 ## Run it yourself

@@ -8,29 +8,50 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const motionOn = () => st().motion !== false && !reduced();
 
 /* ---------------- sound ---------------- */
-let ctx = null;
-function audio() {
-  if (!ctx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    // on iPhone, "ambient" respects the silent switch and mixes with music instead of stopping it
-    try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch {}
-    ctx = new AC();
-  }
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+let ctx = null, out = null;
+// iPhone: "ambient" mixes with music but stays quiet while the ring switch is on silent;
+// "playback" (the Play on silent setting) is heard even on silent, like a video would be.
+const sessionType = () => (st().soundsOnSilent ? 'playback' : 'ambient');
+export function setSession() { try { if (navigator.audioSession) navigator.audioSession.type = sessionType(); } catch {} }
+function fresh() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  try { ctx?.close(); } catch {}
+  setSession();
+  ctx = new AC();
+  // everything goes through one master volume and a limiter, so phone speakers get a full,
+  // clear sound without clipping when notes overlap
+  const lim = ctx.createDynamicsCompressor();
+  lim.threshold.value = -6; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.002; lim.release.value = 0.12;
+  out = ctx.createGain(); out.gain.value = 2.6;
+  out.connect(lim); lim.connect(ctx.destination);
   return ctx;
 }
-// browsers only allow audio after a tap. iPhone only counts touchend/click (not pointerdown) and
+function audio() {
+  if (!ctx || ctx.state === 'closed') return fresh();
+  if (ctx.state !== 'running') ctx.resume().catch(() => {}); // "suspended", or iPhone's "interrupted"
+  return ctx;
+}
+// Browsers only allow audio after a tap. iPhone only counts touchend/click (not pointerdown) and
 // needs a sound actually started inside that tap, so play one silent sample to unlock it.
-// It can lock again after the app was in the background, so this runs on every tap until it's running.
+// After the app was in the background (paying from another app, a call, the lock screen) iPhone
+// leaves the context "interrupted" and a plain resume often never comes back, so on the next tap
+// a stuck context is replaced with a new one, created inside the tap.
+let unlocked = false, everUnlocked = false;
 const unlock = () => {
   if (st().sounds === false) return;
-  const a = audio(); if (!a || a.state === 'running' && unlocked) return;
-  try { const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050); src.connect(a.destination); src.start(0); unlocked = true; } catch {}
+  if (ctx && ctx.state === 'running' && unlocked) return;
+  // first tap ever: wake the context we have; later taps: a context that isn't running is stuck
+  const a = !ctx ? fresh() : ctx.state === 'running' || !everUnlocked ? audio() : fresh();
+  if (!a) return;
+  try { a.resume().catch(() => {}); const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050); src.connect(a.destination); src.start(0); unlocked = everUnlocked = true; } catch {}
 };
-let unlocked = false;
 for (const ev of ['touchend', 'click', 'keydown']) addEventListener(ev, unlock, { capture: true, passive: true });
-document.addEventListener('visibilitychange', () => { if (!document.hidden && ctx) ctx.resume().catch(() => {}); });
+document.addEventListener('visibilitychange', () => {
+  if (!ctx) return;
+  if (document.hidden) unlocked = false; // check again on the first tap after coming back
+  else ctx.resume().catch(() => {});
+});
 
 // one soft note: frequency glide, quick attack, smooth decay
 function note(a, { f, f2 = f, at = 0, dur = 0.16, vol = 0.16, type = 'sine', lp = 0 }) {
@@ -44,7 +65,7 @@ function note(a, { f, f2 = f, at = 0, dur = 0.16, vol = 0.16, type = 'sine', lp 
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   let node = o;
   if (lp) { const fl = a.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = lp; o.connect(fl); node = fl; }
-  node.connect(g); g.connect(a.destination);
+  node.connect(g); g.connect(out || a.destination);
   o.start(t); o.stop(t + dur + 0.05);
 }
 // a short breath of filtered noise, for the "whoosh" of sending
@@ -56,7 +77,7 @@ function whoosh(a, { at = 0, dur = 0.22, vol = 0.07 } = {}) {
   src.buffer = buf; fl.type = 'bandpass'; fl.Q.value = 0.9;
   fl.frequency.setValueAtTime(2600, t); fl.frequency.exponentialRampToValueAtTime(500, t + dur);
   g.gain.setValueAtTime(vol, t);
-  src.connect(fl); fl.connect(g); g.connect(a.destination);
+  src.connect(fl); fl.connect(g); g.connect(out || a.destination);
   src.start(t);
 }
 const SOUNDS = {

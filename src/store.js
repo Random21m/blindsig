@@ -2,13 +2,14 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.8.1';
+export const VERSION = '1.8.2';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
   lang: '', // '' = follow the device language
   keypad: true,
   sounds: true,
+  soundsOnSilent: false, // iPhone: play even with the ring switch on silent
   haptics: true,
   motion: true,
   keyClicks: false,

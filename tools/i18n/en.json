@@ -680,5 +680,7 @@
 "Reset this wallet",
 "Try my PIN again",
 "Burnt orange",
-"Fill in a token from your clipboard when you open Receive."
+"Fill in a token from your clipboard when you open Receive.",
+"Play on silent",
+"Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open."
 ]
