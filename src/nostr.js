@@ -209,7 +209,8 @@ export async function payRequest(r, amount) {
   if (fee) { h.fee = (h.fee || 0) + fee; save(); }
   const w = await C.walletFor(h.mint, h.unit);
   const { proofs } = w.decodeToken(h.token);
-  const body = r.pr.encodePayload(h.mint, proofs, { unit: h.unit, memo: r.memo || undefined });
+  const rawMint = (r.pr.mints || []).find((m) => normUrl(m) === h.mint) || h.mint;
+  const body = r.pr.encodePayload(rawMint, proofs, { unit: h.unit, memo: r.memo || undefined });
   try {
     if (r.transport.type === 'post') {
       const res = await fetch(r.transport.target, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
@@ -363,7 +364,6 @@ function classicToken(mint, proofs, unit, memo) {
   const ps = proofs.map((p) => ({ id: p.id, amount: plainAmount(p.amount), secret: p.secret, C: p.C, ...(p.witness ? { witness: typeof p.witness === 'string' ? p.witness : JSON.stringify(p.witness) } : {}) }));
   return 'cashuA' + b64url(JSON.stringify({ token: [{ mint, proofs: ps }], unit, ...(memo ? { memo } : {}) }));
 }
-export const npcRequiredMint = (creq) => { const r = decodeRequest(creq); return { raw: (r.pr.mints || [])[0] || '', url: r.mints[0] || '' }; };
 // npub.cash's server (cashu-ts 2.8) can't read ecash on the newer "01…" keysets: it would need the
 // mint's key list, which it doesn't pass. So pay with an older "00…" keyset if the mint still has one.
 export async function npcPayableKeyset(url, unit) {
@@ -385,8 +385,9 @@ export async function npcBuyUsername(name, creq) {
     await npcUsernameCall(name, classicToken(raw, proofs, h.unit, 'npub.cash username'));
   } catch (e) {
     // npub.cash didn't take it: the ecash is still ours, so take it straight back
-    let back = false;
-    try { await C.reclaim(h); back = true; } catch {}
+    let back = false, spent = false;
+    try { await C.reclaim(h); back = true; } catch (er) { spent = /spent|already/i.test(String(er.message || er)); }
+    if (spent) { h.status = 'claimed'; save(); throw new Error('The connection to npub.cash dropped after it received the payment. Reopen this page in a minute to see if your username is set.'); }
     const why = String(e.message || e).replace(/^Invalid payment:\s*/i, '');
     throw new Error(`npub.cash refused the payment (${why}). ${back ? 'Your sats are back in your wallet.' : 'The ecash is in your history; you can reclaim it there.'}`);
   }

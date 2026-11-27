@@ -1,6 +1,6 @@
 {
   "name": "blindsig",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "Cypherpunk Cashu ecash wallet PWA",
   "scripts": {
     "build": "node build.mjs",

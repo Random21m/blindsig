@@ -627,3 +627,9 @@
 626	Non bloccato: npub.cash o chiunque abbia i dettagli del pagamento potrebbe riscuoterlo.
 627	Impossibile contattare npub.cash per verificare il blocco.
 628	Nuova versione pronta. Tocca per aggiornare.
+629	Commissione da questa mint
+630	La connessione a npub.cash si è interrotta dopo aver ricevuto il pagamento. Riapri questa pagina tra un minuto per vedere se il nome utente è attivo.
+631	Proteggi il tuo wallet:
+632	stai usando blindsig in una scheda di Safari. Safari può cancellare i dati di un sito dopo circa una settimana senza visite, compreso questo wallet. Aggiungilo alla schermata Home e fai il backup della frase seed.
+633	Come installarlo
+634	L’app nella schermata Home ha una memoria propria, separata da Safari. Se finora hai usato blindsig in una scheda di Safari, annota prima la frase seed (Impostazioni → Backup e ripristino), poi ripristinala nell’app installata.

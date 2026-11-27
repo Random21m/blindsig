@@ -71,6 +71,7 @@ a{color:var(--ac)}
 .motd{display:flex;gap:10px;align-items:flex-start;margin-top:10px;padding:12px 14px;border-radius:var(--r);background:rgba(232,160,74,.08);border:1px solid rgba(232,160,74,.3);font-size:15px}
 .motd p{margin:0;flex:1}
 .motd button{color:var(--dim);width:32px;height:32px;flex:none}
+.motd .lnk{width:auto;height:auto;color:var(--ac);text-decoration:underline;font:inherit;padding:0}
 
 /* readout */
 .hero{padding:26px 2px 22px}
@@ -153,7 +154,7 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .kp{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 14px}
 .kp button{min-height:54px;border-radius:12px;font:500 22px var(--mono);background:var(--card)}
 .kp button:active{background:var(--card2)}
-.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;margin:14px 0;padding:14px 16px;border-radius:var(--r);background:var(--card);font-size:15px}
+.kv{display:grid;grid-template-columns:fit-content(48%) minmax(0,1fr);gap:8px 16px;margin:14px 0;padding:14px 16px;border-radius:var(--r);background:var(--card);font-size:15px}
 .kv dt{color:var(--dim)}.kv dd{margin:0;text-align:end;overflow-wrap:anywhere;unicode-bidi:plaintext}
 [dir=rtl] .kv dd{text-align:left}
 .big,.mb{direction:ltr;unicode-bidi:isolate}
@@ -305,6 +306,7 @@ details.more[open]{padding-bottom:14px}
     <button class="mintline" id="mintChip" aria-label="Choose mint"><i class="dot"></i><span class="mt"><b id="mintName">No mint selected</b><small id="mintHost"></small></span><span class="chev" aria-hidden="true">▾</span></button>
     <button id="unitChip" hidden aria-label="Switch unit">SAT</button>
   </div>
+  <div class="motd" id="tabWarn" hidden role="status"><p><b>Keep your wallet safe:</b> you’re using blindsig in a Safari tab. Safari can clear a website’s data after about a week without a visit, and that includes this wallet. Add it to your Home Screen and back up your seed phrase. <button class="lnk" id="tabHow">How to install</button></p><button id="tabWarnX" aria-label="Dismiss">✕</button></div>
   <div class="motd" id="motd" hidden role="status"><p><b>Mint message:</b> <span id="motdText"></span></p><button id="motdX" aria-label="Dismiss">✕</button></div>
 
   <section class="hero" aria-live="polite">

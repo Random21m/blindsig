@@ -627,3 +627,9 @@
 626	Nezamčeno: npub.cash nebo kdokoli s detaily platby by si ji mohl vzít.
 627	Nepodařilo se spojit s npub.cash a ověřit zamykání.
 628	Nová verze je připravena. Klepni pro aktualizaci.
+629	Poplatek z této mincovny
+630	Spojení s npub.cash se po přijetí platby přerušilo. Za minutu otevři tuto stránku znovu a podívej se, jestli je uživatelské jméno nastavené.
+631	Chraň svou peněženku:
+632	používáš blindsig v kartě Safari. Safari může smazat data webu, když ho asi týden nenavštívíš, a to včetně této peněženky. Přidej ji na plochu a zálohuj si seed frázi.
+633	Jak nainstalovat
+634	Aplikace na ploše má vlastní úložiště, oddělené od Safari. Pokud jsi blindsig používal v kartě Safari, nejdřív si zapiš seed frázi (Nastavení → Záloha a obnova) a pak ji obnov v nainstalované aplikaci.

@@ -627,3 +627,9 @@
 626	Non verrouillé : npub.cash ou toute personne ayant les détails du paiement pourrait le récupérer.
 627	Impossible de joindre npub.cash pour vérifier le verrouillage.
 628	Nouvelle version prête. Touchez pour mettre à jour.
+629	Frais depuis cette mint
+630	La connexion à npub.cash a été coupée après réception du paiement. Rouvrez cette page dans une minute pour voir si votre nom d’utilisateur est actif.
+631	Protégez votre portefeuille :
+632	vous utilisez blindsig dans un onglet Safari. Safari peut effacer les données d’un site après environ une semaine sans visite, y compris ce portefeuille. Ajoutez-le à votre écran d’accueil et sauvegardez votre phrase de récupération.
+633	Comment l’installer
+634	L’app de l’écran d’accueil a son propre stockage, séparé de Safari. Si vous utilisiez blindsig dans un onglet Safari, notez d’abord votre phrase de récupération (Réglages → Sauvegarde et restauration), puis restaurez-la dans l’app installée.

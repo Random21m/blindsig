@@ -627,3 +627,9 @@
 626	Sin bloquear: npub.cash o cualquiera con los detalles del pago podría reclamar un pago.
 627	No se pudo contactar con npub.cash para comprobar el bloqueo.
 628	Nueva versión lista. Toca para actualizar.
+629	Comisión desde esta mint
+630	La conexión con npub.cash se cortó después de recibir el pago. Vuelve a abrir esta página en un minuto para ver si tu nombre de usuario está activo.
+631	Protege tu billetera:
+632	estás usando blindsig en una pestaña de Safari. Safari puede borrar los datos de un sitio si no lo visitas en una semana, incluida esta billetera. Añádela a tu pantalla de inicio y respalda tu frase semilla.
+633	Cómo instalarla
+634	La app de la pantalla de inicio tiene su propio almacenamiento, separado de Safari. Si has usado blindsig en una pestaña de Safari, apunta primero tu frase semilla (Ajustes → Copia y restauración) y luego restáurala en la app instalada.

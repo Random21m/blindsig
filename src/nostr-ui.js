@@ -43,7 +43,7 @@ export function nostrUI(x) {
       const tl = $('#t_lock', b);
       // show what npub.cash actually has, not just what we last asked for
       const showLock = () => { const el = $('#lockst', b); if (!el) return; el.textContent = n.lock ? '✓ npub.cash confirms: payments are locked to your key.' : 'Not locked: npub.cash or anyone with the payment details could claim a payment.'; el.className = n.lock ? 'small' : 'dim small'; if (tl) tl.checked = !!n.lock; };
-      if (n.enabled) N.npcLockState().then(showLock).catch(() => { const el = $('#lockst', b); if (el) el.textContent = 'Couldn’t reach npub.cash to check the lock setting.'; });
+      if (n.enabled && (N.npcCanLock() || n.lock)) N.npcLockState().then(showLock).catch(() => { const el = $('#lockst', b); if (el) el.textContent = 'Couldn’t reach npub.cash to check the lock setting.'; });
       if (tl) tl.onchange = withBusy(tl, async () => {
         try { await N.npcSetLock(tl.checked); await N.npcLockState().catch(() => {}); showLock(); toast(n.lock ? 'Payments are now locked to your key' : 'Payment locking turned off'); }
         catch (e) { tl.checked = !!n.lock; showLock(); throw e; }

@@ -627,5 +627,11 @@
 "✓ npub.cash confirms: payments are locked to your key.",
 "Not locked: npub.cash or anyone with the payment details could claim a payment.",
 "Couldn’t reach npub.cash to check the lock setting.",
-"New version ready. Tap to update."
+"New version ready. Tap to update.",
+"Fee from this mint",
+"The connection to npub.cash dropped after it received the payment. Reopen this page in a minute to see if your username is set.",
+"Keep your wallet safe:",
+"you’re using blindsig in a Safari tab. Safari can clear a website’s data after about a week without a visit, and that includes this wallet. Add it to your Home Screen and back up your seed phrase.",
+"How to install",
+"The Home Screen app keeps its own storage, separate from Safari. If you’ve been using blindsig in a Safari tab, write down your seed phrase first (Settings → Backup & restore), then restore it in the installed app."
 ]

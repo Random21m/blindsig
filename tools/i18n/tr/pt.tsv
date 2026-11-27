@@ -627,3 +627,9 @@
 626	Sem trava: o npub.cash ou qualquer pessoa com os detalhes do pagamento poderia resgatá-lo.
 627	Não foi possível falar com o npub.cash para verificar a trava.
 628	Nova versão pronta. Toque para atualizar.
+629	Taxa desta mint
+630	A conexão com o npub.cash caiu depois que o pagamento chegou. Reabra esta página em um minuto para ver se seu nome de usuário está ativo.
+631	Proteja sua carteira:
+632	você está usando o blindsig em uma aba do Safari. O Safari pode apagar os dados de um site depois de cerca de uma semana sem visita, incluindo esta carteira. Adicione-a à Tela de Início e faça backup da sua frase seed.
+633	Como instalar
+634	O app da Tela de Início tem armazenamento próprio, separado do Safari. Se você usava o blindsig em uma aba do Safari, anote primeiro sua frase seed (Ajustes → Backup e restauração) e depois restaure no app instalado.

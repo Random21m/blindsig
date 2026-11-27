@@ -627,3 +627,9 @@
 626	Kilitli değil: npub.cash veya ödeme ayrıntılarına sahip biri ödemeyi alabilir.
 627	Kilit ayarını kontrol etmek için npub.cash’e ulaşılamadı.
 628	Yeni sürüm hazır. Güncellemek için dokun.
+629	Bu mintten ücret
+630	Ödeme ulaştıktan sonra npub.cash bağlantısı koptu. Kullanıcı adının ayarlanıp ayarlanmadığını görmek için bir dakika sonra bu sayfayı yeniden aç.
+631	Cüzdanını koru:
+632	blindsig’i bir Safari sekmesinde kullanıyorsun. Safari, yaklaşık bir hafta ziyaret edilmeyen sitelerin verilerini silebilir; bu cüzdan da dahil. Ana Ekrana ekle ve seed ifadeni yedekle.
+633	Nasıl yüklenir
+634	Ana Ekran uygulamasının Safari’den ayrı kendi depolaması vardır. blindsig’i bir Safari sekmesinde kullandıysan önce seed ifadeni yaz (Ayarlar → Yedekleme ve geri yükleme), sonra yüklü uygulamada geri yükle.

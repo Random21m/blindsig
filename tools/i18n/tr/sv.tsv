@@ -627,3 +627,9 @@
 626	Inte låst: npub.cash eller någon med betalningsuppgifterna skulle kunna ta emot en betalning.
 627	Kunde inte nå npub.cash för att kontrollera låsningen.
 628	Ny version klar. Tryck för att uppdatera.
+629	Avgift från den här minten
+630	Anslutningen till npub.cash bröts efter att betalningen kom fram. Öppna sidan igen om en minut för att se om ditt användarnamn är satt.
+631	Skydda din plånbok:
+632	du använder blindsig i en Safari-flik. Safari kan rensa en webbplats data efter ungefär en vecka utan besök, och det gäller även den här plånboken. Lägg till den på hemskärmen och säkerhetskopiera din seedfras.
+633	Så installerar du
+634	Appen på hemskärmen har egen lagring, skild från Safari. Om du har använt blindsig i en Safari-flik, skriv först ner din seedfras (Inställningar → Säkerhetskopia och återställning) och återställ den sedan i den installerade appen.

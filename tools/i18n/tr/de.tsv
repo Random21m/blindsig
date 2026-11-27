@@ -627,3 +627,9 @@
 626	Nicht gebunden: npub.cash oder jeder mit den Zahlungsdetails könnte eine Zahlung einlösen.
 627	npub.cash war nicht erreichbar, um die Einstellung zu prüfen.
 628	Neue Version bereit. Zum Aktualisieren tippen.
+629	Gebühr von dieser Mint
+630	Die Verbindung zu npub.cash brach ab, nachdem die Zahlung angekommen war. Öffne diese Seite in einer Minute erneut, um zu sehen, ob dein Benutzername gesetzt ist.
+631	Schütze dein Wallet:
+632	Du nutzt blindsig in einem Safari-Tab. Safari kann die Daten einer Website löschen, wenn du sie etwa eine Woche nicht besuchst, auch dieses Wallet. Füge es zum Home-Bildschirm hinzu und sichere deine Seed-Phrase.
+633	So installierst du es
+634	Die App auf dem Home-Bildschirm hat einen eigenen Speicher, getrennt von Safari. Wenn du blindsig bisher in einem Safari-Tab genutzt hast, schreib zuerst deine Seed-Phrase auf (Einstellungen → Sicherung & Wiederherstellung) und stelle sie dann in der installierten App wieder her.

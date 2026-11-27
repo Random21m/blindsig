@@ -573,7 +573,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const okMint = N.requestMintOk(req, S.active), fee = okMint ? N.requestFee(req, S.active) : 0;
         const alt = req.mints.find((u) => mintOf(u));
         const short = req.amount && req.amount + fee > bal(S.active);
-        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee for paying from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
+        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
           + (req.unit !== S.unit ? `<p class="warn">This request is in ${esc(unitLabel(req.unit))}. Switch unit first.</p>` : '')
           + (okMint ? '' : `<p class="warn">The request only accepts ${esc(req.mints.map(host).join(', '))}.</p>${alt ? `<button class="btn wide" id="swm">Switch to ${esc(host(alt))}</button>` : ''}`)
           + (fee ? '<p class="dim small">This mint isn’t on the request’s list, so the recipient adds a fee to move the ecash to theirs.</p>' : '')
@@ -1124,7 +1124,7 @@ let installEvt = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; $('#instBtn').hidden = false; });
 function installHelp() {
   if (installEvt) { installEvt.prompt(); installEvt = null; $('#instBtn').hidden = true; return; }
-  sheet('Install', `<p>On iPhone: tap Share, then Add to Home Screen.</p><p>On Android: open the browser menu, then Install app.</p>`);
+  sheet('Install', `<p>On iPhone: tap Share, then Add to Home Screen.</p><p>On Android: open the browser menu, then Install app.</p><p class="dim small">The Home Screen app keeps its own storage, separate from Safari. If you’ve been using blindsig in a Safari tab, write down your seed phrase first (Settings → Backup & restore), then restore it in the installed app.</p>`);
 }
 
 /* ================= boot ================= */
@@ -1150,6 +1150,15 @@ $('#moreHist').onclick = () => { logLimit += 100; render(); };
 $('#chkAll').onclick = withBusy($('#chkAll'), async () => { await C.settleAll({ invoices: true, sent: true, all: true }); render(); toast('Checked all pending'); });
 $('#hist').onclick = (e) => { const r = e.target.closest('.row'); if (r) { const h = S.history.find((x) => x.id === r.dataset.id); if (h) detail(h); } };
 if (!navigator.standalone && !matchMedia('(display-mode: standalone)').matches && /iphone|ipad/i.test(navigator.userAgent)) $('#instBtn').hidden = false;
+// iPhone Safari tab (not installed): Safari may clear site data after ~7 days without a visit.
+// Remind wallet owners once a week until they install it.
+{
+  const inTab = FX.isIOS && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches;
+  const tw = $('#tabWarn');
+  if (inTab && S.mnemonic && Date.now() - (st.tabWarnDismissed || 0) > 7 * 864e5) tw.hidden = false;
+  $('#tabWarnX').onclick = () => { tw.hidden = true; st.tabWarnDismissed = Date.now(); save(); };
+  $('#tabHow').onclick = installHelp;
+}
 
 I18N.startObserver();
 I18N.setLang(st.lang || I18N.detect()).then(render);
