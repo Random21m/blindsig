@@ -260,6 +260,21 @@ details.more[open]{padding-bottom:14px}
 .langs{list-style:none;margin:0;padding:0}
 #tabLock{position:fixed;inset:0;z-index:90;background:var(--bg);display:grid;place-items:center;padding:24px}
 #tabLock>div{max-width:380px;text-align:center}#tabLock h2{font:600 20px var(--mono);color:var(--ac)}#tabLock p{color:var(--dim);margin-bottom:20px}
+#pinLock{position:fixed;inset:0;z-index:65;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 18px) 20px calc(env(safe-area-inset-bottom) + 16px);overflow:auto}
+#pinLock[hidden]{display:none}
+#pinLock>.brand{align-self:flex-start;direction:ltr;flex:0 0 auto}
+.plbox{width:100%;max-width:360px;margin:auto 0;padding-top:12px}
+.pinpad{text-align:center}
+.pinpad .pt{font:600 20px var(--mono);color:var(--ac);margin:0 0 6px}
+.pinpad .ps{color:var(--dim);min-height:1.4em;margin:0 0 18px;font-size:15px}
+.pdots{display:flex;justify-content:center;gap:14px;margin:6px 0 10px;direction:ltr}
+.pdots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--faint);transition:background .12s,border-color .12s,transform .12s}
+.pdots i.on{background:var(--ac);border-color:var(--ac);transform:scale(1.08)}
+.pinpad .pm{min-height:1.5em;font-size:14px;color:var(--dim);margin:0 0 12px}.pinpad .pm.bad{color:var(--err)}
+.pkp{max-width:300px;margin:0 auto 10px}.pkp button{min-height:62px;font-size:24px;border-radius:50%;aspect-ratio:auto}
+.pinpad .lnk{display:inline-block;margin-top:8px;padding:10px;color:var(--dim)}
+.okline{color:var(--ac)}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
+@media (max-height:660px){.pkp button{min-height:50px}.pinpad .ps{margin-bottom:10px}}
 #chkAll{margin-top:10px}
 .audbars{display:flex;align-items:flex-end;gap:2px;height:44px;margin:6px 0}.audbars i{flex:1;border-radius:2px}.audbars i.ok{height:100%;background:var(--ac)}.audbars i.bad{height:35%;background:var(--err)}
 .spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:r .7s linear infinite;display:inline-block}
@@ -300,6 +315,7 @@ details.more[open]{padding-bottom:14px}
     <div class="brand"><b>$</b> blindsig<span class="cur">_</span></div>
     <button class="btcp" id="btcPrice" hidden aria-label="Bitcoin price"><i class="live"></i><span id="btcVal"></span><b id="btcDir"></b></button>
     <button class="tbtn" id="instBtn" hidden>Install</button>
+    <button class="tbtn" id="lockBtn" hidden aria-label="Lock"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
     <button class="tbtn" id="setBtn" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
   </header>
   <div class="mline">

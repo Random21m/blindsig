@@ -633,3 +633,48 @@
 632	du använder blindsig i en Safari-flik. Safari kan rensa en webbplats data efter ungefär en vecka utan besök, och det gäller även den här plånboken. Lägg till den på hemskärmen och säkerhetskopiera din seedfras.
 633	Så installerar du
 634	Appen på hemskärmen har egen lagring, skild från Safari. Om du har använt blindsig i en Safari-flik, skriv först ner din seedfras (Inställningar → Säkerhetskopia och återställning) och återställ den sedan i den installerade appen.
+635	PIN-lås
+636	Lås och kryptera appen med en PIN-kod
+637	Ber om en PIN-kod varje gång blindsig öppnas. PIN-koden krypterar också plånboken på den här enheten, så din seed-fras och din ecash kan inte läsas utan den.
+638	Om du glömmer PIN-koden kommer du bara in igen med din seed-fras. Se till att den är nedskriven först.
+639	Min seed-fras är nedskriven
+640	Ställ in PIN-kod
+641	PIN-låset är på. Din plånbok är krypterad på den här enheten.
+642	Fråga igen
+643	Hur länge blindsig får vara i bakgrunden innan PIN-koden efterfrågas igen. Den frågas alltid när appen startar.
+644	Direkt
+645	Efter 1 minut
+646	Efter 5 minuter
+647	Efter 15 minuter
+648	Efter 1 timme
+649	Lås nu
+650	Byt PIN-kod
+651	Stäng av PIN-lås
+652	PIN-låset är av
+653	Välj en ny PIN-kod
+654	Välj en PIN-kod
+655	Du anger den varje gång du öppnar blindsig.
+656	Den PIN-koden är för lätt att gissa. Välj en annan.
+657	Ange den igen
+658	För att se att du skrev rätt.
+659	PIN-koderna stämmer inte. Försök igen.
+660	PIN-koden ändrad
+661	PIN-låset är på. Din plånbok är nu krypterad.
+662	Kryptering
+663	PIN (AES-256)
+664	Av
+665	Ange din PIN-kod
+666	Glömt PIN-koden?
+667	Radera
+668	Fel PIN-kod.
+669	Fel PIN-kod. 1 försök kvar innan du får vänta.
+670	För många försök. Vänta {0} min.
+671	För många försök. Vänta {0} s.
+672	Använd en 4-siffrig PIN-kod
+673	Använd en 6-siffrig PIN-kod
+674	Glömt din PIN-kod?
+675	PIN-koden kan inte återställas. Den krypterar plånboken på den här enheten och ingen annan har den.
+676	För att komma in igen, återställ blindsig på den här enheten och återskapa den sedan med din seed-fras. Din ecash kommer tillbaka från dina mintar.
+677	Utan seed-frasen förlorar du ecash på den här enheten för gott när du återställer. Importerade P2PK-nycklar och din historik ingår inte i seeden.
+678	Återställ den här plånboken
+679	Prova min PIN-kod igen

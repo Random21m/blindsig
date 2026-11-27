@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.7.3';
+export const VERSION = '1.8.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber
@@ -66,7 +66,13 @@ function normalize(s) {
 }
 
 /* ---------- persistence: IndexedDB (no 5 MB limit), localStorage fallback ---------- */
+// With a PIN set, the saved state is an encrypted envelope:
+// { enc: 1, kdf, iter, salt, chk: {iv, ct}, iv, ct, pub: { theme, lang, len, after } }
+// AES-256-GCM with a key derived from the PIN (PBKDF2-SHA256). `pub` holds only what the
+// lock screen needs before unlocking. The key lives in memory as a non-extractable CryptoKey.
 let db = null;
+let key = null; // CryptoKey while a PIN is set and the wallet is unlocked
+let env = null; // envelope header (no ciphertext) while a PIN is set
 function openDb() {
   return new Promise((res) => {
     try {
@@ -78,31 +84,123 @@ function openDb() {
   });
 }
 const idbGet = (k) => new Promise((res) => { try { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => res(undefined); } catch { res(undefined); } });
-// load the newest saved state before the rest of the app starts
+
+const b64 = (u8) => btoa(String.fromCharCode(...new Uint8Array(u8)));
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const enc = new TextEncoder(), dec = new TextDecoder();
+const CHECK = 'blindsig-pin-check';
+export const PIN_ITER = 600000;
+async function deriveKey(pin, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function seal(k, text) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, enc.encode(text));
+  return { iv: b64(iv), ct: b64(ct) };
+}
+async function open_(k, box) {
+  return dec.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(box.iv) }, k, unb64(box.ct)));
+}
+
+let lockedRaw = null; // encrypted envelope found at startup, waiting for the PIN
+// load the newest saved state before the rest of the app starts.
+// Returns { locked: true, pub } when a PIN must be entered first (then call unlock(pin)).
 export async function initStore() {
   db = await openDb();
-  if (!db) return;
-  const raw = await idbGet('state');
-  if (raw) {
-    try { const st = normalize(JSON.parse(raw)); for (const k of Object.keys(S)) delete S[k]; Object.assign(S, st); } catch {}
-  } else if (localStorage.getItem(KEY)) save(); // migrate localStorage -> IndexedDB
+  let raw = db ? await idbGet('state') : undefined;
+  if (raw == null) { try { raw = localStorage.getItem(KEY); } catch {} }
+  if (raw == null) return { locked: false };
+  let parsed; try { parsed = JSON.parse(raw); } catch { return { locked: false }; }
+  if (parsed && parsed.enc === 1) {
+    lockedRaw = parsed;
+    env = { ...parsed }; delete env.iv; delete env.ct;
+    for (const k of Object.keys(S)) delete S[k];
+    Object.assign(S, blank());
+    if (parsed.pub?.theme) S.settings.theme = parsed.pub.theme;
+    if (parsed.pub?.lang) S.settings.lang = parsed.pub.lang;
+    return { locked: true, pub: parsed.pub || {} };
+  }
+  try { const st = normalize(parsed); for (const k of Object.keys(S)) delete S[k]; Object.assign(S, st); } catch {}
+  if (db && !(await idbGet('state')) && localStorage.getItem(KEY)) save(); // migrate localStorage -> IndexedDB
+  return { locked: false };
 }
-let migrated = false;
+// does this PIN open the wallet? (checks a small sealed value, not the whole state)
+export async function checkPin(pin) {
+  if (!env) return true;
+  try { const k = await deriveKey(pin, unb64(env.salt), env.iter); return (await open_(k, env.chk)) === CHECK ? k : null; } catch { return null; }
+}
+// first unlock after a cold start: decrypt the saved state into S
+export async function unlock(pin) {
+  const k = await checkPin(pin);
+  if (!k) return false;
+  if (lockedRaw) {
+    const st = normalize(JSON.parse(await open_(k, lockedRaw)));
+    for (const x of Object.keys(S)) delete S[x];
+    Object.assign(S, st);
+    lockedRaw = null;
+  }
+  key = k;
+  return true;
+}
+export const pinOn = () => !!env;
+export const pinInfo = () => (env ? { len: env.pub?.len || 6, after: env.pub?.after ?? 300 } : null);
+// turn the PIN on, or change it: re-encrypt everything under a new salt and key
+export async function setPin(pin, after) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const k = await deriveKey(pin, salt, PIN_ITER);
+  env = { enc: 1, kdf: 'pbkdf2-sha256', iter: PIN_ITER, salt: b64(salt), chk: await seal(k, CHECK), pub: { len: pin.length, after: after ?? env?.pub?.after ?? 300 } };
+  key = k;
+  await flushSave(true);
+}
+export async function clearPin() { env = null; key = null; await flushSave(true); }
+export async function setLockAfter(sec) { if (!env) return; env.pub.after = sec; await flushSave(true); }
+
+let writing = null, queued = false;
+let wiped = false;
 export function save() {
-  const json = JSON.stringify(S);
-  if (db) {
+  if (wiped) return false;
+  queued = true;
+  if (!writing) writing = flush();
+  return true;
+}
+async function flush() {
+  try {
+    while (queued) {
+      queued = false;
+      const json = JSON.stringify(S);
+      let out = json;
+      if (env && key) {
+        env.pub.theme = S.settings.theme; env.pub.lang = S.settings.lang || '';
+        out = JSON.stringify({ ...env, ...(await seal(key, json)) });
+      } else if (env) continue; // still locked: never overwrite the encrypted state
+      await writeRaw(out, !!env);
+    }
+  } finally { writing = null; }
+}
+// wait until everything is on disk (call before reloading the page)
+export async function flushSave(force) {
+  if (force) save();
+  while (writing) await writing;
+}
+function writeRaw(text, secret) {
+  return new Promise((res) => {
+    const ls = () => { try { localStorage.setItem(KEY, text); } catch {} res(); };
+    if (!db) return ls();
     try {
       const tx = db.transaction('kv', 'readwrite');
-      tx.objectStore('kv').put(json, 'state');
-      tx.oncomplete = () => { if (!migrated) { migrated = true; try { localStorage.removeItem(KEY); } catch {} } };
-      tx.onerror = () => { try { localStorage.setItem(KEY, json); } catch {} };
-      return true;
-    } catch {}
-  }
-  try { localStorage.setItem(KEY, json); return true; } catch { return false; }
+      tx.objectStore('kv').put(text, 'state');
+      // once IndexedDB holds the state, drop the old localStorage copy (always, when it would be plaintext)
+      tx.oncomplete = () => { try { if (secret || localStorage.getItem(KEY)) localStorage.removeItem(KEY); } catch {} res(); };
+      tx.onerror = ls; tx.onabort = ls;
+    } catch { ls(); }
+  });
 }
 export async function wipeStore() {
-  try { localStorage.removeItem(KEY); } catch {}
+  wiped = true; queued = false;
+  while (writing) await writing;
+  try { localStorage.removeItem(KEY); localStorage.removeItem(KEY + '.lock'); } catch {}
+  env = null; key = null; lockedRaw = null;
   if (db) await new Promise((res) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').delete('state'); tx.oncomplete = res; tx.onerror = res; });
 }
 export const storageKind = () => (db ? 'IndexedDB' : 'localStorage');

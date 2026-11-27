@@ -633,3 +633,48 @@
 632	estás usando blindsig en una pestaña de Safari. Safari puede borrar los datos de un sitio si no lo visitas en una semana, incluida esta billetera. Añádela a tu pantalla de inicio y respalda tu frase semilla.
 633	Cómo instalarla
 634	La app de la pantalla de inicio tiene su propio almacenamiento, separado de Safari. Si has usado blindsig en una pestaña de Safari, apunta primero tu frase semilla (Ajustes → Copia y restauración) y luego restáurala en la app instalada.
+635	Bloqueo con PIN
+636	Bloquea y cifra la app con un PIN
+637	Pide un PIN cada vez que se abre blindsig. El PIN también cifra el monedero en este dispositivo, así que tu frase semilla y tu ecash no se pueden leer sin él.
+638	Si olvidas tu PIN, la única forma de volver a entrar es tu frase semilla. Asegúrate de tenerla apuntada antes.
+639	Tengo apuntada mi frase semilla
+640	Configurar PIN
+641	El bloqueo con PIN está activado. Tu monedero está cifrado en este dispositivo.
+642	Volver a pedirlo
+643	Cuánto tiempo puede estar blindsig en segundo plano antes de pedir tu PIN otra vez. Siempre lo pide al iniciar la app.
+644	Al momento
+645	Después de 1 minuto
+646	Después de 5 minutos
+647	Después de 15 minutos
+648	Después de 1 hora
+649	Bloquear ahora
+650	Cambiar PIN
+651	Desactivar bloqueo con PIN
+652	Bloqueo con PIN desactivado
+653	Elige un PIN nuevo
+654	Elige un PIN
+655	Lo introducirás cada vez que abras blindsig.
+656	Ese PIN es demasiado fácil de adivinar. Elige otro.
+657	Introdúcelo otra vez
+658	Para comprobar que lo escribiste bien.
+659	Los PIN no coinciden. Inténtalo de nuevo.
+660	PIN cambiado
+661	Bloqueo con PIN activado. Tu monedero ahora está cifrado.
+662	Cifrado
+663	PIN (AES-256)
+664	Desactivado
+665	Introduce tu PIN
+666	¿Olvidaste el PIN?
+667	Borrar
+668	PIN incorrecto.
+669	PIN incorrecto. Te queda 1 intento antes de tener que esperar.
+670	Demasiados intentos. Espera {0} min.
+671	Demasiados intentos. Espera {0} s.
+672	Usar un PIN de 4 dígitos
+673	Usar un PIN de 6 dígitos
+674	¿Olvidaste tu PIN?
+675	Tu PIN no se puede recuperar. Cifra el monedero en este dispositivo y nadie más lo tiene.
+676	Para volver a entrar, reinicia blindsig en este dispositivo y después restáuralo con tu frase semilla. Tu ecash vuelve desde tus mints.
+677	Sin tu frase semilla, reiniciar hace perder para siempre el ecash de este dispositivo. Las claves P2PK importadas y tu historial no forman parte de la semilla.
+678	Reiniciar este monedero
+679	Probar mi PIN otra vez

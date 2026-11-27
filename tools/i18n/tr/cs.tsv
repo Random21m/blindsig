@@ -633,3 +633,48 @@
 632	používáš blindsig v kartě Safari. Safari může smazat data webu, když ho asi týden nenavštívíš, a to včetně této peněženky. Přidej ji na plochu a zálohuj si seed frázi.
 633	Jak nainstalovat
 634	Aplikace na ploše má vlastní úložiště, oddělené od Safari. Pokud jsi blindsig používal v kartě Safari, nejdřív si zapiš seed frázi (Nastavení → Záloha a obnova) a pak ji obnov v nainstalované aplikaci.
+635	Zámek PINem
+636	Zamknout a zašifrovat aplikaci PINem
+637	Při každém otevření blindsig se zeptá na PIN. PIN také šifruje peněženku v tomto zařízení, takže bez něj nelze přečíst vaši seed frázi ani ecash.
+638	Pokud PIN zapomenete, jedinou cestou zpět je vaše seed fráze. Nejdřív se ujistěte, že ji máte zapsanou.
+639	Seed frázi mám zapsanou
+640	Nastavit PIN
+641	Zámek PINem je zapnutý. Peněženka je v tomto zařízení zašifrovaná.
+642	Znovu se zeptat
+643	Jak dlouho může být blindsig na pozadí, než se znovu zeptá na PIN. Při spuštění aplikace se ptá vždy.
+644	Hned
+645	Po 1 minutě
+646	Po 5 minutách
+647	Po 15 minutách
+648	Po 1 hodině
+649	Zamknout teď
+650	Změnit PIN
+651	Vypnout zámek PINem
+652	Zámek PINem je vypnutý
+653	Zvolte nový PIN
+654	Zvolte PIN
+655	Budete ho zadávat při každém otevření blindsig.
+656	Tento PIN se dá snadno uhodnout. Zvolte jiný.
+657	Zadejte ho znovu
+658	Pro jistotu, že jste ho napsali správně.
+659	PINy se neshodují. Zkuste to znovu.
+660	PIN změněn
+661	Zámek PINem je zapnutý. Peněženka je teď zašifrovaná.
+662	Šifrování
+663	PIN (AES-256)
+664	Vypnuto
+665	Zadejte PIN
+666	Zapomněli jste PIN?
+667	Smazat
+668	Špatný PIN.
+669	Špatný PIN. Zbývá 1 pokus, pak budete muset počkat.
+670	Příliš mnoho pokusů. Počkejte {0} min.
+671	Příliš mnoho pokusů. Počkejte {0} s.
+672	Použít čtyřmístný PIN
+673	Použít šestimístný PIN
+674	Zapomněli jste PIN?
+675	PIN nelze obnovit. Šifruje peněženku v tomto zařízení a nikdo jiný ho nemá.
+676	Abyste se dostali zpět, resetujte blindsig v tomto zařízení a pak ho obnovte pomocí seed fráze. Ecash se vrátí z vašich mintů.
+677	Bez seed fráze reset navždy ztratí ecash v tomto zařízení. Importované P2PK klíče a historie nejsou součástí seedu.
+678	Resetovat tuto peněženku
+679	Zkusit PIN znovu

@@ -633,3 +633,48 @@
 632	vous utilisez blindsig dans un onglet Safari. Safari peut effacer les données d’un site après environ une semaine sans visite, y compris ce portefeuille. Ajoutez-le à votre écran d’accueil et sauvegardez votre phrase de récupération.
 633	Comment l’installer
 634	L’app de l’écran d’accueil a son propre stockage, séparé de Safari. Si vous utilisiez blindsig dans un onglet Safari, notez d’abord votre phrase de récupération (Réglages → Sauvegarde et restauration), puis restaurez-la dans l’app installée.
+635	Verrouillage par code
+636	Verrouiller et chiffrer l’app avec un code
+637	Demande un code à chaque ouverture de blindsig. Le code chiffre aussi le portefeuille sur cet appareil : votre phrase seed et votre ecash ne peuvent pas être lus sans lui.
+638	Si vous oubliez votre code, seule votre phrase seed permet de revenir. Assurez-vous de l’avoir notée avant.
+639	J’ai noté ma phrase seed
+640	Créer un code
+641	Le verrouillage par code est activé. Votre portefeuille est chiffré sur cet appareil.
+642	Redemander
+643	Combien de temps blindsig peut rester en arrière-plan avant de redemander votre code. Il le demande toujours au démarrage.
+644	Immédiatement
+645	Après 1 minute
+646	Après 5 minutes
+647	Après 15 minutes
+648	Après 1 heure
+649	Verrouiller maintenant
+650	Changer le code
+651	Désactiver le verrouillage
+652	Verrouillage par code désactivé
+653	Choisissez un nouveau code
+654	Choisissez un code
+655	Vous le saisirez à chaque ouverture de blindsig.
+656	Ce code est trop facile à deviner. Choisissez-en un autre.
+657	Saisissez-le à nouveau
+658	Pour vérifier que vous l’avez bien tapé.
+659	Les codes ne correspondent pas. Réessayez.
+660	Code modifié
+661	Verrouillage par code activé. Votre portefeuille est maintenant chiffré.
+662	Chiffrement
+663	Code (AES-256)
+664	Désactivé
+665	Saisissez votre code
+666	Code oublié ?
+667	Effacer
+668	Code incorrect.
+669	Code incorrect. Encore 1 essai avant une attente.
+670	Trop d’essais. Attendez {0} min.
+671	Trop d’essais. Attendez {0} s.
+672	Utiliser un code à 4 chiffres
+673	Utiliser un code à 6 chiffres
+674	Code oublié ?
+675	Votre code ne peut pas être récupéré. Il chiffre le portefeuille sur cet appareil et personne d’autre ne le connaît.
+676	Pour revenir, réinitialisez blindsig sur cet appareil, puis restaurez-le avec votre phrase seed. Votre ecash revient depuis vos mints.
+677	Sans votre phrase seed, réinitialiser fait perdre définitivement l’ecash de cet appareil. Les clés P2PK importées et votre historique ne font pas partie de la phrase.
+678	Réinitialiser ce portefeuille
+679	Réessayer mon code

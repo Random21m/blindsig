@@ -633,3 +633,48 @@
 632	você está usando o blindsig em uma aba do Safari. O Safari pode apagar os dados de um site depois de cerca de uma semana sem visita, incluindo esta carteira. Adicione-a à Tela de Início e faça backup da sua frase seed.
 633	Como instalar
 634	O app da Tela de Início tem armazenamento próprio, separado do Safari. Se você usava o blindsig em uma aba do Safari, anote primeiro sua frase seed (Ajustes → Backup e restauração) e depois restaure no app instalado.
+635	Bloqueio por PIN
+636	Bloqueie e criptografe o app com um PIN
+637	Pede um PIN sempre que o blindsig abre. O PIN também criptografa a carteira neste dispositivo, então sua frase semente e seu ecash não podem ser lidos sem ele.
+638	Se você esquecer o PIN, a única forma de entrar de novo é com a sua frase semente. Confirme que ela está anotada antes.
+639	Minha frase semente está anotada
+640	Configurar PIN
+641	O bloqueio por PIN está ativado. Sua carteira está criptografada neste dispositivo.
+642	Pedir de novo
+643	Quanto tempo o blindsig pode ficar em segundo plano antes de pedir seu PIN de novo. Ele sempre pede quando o app inicia.
+644	Na hora
+645	Depois de 1 minuto
+646	Depois de 5 minutos
+647	Depois de 15 minutos
+648	Depois de 1 hora
+649	Bloquear agora
+650	Alterar PIN
+651	Desativar bloqueio por PIN
+652	Bloqueio por PIN desativado
+653	Escolha um novo PIN
+654	Escolha um PIN
+655	Você vai digitá-lo sempre que abrir o blindsig.
+656	Esse PIN é fácil demais de adivinhar. Escolha outro.
+657	Digite de novo
+658	Para garantir que você digitou certo.
+659	Os PINs não conferem. Tente de novo.
+660	PIN alterado
+661	Bloqueio por PIN ativado. Sua carteira agora está criptografada.
+662	Criptografia
+663	PIN (AES-256)
+664	Desativada
+665	Digite seu PIN
+666	Esqueceu o PIN?
+667	Apagar
+668	PIN incorreto.
+669	PIN incorreto. Resta 1 tentativa antes de uma espera.
+670	Tentativas demais. Aguarde {0} min.
+671	Tentativas demais. Aguarde {0} s.
+672	Usar um PIN de 4 dígitos
+673	Usar um PIN de 6 dígitos
+674	Esqueceu seu PIN?
+675	Seu PIN não pode ser recuperado. Ele criptografa a carteira neste dispositivo e ninguém mais o tem.
+676	Para entrar de novo, redefina o blindsig neste dispositivo e depois restaure com sua frase semente. Seu ecash volta a partir das suas mints.
+677	Sem a frase semente, redefinir faz perder para sempre o ecash deste dispositivo. Chaves P2PK importadas e seu histórico não fazem parte da semente.
+678	Redefinir esta carteira
+679	Tentar meu PIN de novo

@@ -633,3 +633,48 @@
 632	Du nutzt blindsig in einem Safari-Tab. Safari kann die Daten einer Website löschen, wenn du sie etwa eine Woche nicht besuchst, auch dieses Wallet. Füge es zum Home-Bildschirm hinzu und sichere deine Seed-Phrase.
 633	So installierst du es
 634	Die App auf dem Home-Bildschirm hat einen eigenen Speicher, getrennt von Safari. Wenn du blindsig bisher in einem Safari-Tab genutzt hast, schreib zuerst deine Seed-Phrase auf (Einstellungen → Sicherung & Wiederherstellung) und stelle sie dann in der installierten App wieder her.
+635	PIN-Sperre
+636	App mit einer PIN sperren und verschlüsseln
+637	Fragt bei jedem Öffnen von blindsig nach einer PIN. Die PIN verschlüsselt außerdem die Wallet auf diesem Gerät, sodass deine Seed-Phrase und dein Ecash ohne sie nicht lesbar sind.
+638	Wenn du deine PIN vergisst, kommst du nur mit deiner Seed-Phrase wieder hinein. Sorge vorher dafür, dass sie aufgeschrieben ist.
+639	Meine Seed-Phrase ist aufgeschrieben
+640	PIN einrichten
+641	Die PIN-Sperre ist an. Deine Wallet ist auf diesem Gerät verschlüsselt.
+642	Erneut fragen
+643	Wie lange blindsig im Hintergrund sein darf, bevor die PIN erneut abgefragt wird. Beim Start wird immer gefragt.
+644	Sofort
+645	Nach 1 Minute
+646	Nach 5 Minuten
+647	Nach 15 Minuten
+648	Nach 1 Stunde
+649	Jetzt sperren
+650	PIN ändern
+651	PIN-Sperre ausschalten
+652	PIN-Sperre ist aus
+653	Neue PIN wählen
+654	PIN wählen
+655	Du gibst sie bei jedem Öffnen von blindsig ein.
+656	Diese PIN ist zu leicht zu erraten. Wähle eine andere.
+657	Noch einmal eingeben
+658	Damit sicher ist, dass du sie richtig getippt hast.
+659	Die PINs stimmen nicht überein. Versuch es noch einmal.
+660	PIN geändert
+661	PIN-Sperre ist an. Deine Wallet ist jetzt verschlüsselt.
+662	Verschlüsselung
+663	PIN (AES-256)
+664	Aus
+665	PIN eingeben
+666	PIN vergessen?
+667	Löschen
+668	Falsche PIN.
+669	Falsche PIN. Noch 1 Versuch, dann musst du warten.
+670	Zu viele Versuche. Warte {0} Min.
+671	Zu viele Versuche. Warte {0} s.
+672	4-stellige PIN verwenden
+673	6-stellige PIN verwenden
+674	PIN vergessen?
+675	Deine PIN lässt sich nicht wiederherstellen. Sie verschlüsselt die Wallet auf diesem Gerät, und niemand sonst kennt sie.
+676	Um wieder hineinzukommen, setze blindsig auf diesem Gerät zurück und stelle es dann mit deiner Seed-Phrase wieder her. Dein Ecash kommt von deinen Mints zurück.
+677	Ohne Seed-Phrase geht beim Zurücksetzen das Ecash auf diesem Gerät endgültig verloren. Importierte P2PK-Schlüssel und dein Verlauf sind nicht Teil des Seeds.
+678	Diese Wallet zurücksetzen
+679	PIN noch einmal versuchen

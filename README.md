@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.7.3-72d99b?style=flat-square&labelColor=161512" alt="version 1.7.3">
+  <img src="https://img.shields.io/badge/version-1.8.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -111,6 +111,7 @@ Green, white and amber, all on the same soft charcoal background. Change it unde
 
 - You choose which background checks run: invoices, sent tokens, WebSockets (NUT-17) and price lookups
 - Sent tokens update live when someone claims them
+- Optional PIN lock that also encrypts the wallet on the device (AES-256-GCM, key from the PIN via PBKDF2). It asks again after a time in the background you choose, before showing the seed phrase, and waits longer after repeated wrong guesses
 - Data stays in this browser's IndexedDB, and only one tab can run the wallet at a time, so two tabs can't spend the same ecash
 - Spent-proof cleanup, keyset counters, export and new-seed tools for when something looks off
 
@@ -144,7 +145,7 @@ The translations were machine-assisted and haven't been reviewed by native speak
 - **No server of its own, no account.** Your seed phrase, ecash and history stay in your browser.
 - **Strict Content Security Policy.** Only the site's own code can run, and fonts are self-hosted, so opening the wallet doesn't ping Google or a CDN.
 - **You control the extras.** Price lookups, the mint auditor, Nostr and npub.cash can all be turned off. [SECURITY.md](SECURITY.md) lists every service the app talks to.
-- **Your seed phrase and ecash are stored unencrypted in this browser.** Anyone with your unlocked device can spend them, so write the seed down and keep it offline.
+- **Turn on the PIN lock.** Without it, your seed phrase and ecash are stored unencrypted in this browser and anyone with your unlocked phone can spend them. With it, they're encrypted under your PIN. A short PIN stops someone who picks up your phone. It won't hold off a determined attacker who copies the browser's data, so write the seed down and keep it offline either way.
 - **Mints are custodians.** Use small amounts and mints you trust.
 
 Found a security problem? Please [report it privately](https://github.com/Random21m/blindsig/security/advisories/new) instead of opening an issue.

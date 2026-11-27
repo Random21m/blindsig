@@ -633,3 +633,48 @@
 632	stai usando blindsig in una scheda di Safari. Safari può cancellare i dati di un sito dopo circa una settimana senza visite, compreso questo wallet. Aggiungilo alla schermata Home e fai il backup della frase seed.
 633	Come installarlo
 634	L’app nella schermata Home ha una memoria propria, separata da Safari. Se finora hai usato blindsig in una scheda di Safari, annota prima la frase seed (Impostazioni → Backup e ripristino), poi ripristinala nell’app installata.
+635	Blocco con PIN
+636	Blocca e cifra l’app con un PIN
+637	Chiede un PIN ogni volta che blindsig si apre. Il PIN cifra anche il wallet su questo dispositivo, quindi la tua frase seed e il tuo ecash non si possono leggere senza.
+638	Se dimentichi il PIN, l’unico modo per rientrare è la tua frase seed. Assicurati di averla scritta prima.
+639	Ho scritto la mia frase seed
+640	Imposta PIN
+641	Il blocco con PIN è attivo. Il tuo wallet è cifrato su questo dispositivo.
+642	Richiedi di nuovo
+643	Quanto tempo blindsig può restare in background prima di richiedere il PIN. Lo chiede sempre all’avvio.
+644	Subito
+645	Dopo 1 minuto
+646	Dopo 5 minuti
+647	Dopo 15 minuti
+648	Dopo 1 ora
+649	Blocca ora
+650	Cambia PIN
+651	Disattiva blocco con PIN
+652	Blocco con PIN disattivato
+653	Scegli un nuovo PIN
+654	Scegli un PIN
+655	Lo inserirai ogni volta che apri blindsig.
+656	Quel PIN è troppo facile da indovinare. Scegline un altro.
+657	Inseriscilo di nuovo
+658	Per essere sicuri che sia giusto.
+659	I PIN non coincidono. Riprova.
+660	PIN cambiato
+661	Blocco con PIN attivo. Il tuo wallet ora è cifrato.
+662	Cifratura
+663	PIN (AES-256)
+664	Disattivata
+665	Inserisci il PIN
+666	PIN dimenticato?
+667	Cancella
+668	PIN errato.
+669	PIN errato. Ti resta 1 tentativo prima di un’attesa.
+670	Troppi tentativi. Attendi {0} min.
+671	Troppi tentativi. Attendi {0} s.
+672	Usa un PIN di 4 cifre
+673	Usa un PIN di 6 cifre
+674	Hai dimenticato il PIN?
+675	Il PIN non si può recuperare. Cifra il wallet su questo dispositivo e nessun altro lo conosce.
+676	Per rientrare, azzera blindsig su questo dispositivo e poi ripristinalo con la tua frase seed. Il tuo ecash torna dai tuoi mint.
+677	Senza la frase seed, azzerare fa perdere per sempre l’ecash su questo dispositivo. Le chiavi P2PK importate e la cronologia non fanno parte del seed.
+678	Azzera questo wallet
+679	Riprova il PIN

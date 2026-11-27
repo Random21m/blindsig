@@ -9,8 +9,9 @@ import jsQR from 'jsqr';
 import { UR, UREncoder, URDecoder } from '@gandlaf21/bc-ur';
 import {
   S, save, VERSION, DEFAULT_SETTINGS, getProofs, bal, total, sum, mintOf, mintLabel, host, esc, fmt, fmtParts, unitLabel,
-  toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind,
+  toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind, pinOn, pinInfo, setPin, clearPin, setLockAfter, flushSave,
 } from './store.js';
+import * as L from './lock.js';
 import * as C from './core.js';
 import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
@@ -175,6 +176,7 @@ function fitBal() {
 addEventListener('resize', () => fitBal());
 function render() {
   document.documentElement.dataset.accent = st.theme;
+  $('#lockBtn').hidden = !pinOn();
   document.documentElement.dataset.motion = st.motion === false ? 'off' : 'on';
   const m = mintOf(S.active);
   $('#mintName').textContent = m ? mintLabel(m) : 'No mint selected';
@@ -816,6 +818,7 @@ function moveSheet() {
 /* ================= settings ================= */
 const MENU = [
   ['backup', 'Backup & restore', 'Seed phrase and ecash recovery'],
+  ['security', 'PIN lock', 'Lock and encrypt the app with a PIN'],
   ['p2pk', 'P2PK', 'Receive ecash locked to your keys'],
   ['privacy', 'Privacy', 'Network checks and Bitcoin price'],
   ['appearance', 'Appearance', 'Theme, keypad and Bitcoin symbol'],
@@ -842,7 +845,7 @@ const SECTIONS = {
       <textarea id="other" rows="3" placeholder="Leave empty to use this wallet’s seed" spellcheck="false" autocapitalize="off"></textarea>
       <button class="btn wide" id="rst">Restore</button>
       <h3>Export</h3><button class="btn wide" id="exp">Export all ecash as tokens</button>`, (b) => {
-      $('#seed', b).onclick = () => showSeed(S.mnemonic, false, SECTIONS.backup);
+      $('#seed', b).onclick = async () => { if (await L.confirmPin(sheet, 'Show seed phrase', SECTIONS.backup)) showSeed(S.mnemonic, false, SECTIONS.backup); };
       $('#rst', b).onclick = () => {
         const o = $('#other', b).value.trim().toLowerCase().split(/\s+/).filter(Boolean).join(' ');
         if (o && !validateMnemonic(o, wordlist)) return toast('That seed phrase isn’t valid.', 'err');
@@ -850,6 +853,36 @@ const SECTIONS = {
         restoreRun(S.mints.map((m) => m.url), o || undefined);
       };
       $('#exp', b).onclick = () => exportSheet(false);
+    }, { back });
+  },
+  security() {
+    const info = pinInfo();
+    if (!info) {
+      sheet('PIN lock', `<p class="dim">Ask for a PIN every time blindsig opens. The PIN also encrypts the wallet on this device, so your seed phrase and ecash can’t be read from it without the PIN.</p>
+        <p class="warn">If you forget your PIN, the only way back in is your seed phrase. Make sure it’s written down first.</p>
+        <label class="chk"><input type="checkbox" id="ok"> My seed phrase is written down</label>
+        <button class="btn primary wide" id="on" disabled>Set up PIN</button>
+        <button class="btn wide" id="sd">Show seed phrase</button>`, (b) => {
+        $('#ok', b).onchange = (e) => ($('#on', b).disabled = !e.target.checked);
+        $('#on', b).onclick = () => choosePin();
+        $('#sd', b).onclick = () => showSeed(S.mnemonic, false, SECTIONS.security);
+      }, { back });
+      return;
+    }
+    const AFTER = [[0, 'Right away'], [60, 'After 1 minute'], [300, 'After 5 minutes'], [900, 'After 15 minutes'], [3600, 'After 1 hour']];
+    sheet('PIN lock', `<p class="okline">PIN lock is on. Your wallet is encrypted on this device.</p>
+      <h3>Ask again</h3><p class="dim small">How long blindsig can be in the background before it asks for your PIN again. It always asks when the app starts.</p>
+      ${AFTER.map(([v, l]) => `<label class="radio"><input type="radio" name="aft" value="${v}" ${info.after === v ? 'checked' : ''}><span class="mt"><b>${l}</b></span></label>`).join('')}
+      <button class="btn wide" id="lk">Lock now</button>
+      <button class="btn wide" id="ch">Change PIN</button>
+      <button class="btn wide danger" id="off">Turn off PIN lock</button>`, (b) => {
+      $$('input[name=aft]', b).forEach((r) => (r.onchange = () => setLockAfter(+r.value)));
+      $('#lk', b).onclick = () => { closeSheet(); L.relock(); };
+      $('#ch', b).onclick = async () => { if (await L.confirmPin(sheet, 'Change PIN', SECTIONS.security)) choosePin(true); };
+      $('#off', b).onclick = async () => {
+        if (!(await L.confirmPin(sheet, 'Turn off PIN lock', SECTIONS.security))) return;
+        await clearPin(); toast('PIN lock is off'); render(); SECTIONS.security();
+      };
     }, { back });
   },
   p2pk() {
@@ -965,11 +998,38 @@ const SECTIONS = {
   about() {
     sheet('About', `<p><b>blindsig ${VERSION}</b></p>
       <p class="dim">A Cashu ecash wallet built on cashu-ts. Ecash and your seed are stored only in this browser. Mints are custodians: use ones you trust and keep amounts small.</p>
-      ${kv([['Library', 'cashu-ts 4.14'], ['Proofs held', String(Object.values(S.proofs).reduce((t, a) => t + (a?.length || 0), 0))], ['Mints', String(S.mints.length)], ['Storage', storageKind()]])}
+      ${kv([['Library', 'cashu-ts 4.14'], ['Proofs held', String(Object.values(S.proofs).reduce((t, a) => t + (a?.length || 0), 0))], ['Mints', String(S.mints.length)], ['Storage', storageKind()], ['Encryption', pinOn() ? 'PIN (AES-256)' : 'Off']])}
       <a class="btn wide" href="https://cashu.space" target="_blank" rel="noopener">cashu.space</a>
       <a class="btn wide" href="https://github.com/Random21m/blindsig" target="_blank" rel="noopener">Source code</a>`, null, { back });
   },
 };
+// common PINs a thief would try first
+const easyPin = (p) => /^(\d)\1+$/.test(p) || '01234567890'.includes(p) || '09876543210'.includes(p) || ['121212', '112233', '123123', '696969', '1212', '6969', '2580', '258025'].includes(p);
+function choosePin(change) {
+  const title = change ? 'Change PIN' : 'Set up PIN';
+  sheet(title, '<div id="pcBox"></div>', (b) => {
+    const box = $('#pcBox', b);
+    const first = (msg) => {
+      const pad = L.pinPad(box, {
+        len: 6, lenSwitch: true, title: change ? 'Choose a new PIN' : 'Choose a PIN',
+        sub: 'You’ll enter it every time blindsig opens.',
+        onPin: async (p) => (easyPin(p) ? 'That PIN is too easy to guess. Pick another.' : (later(() => again(p)), true)),
+      });
+      if (msg) pad.setMsg(msg, true);
+    };
+    const again = (p1) => L.pinPad(box, {
+      len: p1.length, title: 'Enter it again', sub: 'To make sure you typed it right.',
+      onPin: async (p) => {
+        if (p !== p1) { later(() => first('Those PINs didn’t match. Try again.')); return true; }
+        try { await setPin(p); } catch (e) { return niceErr(e); }
+        FX.success('received');
+        toast(change ? 'PIN changed' : 'PIN lock is on. Your wallet is now encrypted.');
+        render(); SECTIONS.security(); return true;
+      },
+    });
+    first();
+  }, { back: SECTIONS.security });
+}
 function importNsecSheet() {
   sheet('Import nsec', `<p class="dim">Use a nostr private key as a P2PK key, so ecash locked to your npub can be redeemed here.</p>
     <input id="ns" class="field" placeholder="nsec1…" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -1142,6 +1202,16 @@ $('#unitChip').onclick = () => { const m = mintOf(S.active); const u = m?.units 
 $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
 $('#btcPrice').onclick = () => { if (S.mnemonic) SECTIONS.privacy(); };
 $('#instBtn').onclick = installHelp;
+$('#lockBtn').onclick = () => L.relock();
+// ask for the PIN again after time in the background ("Right away" also hides the app-switcher snapshot)
+{
+  let hiddenAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    const p = pinInfo(); if (!p) return;
+    if (document.hidden) { hiddenAt = Date.now(); if (p.after === 0) L.relock(); }
+    else if (hiddenAt && Date.now() - hiddenAt >= p.after * 1000) L.relock();
+  });
+}
 $('#scanClose').onclick = stopScan;
 $('#motdX').onclick = () => { const m = mintOf(S.active); if (m) { m.motdSeen = m.info.motd; save(); render(); } };
 $('#sheet .backdrop').onclick = () => closeSheet();
@@ -1219,7 +1289,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     if (!hadController || $('#updBar')) return;
     const bar = document.createElement('button');
     bar.id = 'updBar'; bar.className = 'updbar'; bar.textContent = 'New version ready. Tap to update.';
-    bar.onclick = () => location.reload();
+    bar.onclick = async () => { await flushSave(); location.reload(); };
     document.body.appendChild(bar);
   });
 }

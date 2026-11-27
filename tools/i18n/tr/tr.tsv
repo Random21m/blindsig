@@ -633,3 +633,48 @@
 632	blindsig’i bir Safari sekmesinde kullanıyorsun. Safari, yaklaşık bir hafta ziyaret edilmeyen sitelerin verilerini silebilir; bu cüzdan da dahil. Ana Ekrana ekle ve seed ifadeni yedekle.
 633	Nasıl yüklenir
 634	Ana Ekran uygulamasının Safari’den ayrı kendi depolaması vardır. blindsig’i bir Safari sekmesinde kullandıysan önce seed ifadeni yaz (Ayarlar → Yedekleme ve geri yükleme), sonra yüklü uygulamada geri yükle.
+635	PIN kilidi
+636	Uygulamayı PIN ile kilitleyin ve şifreleyin
+637	blindsig her açıldığında PIN ister. PIN ayrıca bu cihazdaki cüzdanı şifreler; böylece seed ifadeniz ve ecash’iniz PIN olmadan okunamaz.
+638	PIN’inizi unutursanız tekrar girmenin tek yolu seed ifadenizdir. Önce yazılı olduğundan emin olun.
+639	Seed ifademi yazdım
+640	PIN oluştur
+641	PIN kilidi açık. Cüzdanınız bu cihazda şifreli.
+642	Tekrar sor
+643	blindsig arka planda ne kadar kalınca PIN’inizi tekrar istesin. Uygulama başlarken her zaman sorar.
+644	Hemen
+645	1 dakika sonra
+646	5 dakika sonra
+647	15 dakika sonra
+648	1 saat sonra
+649	Şimdi kilitle
+650	PIN’i değiştir
+651	PIN kilidini kapat
+652	PIN kilidi kapalı
+653	Yeni bir PIN seçin
+654	Bir PIN seçin
+655	blindsig’i her açtığınızda gireceksiniz.
+656	Bu PIN tahmin edilmesi çok kolay. Başka birini seçin.
+657	Tekrar girin
+658	Doğru yazdığınızdan emin olmak için.
+659	PIN’ler eşleşmedi. Tekrar deneyin.
+660	PIN değiştirildi
+661	PIN kilidi açık. Cüzdanınız artık şifreli.
+662	Şifreleme
+663	PIN (AES-256)
+664	Kapalı
+665	PIN’inizi girin
+666	PIN’i mi unuttunuz?
+667	Sil
+668	Yanlış PIN.
+669	Yanlış PIN. Beklemeden önce 1 deneme hakkınız kaldı.
+670	Çok fazla deneme. {0} dk bekleyin.
+671	Çok fazla deneme. {0} sn bekleyin.
+672	4 haneli PIN kullan
+673	6 haneli PIN kullan
+674	PIN’inizi mi unuttunuz?
+675	PIN’iniz kurtarılamaz. Bu cihazdaki cüzdanı şifreler ve başka kimsede yoktur.
+676	Tekrar girmek için blindsig’i bu cihazda sıfırlayın, sonra seed ifadenizle geri yükleyin. Ecash’iniz mint’lerinizden geri gelir.
+677	Seed ifadeniz olmadan sıfırlamak bu cihazdaki ecash’i kalıcı olarak kaybettirir. İçe aktardığınız P2PK anahtarları ve geçmişiniz ifadenin parçası değildir.
+678	Bu cüzdanı sıfırla
+679	PIN’imi tekrar dene
