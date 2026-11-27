@@ -209,14 +209,14 @@ export async function tokenLockInfo(t) {
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
 
-export async function sendEcash(amount, { memo, lockTo, offline } = {}) {
+export async function sendEcash(amount, { memo, lockTo, offline, keysetId } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
   if (amount > before) throw new Error('insufficient balance at this mint');
   let res;
   if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
   else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo }).includeFees(true).run();
-  else res = await w.send(amount, getProofs(url, unit), { includeFees: true });
+  else res = await w.send(amount, getProofs(url, unit), { includeFees: true, ...(keysetId ? { keysetId } : {}) });
   // never record a send unless the token really carries the amount
   if (!res.send.length || sum(res.send) < amount) throw new Error(offline ? 'no exact match for offline sending' : 'could not prepare the token');
   setProofs(url, res.keep, unit);

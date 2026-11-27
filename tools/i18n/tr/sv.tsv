@@ -611,3 +611,5 @@
 610	npub.cash nekade betalningen ({0}). Ecash finns i historiken; du kan ta tillbaka den där.
 611	npub.cash tar bara ecash från {0}. Byt till den minten först.
 612	npub.cash vill ha {0}; byt enhet först
+613	Försök ändå
+614	npub.cash-servern kan för närvarande inte läsa ecash från {0} (den här minten använder nyare nycklar), så den nekar troligen betalningen. Gör den det kommer dina sats tillbaka direkt, minus en eller två sats i mintavgift.

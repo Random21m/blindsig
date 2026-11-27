@@ -611,3 +611,5 @@
 610	npub.cash ödemeyi reddetti ({0}). Ecash geçmişinde; oradan geri alabilirsin.
 611	npub.cash yalnızca {0} ecash’i kabul ediyor. Önce o minte geç.
 612	npub.cash {0} istiyor; önce birimi değiştir
+613	Yine de dene
+614	npub.cash sunucusu şu an {0} ecash’ini okuyamıyor (bu mint daha yeni anahtarlar kullanıyor), bu yüzden ödemeyi büyük ihtimalle reddedecek. Reddederse satların hemen geri gelir, bir iki sat mint ücreti düşülerek.

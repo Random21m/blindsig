@@ -611,3 +611,5 @@
 610	npub.cash rechazó el pago ({0}). El ecash está en tu historial; puedes recuperarlo allí.
 611	npub.cash solo acepta ecash de {0}. Cámbiate primero a esa mint.
 612	npub.cash quiere {0}; cambia la unidad primero
+613	Intentar de todos modos
+614	El servidor de npub.cash no puede leer ahora el ecash de {0} (esta mint usa claves más nuevas), así que probablemente rechace el pago. Si lo hace, tus sats vuelven al instante, menos uno o dos sats de comisión de la mint.

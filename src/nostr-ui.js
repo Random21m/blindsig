@@ -48,9 +48,11 @@ export function nostrUI(x) {
         if (r.done) { toast('Username set'); return lnaddr(); }
         const q = N.decodeRequest(r.creq), need = q.mints[0];
         const onMint = !need || need === S.active, have = need && mintOf(need);
+        const readable = onMint ? await N.npcPayableKeyset(S.active, S.unit) : undefined;
         const ux = $('#ux', b);
         ux.innerHTML = kv([['Username', esc(name + '@' + n.host)], ['Price', `<b>${esc(fmt(q.amount, q.unit))}</b>`], need && ['Paid with ecash from', esc(host(need))], ['Pay from', esc(host(S.active))]])
-          + (onMint ? '<button class="btn primary wide" id="buy">Pay and claim</button>'
+          + (onMint && readable === null ? `<p class="warn">npub.cash’s server can’t currently read ecash from ${esc(host(S.active))} (this mint uses newer keys), so it will probably refuse the payment. If it does, your sats come straight back, minus a sat or two of mint fees.</p><button class="btn wide" id="buy">Try anyway</button>`
+            : onMint ? '<button class="btn primary wide" id="buy">Pay and claim</button>'
             : `<p class="warn">npub.cash only takes ecash from ${esc(host(need))}. ${have ? 'Switch to it, then pay.' : 'Add that mint and move some sats to it first.'}</p><button class="btn wide" id="swn">${have ? `Switch to ${esc(host(need))}` : `Add ${esc(host(need))}`}</button>`);
         const buy = $('#buy', ux);
         if (buy) buy.onclick = withBusy(buy, async () => { await N.npcBuyUsername(name, r.creq); render(); toast('Username claimed'); lnaddr(); });

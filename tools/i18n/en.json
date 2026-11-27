@@ -611,5 +611,7 @@
 "npub.cash refused the payment ({0}). Your sats are back in your wallet.",
 "npub.cash refused the payment ({0}). The ecash is in your history; you can reclaim it there.",
 "npub.cash only takes ecash from {0}. Switch to that mint first.",
-"npub.cash wants {0}; switch unit first"
+"npub.cash wants {0}; switch unit first",
+"Try anyway",
+"npub.cash’s server can’t currently read ecash from {0} (this mint uses newer keys), so it will probably refuse the payment. If it does, your sats come straight back, minus a sat or two of mint fees."
 ]

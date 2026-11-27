@@ -337,12 +337,21 @@ function classicToken(mint, proofs, unit, memo) {
   return 'cashuA' + b64url(JSON.stringify({ token: [{ mint, proofs: ps }], unit, ...(memo ? { memo } : {}) }));
 }
 export const npcRequiredMint = (creq) => { const r = decodeRequest(creq); return { raw: (r.pr.mints || [])[0] || '', url: r.mints[0] || '' }; };
+// npub.cash's server (cashu-ts 2.8) can't read ecash on the newer "01…" keysets: it would need the
+// mint's key list, which it doesn't pass. So pay with an older "00…" keyset if the mint still has one.
+export async function npcPayableKeyset(url, unit) {
+  await C.refreshMint(url).catch(() => {});
+  const ks = (mintOf(url)?.keysets || []).filter((k) => k.unit === unit && k.active);
+  const old = ks.find((k) => /^00/.test(k.id));
+  return old ? old.id : ks.length ? null : undefined; // id, null = can't, undefined = unknown
+}
 export async function npcBuyUsername(name, creq) {
   const r = decodeRequest(creq);
   if (r.unit !== S.unit) throw new Error(`npub.cash wants ${r.unit}; switch unit first`);
   if (r.mints.length && !r.mints.includes(S.active)) throw new Error(`npub.cash only takes ecash from ${host(r.mints[0])}. Switch to that mint first.`);
   const raw = (r.pr.mints || []).find((m) => normUrl(m) === S.active) || S.active;
-  const h = await C.sendEcash(r.amount, { memo: 'npub.cash username' });
+  const keysetId = await npcPayableKeyset(S.active, S.unit);
+  const h = await C.sendEcash(r.amount, { memo: 'npub.cash username', ...(keysetId ? { keysetId } : {}) });
   const w = await C.walletFor(h.mint, h.unit);
   const { proofs } = w.decodeToken(h.token); // full keyset ids
   try {

@@ -611,3 +611,5 @@
 610	npub.cash hat die Zahlung abgelehnt ({0}). Das Ecash ist in deinem Verlauf; du kannst es dort zurückholen.
 611	npub.cash nimmt nur Ecash von {0}. Wechsle zuerst zu dieser Mint.
 612	npub.cash möchte {0}; wechsle zuerst die Einheit
+613	Trotzdem versuchen
+614	Der Server von npub.cash kann Ecash von {0} derzeit nicht lesen (diese Mint nutzt neuere Schlüssel) und lehnt die Zahlung daher wahrscheinlich ab. Dann kommen deine Sats sofort zurück, abzüglich ein, zwei Sats Mint-Gebühr.

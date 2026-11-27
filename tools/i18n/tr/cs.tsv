@@ -611,3 +611,5 @@
 610	npub.cash platbu odmítl ({0}). Ecash je v historii; můžeš si ho tam vzít zpět.
 611	npub.cash přijímá jen ecash z {0}. Nejdřív přepni na tu mincovnu.
 612	npub.cash chce {0}; nejdřív změň jednotku
+613	Přesto zkusit
+614	Server npub.cash zatím neumí číst ecash z {0} (tato mincovna používá novější klíče), takže platbu nejspíš odmítne. Pak se ti saty hned vrátí, minus sat nebo dva poplatku mincovně.

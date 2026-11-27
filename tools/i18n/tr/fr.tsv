@@ -611,3 +611,5 @@
 610	npub.cash a refusé le paiement ({0}). L’ecash est dans votre historique ; vous pouvez le récupérer là.
 611	npub.cash n’accepte que l’ecash de {0}. Passez d’abord à cette mint.
 612	npub.cash veut des {0} ; changez d’abord d’unité
+613	Essayer quand même
+614	Le serveur de npub.cash ne sait pas encore lire l’ecash de {0} (cette mint utilise des clés plus récentes) : il refusera probablement le paiement. Dans ce cas, vos sats reviennent aussitôt, moins un ou deux sats de frais de mint.
