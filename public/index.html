@@ -16,13 +16,13 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /*
 VOICE: calm, private, a little terminal. Plain words, no jargon unless it helps.
 IDEA: a terminal on warm charcoal, like a screen in a dim room: soft light, nothing harsh.
 PICTURE: the balance as large, gently glowing digits over the mint's details.
-COLOUR and TYPE: warm charcoal ground, off-white ink, one accent the user picks (green, white or amber). VT323 numerals, IBM Plex Sans text, IBM Plex Mono labels.
+COLOUR and TYPE: warm charcoal ground, off-white ink, one accent the user picks (green, white or amber). JetBrains Mono light numerals and labels, Inter text.
 LAYOUT: one column, thumb-first: mint line, readout, three actions, history; flows open in bottom sheets.
 */
 :root{color-scheme:dark;
@@ -30,7 +30,7 @@ LAYOUT: one column, thumb-first: mint line, readout, three actions, history; flo
   --ink:#ece6da;--dim:#aaa194;--faint:#857d71;
   --warn:#e8a04a;--err:#ec8a72;
   --ac:#72d99b;--ac-ink:#0e1a12;--ac-soft:rgba(114,217,155,.13);--glow:rgba(114,217,155,.28);
-  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;--d:"VT323","IBM Plex Mono",monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;--d:"JetBrains Mono",ui-monospace,monospace;
   --r:14px}
 [data-accent=white]{--ac:#efe9dd;--ac-ink:#161411;--ac-soft:rgba(239,233,221,.10);--glow:rgba(239,233,221,.18)}
 [data-accent=amber]{--ac:#f2b763;--ac-ink:#1e1507;--ac-soft:rgba(242,183,99,.13);--glow:rgba(242,183,99,.26);--warn:#e88f5a}
@@ -68,8 +68,8 @@ a{color:var(--ac)}
 .hero{padding:26px 2px 22px}
 .lab{color:var(--dim);font:500 13px var(--mono)}
 .balrow{display:flex;align-items:baseline;gap:6px;margin:12px 0 4px;color:var(--ac);white-space:nowrap}
-.bal{font-family:var(--d);font-size:clamp(80px,25vw,124px);line-height:.85;text-shadow:0 0 22px var(--glow);font-variant-numeric:tabular-nums}
-#balPre{font-family:var(--d);font-size:clamp(48px,14vw,72px);line-height:.85;opacity:.85}
+.bal{font-family:var(--d);font-weight:300;letter-spacing:-.04em;font-size:clamp(52px,16vw,80px);line-height:1;text-shadow:0 0 22px var(--glow);font-variant-numeric:tabular-nums}
+#balPre{font-family:var(--d);font-weight:300;font-size:clamp(30px,9vw,46px);line-height:1;opacity:.85}
 #balPost{font:500 18px var(--mono);color:var(--dim);margin-left:6px}
 .sub{display:flex;justify-content:space-between;gap:12px;font-size:15px;color:var(--dim);min-height:24px;flex-wrap:wrap}
 
@@ -134,9 +134,9 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .field + .field,.field + .btn,.amtwrap + .field{margin-top:10px}
 .lbl{display:block;color:var(--dim);font:500 13px var(--mono);margin:16px 0 6px}
 .amt{direction:ltr;display:flex;align-items:baseline;justify-content:center;gap:6px;padding:6px 0 2px;color:var(--ac)}
-.amt input{border:0;background:none;outline:none;text-align:center;font-family:var(--d);font-size:clamp(64px,19vw,84px);line-height:1;color:var(--ac);padding:0;width:100%;max-width:8ch;text-shadow:0 0 16px var(--glow);caret-color:var(--ac)}
+.amt input{border:0;background:none;outline:none;text-align:center;font-family:var(--d);font-weight:300;letter-spacing:-.03em;font-size:clamp(40px,12vw,56px);line-height:1;color:var(--ac);padding:0;width:100%;max-width:8ch;text-shadow:0 0 16px var(--glow);caret-color:var(--ac)}
 .amt input::placeholder{color:var(--ac);opacity:.3}
-.amt-pre{font-family:var(--d);font-size:44px}
+.amt-pre{font-family:var(--d);font-weight:300;font-size:30px}
 .amt-post{font:500 16px var(--mono);color:var(--dim)}
 .hint{text-align:center;color:var(--dim);font-size:14px;margin:4px 0 14px!important}
 .kp{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 14px}
@@ -157,7 +157,7 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .chips{justify-content:flex-start}
 .chip{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font:500 13px var(--mono);color:var(--dim);display:inline-flex;align-items:center}
 .chip.ro{min-height:28px;cursor:default}
-.big{font-family:var(--d);color:var(--ac);font-size:60px;line-height:1;text-align:center;margin:18px 0 6px!important;text-shadow:0 0 16px var(--glow)}
+.big{font-family:var(--d);font-weight:300;letter-spacing:-.03em;color:var(--ac);font-size:42px;line-height:1;text-align:center;margin:18px 0 6px!important;text-shadow:0 0 16px var(--glow)}
 .big small{font:500 18px var(--mono);color:var(--dim);text-shadow:none}
 .wait{text-align:center;color:var(--dim)}
 .armor{margin:14px 0 6px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line2);font:12.5px/1.5 var(--mono);color:var(--dim);white-space:pre-wrap;word-break:break-all;max-height:8.5em;overflow:auto;user-select:all;-webkit-user-select:all}

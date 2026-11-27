@@ -1,6 +1,6 @@
 // blindsig service worker: caches the app shell so it opens offline.
 // Mint API calls are never cached.
-const VERSION = 'mwz27w6l';
+const VERSION = 'mwz2jbim';
 const SHELL = ['./', './index.html', './app.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/apple-touch-icon.png'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
