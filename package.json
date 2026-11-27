@@ -9,7 +9,7 @@
   "dependencies": {
     "@cashu/cashu-ts": "^4.14.0",
     "@gandlaf21/bc-ur": "^1.1.12",
-    "@scure/bip39": "^2.0.1",
+    "@scure/bip39": "^2.4.0",
     "buffer": "^6.0.3",
     "jsqr": "^1.4.0",
     "light-bolt11-decoder": "^3.2.0",
