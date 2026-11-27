@@ -1,0 +1,419 @@
+// Wallet logic: mints, units, Lightning, ecash, P2PK, swaps, multinut, restore.
+import {
+  Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
+  getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey,
+} from '@cashu/cashu-ts';
+import { mnemonicToSeedSync } from '@scure/bip39';
+import { bech32 } from '@scure/base';
+import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils.js';
+import {
+  S, save, getProofs, setProofs, addProofs, sum, bal, mintOf, host, uid, normUrl, fmt,
+} from './store.js';
+
+/* ---------------- seed + counters ---------------- */
+let SEED = S.mnemonic ? mnemonicToSeedSync(S.mnemonic) : null;
+export const counterSource = {
+  async reserve(id, n) { const start = S.counters[id] || 0; if (n > 0) { S.counters[id] = start + n; save(); } return { start, count: n }; },
+  async reserveAt(id, start, count) {
+    const cur = S.counters[id] || 0;
+    if (start < cur) throw new Error(`counter ${start} already used for keyset ${id}`);
+    S.counters[id] = start + count; save(); return { start, count };
+  },
+  async advanceToAtLeast(id, n) { if ((S.counters[id] || 0) < n) { S.counters[id] = n; save(); } },
+  async snapshot() { return { ...S.counters }; },
+  async setNext(id, n) { S.counters[id] = n; save(); },
+};
+export function setSeed(m) { S.mnemonic = m; save(); SEED = mnemonicToSeedSync(m); wallets.clear(); }
+
+/* ---------------- wallets ---------------- */
+const wallets = new Map();
+export function walletFor(url, unit = S.unit, seed = SEED, counters = counterSource) {
+  const key = `${url}|${unit}|${seed === SEED ? 'main' : 'alt'}`;
+  if (seed !== SEED) return makeWallet(url, unit, seed, counters);
+  if (!wallets.has(key)) {
+    const p = makeWallet(url, unit, seed, counters);
+    wallets.set(key, p);
+    p.catch(() => wallets.delete(key));
+  }
+  return wallets.get(key);
+}
+async function makeWallet(url, unit, seed, counters) {
+  const w = new Wallet(url, { unit, bip39seed: seed, counterSource: counters });
+  await w.loadMint();
+  return w;
+}
+export const dropWallets = () => wallets.clear();
+
+async function infoSnapshot(w) {
+  const info = w.getMintInfo(), c = info.cache || {};
+  let ks = [];
+  try { ks = (await w.mint.getKeySets()).keysets || []; } catch { ks = w.keyChain.getKeysets().map((k) => ({ id: k.id, unit: k.unit, active: k.isActive, input_fee_ppk: k.fee })); }
+  const units = [...new Set(ks.map((k) => k.unit).filter((u) => u && u !== 'auth'))];
+  return {
+    name: info.name || '', pubkey: info.pubkey || '', units: units.length ? units : ['sat'],
+    info: {
+      description: c.description || '', description_long: c.description_long || '', motd: c.motd || '',
+      contact: (c.contact || []).map((x) => ({ method: x.method, info: x.info })), icon_url: c.icon_url || '',
+      version: c.version || '', nuts: Object.keys(c.nuts || {}), tos_url: c.tos_url || '', urls: c.urls || [],
+      nut15: !!(c.nuts && c.nuts['15']), nut17: !!(c.nuts && c.nuts['17']),
+    },
+    keysets: ks.map((k) => ({ id: k.id, unit: k.unit, active: !!k.active, fee: k.input_fee_ppk || 0 })),
+    updated: Date.now(),
+  };
+}
+export async function addMint(url) {
+  url = normUrl(url);
+  const w = await walletFor(url, 'sat');
+  const snap = await infoSnapshot(w);
+  const ex = mintOf(url);
+  if (ex) Object.assign(ex, snap);
+  else S.mints.push({ url, nick: '', motdSeen: '', ...snap });
+  if (!S.active) { S.active = url; S.unit = snap.units.includes('sat') ? 'sat' : snap.units[0]; }
+  save();
+  try { navigator.storage?.persist?.(); } catch {}
+  return url;
+}
+export async function refreshMint(url) {
+  const w = await walletFor(url, 'sat');
+  try { await w.loadMint(); } catch {}
+  const m = mintOf(url); if (m) { Object.assign(m, await infoSnapshot(w)); save(); }
+  return m;
+}
+export function selectMint(url) {
+  S.active = url;
+  const m = mintOf(url);
+  if (m && !(m.units || ['sat']).includes(S.unit)) S.unit = (m.units || ['sat'])[0];
+  save();
+}
+
+/* ---------------- history ---------------- */
+const busy = new Set();
+export const H = (o) => { const h = { id: uid(), ts: Date.now(), unit: S.unit, ...o }; S.history.unshift(h); save(); return h; };
+
+/* ---------------- lightning in ---------------- */
+export async function createInvoice(amount, url = S.active, unit = S.unit, memo) {
+  const w = await walletFor(url, unit);
+  const q = await w.createMintQuoteBolt11(amount);
+  return H({ kind: 'ln-in', amount, mint: url, unit, status: 'pending', quote: q.quote, request: q.request, expiry: q.expiry, memo });
+}
+export async function checkInvoice(h) {
+  if (h.status !== 'pending' || busy.has(h.id)) return h.status;
+  busy.add(h.id);
+  try {
+    const w = await walletFor(h.mint, h.unit);
+    const q = await w.checkMintQuoteBolt11(h.quote);
+    if (q.state === 'PAID') {
+      const proofs = await w.mintProofsBolt11(h.amount, q);
+      addProofs(h.mint, proofs, h.unit);
+      h.status = 'done'; h.ts = Date.now();
+    } else if (q.state === 'ISSUED') h.status = 'done';
+    else if (h.expiry && Date.now() / 1000 > h.expiry) h.status = 'expired';
+    save();
+  } finally { busy.delete(h.id); }
+  return h.status;
+}
+// resolves when paid over websocket (NUT-17); caller aborts via signal
+export async function waitInvoiceWs(h, signal) {
+  const w = await walletFor(h.mint, h.unit);
+  await w.on.onceMintPaid(h.quote, { signal, timeoutMs: 30 * 60e3 });
+  return checkInvoice(h);
+}
+
+/* ---------------- ecash ---------------- */
+export function parseToken(str) {
+  str = str.trim().replace(/^web\+cashu:\/\//i, '').replace(/^cashu:\/\//i, '').replace(/^cashu:/i, '');
+  const meta = getTokenMetadata(str);
+  return { str, mint: normUrl(meta.mint), unit: meta.unit || 'sat', amount: meta.amount.toNumber(), memo: meta.memo };
+}
+// inspect P2PK locks after loading the token's mint
+export async function tokenLockInfo(t) {
+  const w = await walletFor(t.mint, t.unit);
+  const { proofs } = w.decodeToken(t.str);
+  const locks = new Set();
+  for (const p of proofs) { try { getP2PKExpectedWitnessPubkeys(p.secret).forEach((k) => locks.add(k)); } catch {} }
+  if (!locks.size) return { locked: false };
+  const mine = S.p2pk.filter((k) => locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
+  return { locked: true, mine: mine.length > 0, keys: [...locks] };
+}
+const privkeys = () => S.p2pk.map((k) => k.priv);
+
+export async function sendEcash(amount, { memo, lockTo } = {}) {
+  const url = S.active, unit = S.unit, w = await walletFor(url, unit);
+  const before = bal(url, unit);
+  if (amount > before) throw new Error('insufficient balance at this mint');
+  let res;
+  if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo }).includeFees(true).run();
+  else res = await w.send(amount, getProofs(url, unit), { includeFees: true });
+  setProofs(url, res.keep, unit);
+  const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: true });
+  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo });
+}
+export async function receiveEcash(t) {
+  await addMint(t.mint);
+  const w = await walletFor(t.mint, t.unit);
+  const pks = privkeys();
+  const proofs = await w.receive(t.str, pks.length ? { privkey: pks } : undefined);
+  addProofs(t.mint, proofs, t.unit);
+  markP2pkUsed(t);
+  const got = sum(proofs);
+  return H({ kind: 'ecash-in', amount: got, unit: t.unit, fee: Math.max(0, t.amount - got), mint: t.mint, status: 'done', memo: t.memo });
+}
+function markP2pkUsed(t) {
+  try {
+    const keys = new Set();
+    // best effort: mark any key whose pubkey appears in the token string's secrets
+    for (const k of S.p2pk) if (t.lockKeys && t.lockKeys.includes(k.pub)) { k.used = true; keys.add(k.pub); }
+    if (keys.size) save();
+  } catch {}
+}
+export async function checkClaimed(h) {
+  if (h.kind !== 'ecash-out' || h.status !== 'pending') return h.status;
+  const w = await walletFor(h.mint, h.unit);
+  const { proofs } = w.decodeToken(h.token);
+  const st = await w.checkProofsStates(proofs);
+  if (st.length && st.every((s) => s.state === 'SPENT')) { h.status = 'claimed'; save(); }
+  return h.status;
+}
+export async function reclaim(h) {
+  const w = await walletFor(h.mint, h.unit);
+  const pks = privkeys();
+  const proofs = await w.receive(h.token, pks.length ? { privkey: pks } : undefined);
+  addProofs(h.mint, proofs, h.unit);
+  h.status = 'reclaimed'; save();
+}
+
+// Swap a token from another mint into the active mint over Lightning.
+export async function swapIncoming(t) {
+  const dst = S.active, unit = t.unit;
+  if (t.mint === dst) throw new Error('token is already from the active mint');
+  const ws = await walletFor(t.mint, unit);
+  const proofs = await ws.receive(t.str, privkeys().length ? { privkey: privkeys() } : undefined);
+  const amt = sum(proofs);
+  const rescue = async () => { await addMint(t.mint); addProofs(t.mint, proofs, unit); };
+  try {
+    const inFee = ws.getFeesForProofs(proofs).toNumber();
+    let target = amt - inFee, inv, q;
+    for (let i = 0; i < 4; i++) {
+      if (target <= 0) throw new Error('amount too small to cover swap fees');
+      inv = await createInvoice(target, dst, unit, 'swap from ' + host(t.mint));
+      q = await ws.createMeltQuoteBolt11(inv.request);
+      const need = q.amount.toNumber() + q.fee_reserve.toNumber() + inFee;
+      if (need <= amt) break;
+      S.history = S.history.filter((x) => x !== inv); save();
+      target -= need - amt; q = null;
+    }
+    if (!q) throw new Error('could not fit swap fees');
+    const res = await ws.meltProofsBolt11(q, proofs);
+    if (res.quote.state !== 'PAID') throw new Error('swap payment pending');
+    if (res.change?.length) { await addMint(t.mint); addProofs(t.mint, res.change, unit); }
+    for (let i = 0; i < 8 && inv.status === 'pending'; i++) { await checkInvoice(inv).catch(() => {}); if (inv.status === 'pending') await new Promise((r) => setTimeout(r, 1200)); }
+    inv.fee = Math.max(0, t.amount - inv.amount); save();
+    return inv;
+  } catch (e) {
+    await rescue().catch(() => {});
+    throw new Error(`${e.message || e} // ecash kept at ${host(t.mint)}`);
+  }
+}
+
+/* ---------------- lightning out ---------------- */
+export const isInvoice = (s) => /^ln(bc|tb|bcrt|tbs)[0-9]/i.test(s);
+export const isAddress = (s) => /^[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s);
+export const isLnurl = (s) => /^lnurl1[02-9ac-hj-np-z]+$/i.test(s);
+function decodeLnurl(s) { const { words } = bech32.decode(s.toLowerCase(), 2000); return new TextDecoder().decode(bech32.fromWords(words)); }
+export async function lnurlMeta(target) {
+  const url = isLnurl(target) ? decodeLnurl(target) : (() => { const [u, d] = target.split('@'); return `https://${d}/.well-known/lnurlp/${u}`; })();
+  let meta;
+  try { meta = await (await fetch(url)).json(); } catch { throw new Error('could not reach ' + host(url)); }
+  if (meta.status === 'ERROR') throw new Error(meta.reason || 'lnurl error');
+  if (meta.tag !== 'payRequest') throw new Error('not a lightning pay endpoint');
+  return meta;
+}
+export async function lnurlInvoice(meta, sats, comment) {
+  const msat = sats * 1000;
+  if (msat < meta.minSendable || msat > meta.maxSendable) throw new Error(`amount must be ${Math.ceil(meta.minSendable / 1000)}–${Math.floor(meta.maxSendable / 1000)} sat`);
+  const cb = new URL(meta.callback);
+  cb.searchParams.set('amount', String(msat));
+  if (comment && meta.commentAllowed) cb.searchParams.set('comment', comment.slice(0, meta.commentAllowed));
+  const r = await (await fetch(cb)).json();
+  if (r.status === 'ERROR' || !r.pr) throw new Error(r.reason || 'no invoice returned');
+  return r.pr;
+}
+export async function quoteInvoice(inv, url = S.active, unit = S.unit, mppMsat) {
+  const w = await walletFor(url, unit);
+  return mppMsat ? w.createMultiPathMeltQuote(inv, mppMsat) : w.createMeltQuoteBolt11(inv);
+}
+export async function payInvoice(q, memo, url = S.active, unit = S.unit) {
+  const w = await walletFor(url, unit);
+  const amount = q.amount.toNumber(), reserve = q.fee_reserve.toNumber();
+  const before = bal(url, unit);
+  if (amount + reserve > before) throw new Error(`need ${fmt(amount + reserve, unit)} incl. fee reserve // have ${fmt(before, unit)} at ${host(url)}`);
+  const { keep, send } = await w.send(amount + reserve, getProofs(url, unit), { includeFees: true });
+  setProofs(url, keep, unit);
+  const h = H({ kind: 'ln-out', amount, unit, mint: url, status: 'pending', quote: q.quote, request: q.request, memo, inflight: serializeProofs(send) });
+  try {
+    const res = await w.meltProofsBolt11(q, send);
+    if (res.quote.state === 'PAID') {
+      addProofs(url, res.change || [], unit);
+      h.status = 'done'; h.fee = Math.max(0, before - bal(url, unit) - amount); h.preimage = res.quote.payment_preimage || ''; delete h.inflight;
+    }
+    save();
+  } catch (e) {
+    await settleMelt(h).catch(() => {});
+    if (h.status === 'failed') throw e;
+  }
+  return h;
+}
+export async function settleMelt(h) {
+  if (h.kind !== 'ln-out' || h.status !== 'pending' || busy.has(h.id)) return;
+  busy.add(h.id);
+  try {
+    const w = await walletFor(h.mint, h.unit);
+    const q = await w.checkMeltQuoteBolt11(h.quote);
+    if (q.state === 'PAID') { h.status = 'done'; h.preimage = q.payment_preimage || ''; delete h.inflight; }
+    else if (q.state === 'UNPAID' && h.inflight) {
+      const g = await w.groupProofsByState(deserializeProofs(h.inflight));
+      addProofs(h.mint, [...g.unspent], h.unit);
+      h.status = 'failed'; delete h.inflight;
+    }
+    save();
+  } finally { busy.delete(h.id); }
+}
+// pay one invoice from several mints at once (NUT-15 multi-path)
+export async function payMultinut(invoice, parts, unit = S.unit) {
+  const quotes = await Promise.all(parts.map(async ([url, amt]) => [url, await quoteInvoice(invoice, url, unit, amt * 1000)]));
+  const results = await Promise.allSettled(quotes.map(([url, q]) => payInvoice(q, 'multinut', url, unit)));
+  const failed = results.filter((r) => r.status === 'rejected');
+  if (failed.length) throw failed[0].reason;
+  return results.map((r) => r.value);
+}
+export async function moveFunds(to, amount, unit = S.unit) {
+  const from = S.active;
+  const inv = await createInvoice(amount, to, unit, 'from ' + host(from));
+  const q = await quoteInvoice(inv.request, from, unit);
+  const out = await payInvoice(q, 'to ' + host(to), from, unit);
+  for (let i = 0; i < 8 && inv.status === 'pending'; i++) { await checkInvoice(inv).catch(() => {}); if (inv.status === 'pending') await new Promise((r) => setTimeout(r, 1500)); }
+  return { inv, out };
+}
+
+/* ---------------- P2PK keys ---------------- */
+export function newP2pkKey(privHex) {
+  const priv = privHex || bytesToHex(randomBytes(32));
+  const pub = bytesToHex(getPubKeyFromPrivKey(hexToBytes(priv)));
+  if (S.p2pk.some((k) => k.pub === pub)) return S.p2pk.find((k) => k.pub === pub);
+  const k = { pub, priv, used: false, ts: Date.now() };
+  S.p2pk.unshift(k); save();
+  return k;
+}
+export function importNsec(nsec) {
+  const { prefix, words } = bech32.decode(nsec.trim().toLowerCase(), 200);
+  if (prefix !== 'nsec') throw new Error('not an nsec');
+  return newP2pkKey(bytesToHex(bech32.fromWords(words)));
+}
+// accepts hex pubkey (33-byte compressed or 32-byte x-only) or npub
+export function parsePubkey(s) {
+  s = s.trim();
+  if (/^npub1/i.test(s)) { const { words } = bech32.decode(s.toLowerCase(), 200); return '02' + bytesToHex(bech32.fromWords(words)); }
+  if (/^(02|03)[0-9a-f]{64}$/i.test(s)) return s.toLowerCase();
+  if (/^[0-9a-f]{64}$/i.test(s)) return '02' + s.toLowerCase();
+  throw new Error('not a valid public key or npub');
+}
+export const currentP2pk = () => S.p2pk.find((k) => !k.used) || S.p2pk[0] || null;
+
+/* ---------------- maintenance ---------------- */
+export async function sweepSpent(onlyActive = false) {
+  let removed = 0;
+  for (const m of S.mints) {
+    if (onlyActive && m.url !== S.active) continue;
+    for (const unit of m.units || ['sat']) {
+      const p = getProofs(m.url, unit); if (!p.length) continue;
+      const w = await walletFor(m.url, unit);
+      const g = await w.groupProofsByState(p);
+      removed += sum(g.spent);
+      setProofs(m.url, [...g.unspent, ...g.pending], unit);
+    }
+  }
+  return removed;
+}
+// restore ecash from a seed (current one by default) into this wallet
+export async function restoreMint(url, mnemonic = S.mnemonic, log = () => {}) {
+  const foreign = mnemonic !== S.mnemonic;
+  const seed = foreign ? mnemonicToSeedSync(mnemonic) : SEED;
+  const tmpCounters = foreign ? { ...counterSource, _c: {}, async reserve(id, n) { const s = this._c[id] || 0; this._c[id] = s + n; return { start: s, count: n }; }, async advanceToAtLeast(id, n) { if ((this._c[id] || 0) < n) this._c[id] = n; }, async reserveAt(id, s, c) { this._c[id] = s + c; return { start: s, count: c }; } } : counterSource;
+  await addMint(url);
+  const m = mintOf(url);
+  const totals = {};
+  for (const unit of m.units || ['sat']) {
+    const w = await walletFor(url, unit, seed, tmpCounters);
+    let found = [];
+    for (const ks of w.keyChain.getKeysets()) {
+      if (ks.unit !== unit) continue;
+      log(`scan ${unit} keyset ${ks.id.slice(0, 12)}…`);
+      try {
+        await w.keyChain.ensureKeysetKeys(ks.id);
+        const { proofs, lastCounterWithSignature } = await w.batchRestore(100, undefined, 0, ks.id);
+        if (lastCounterWithSignature != null) await tmpCounters.advanceToAtLeast(ks.id, lastCounterWithSignature + 1);
+        found = found.concat(proofs);
+      } catch (e) { log(`skip ${ks.id.slice(0, 12)}: ${e.message || e}`); }
+    }
+    if (!found.length) continue;
+    const g = await w.groupProofsByState(found);
+    let mine = g.unspent;
+    if (foreign && mine.length) { log('re-keying to this wallet…'); mine = await (await walletFor(url, unit)).receive(mine); }
+    addProofs(url, mine, unit);
+    const amt = sum(mine);
+    if (amt) { H({ kind: 'ecash-in', amount: amt, unit, mint: url, status: 'done', memo: 'restored from seed' }); log(`found ${fmt(amt, unit)}`); }
+    totals[unit] = (totals[unit] || 0) + amt;
+  }
+  return totals;
+}
+// move every balance onto fresh outputs (used after generating a new seed)
+export async function rekeyAll(log = () => {}) {
+  for (const m of S.mints) for (const unit of m.units || ['sat']) {
+    const p = getProofs(m.url, unit); if (!p.length) continue;
+    log(`re-keying ${fmt(sum(p), unit)} at ${host(m.url)}`);
+    const w = await walletFor(m.url, unit);
+    const fresh = await w.receive(p);
+    setProofs(m.url, fresh, unit);
+  }
+}
+export function releasePending() {
+  let n = 0;
+  for (const h of S.history) if (h.kind === 'ln-out' && h.status === 'pending' && h.inflight) {
+    addProofs(h.mint, deserializeProofs(h.inflight), h.unit); delete h.inflight; h.status = 'failed'; n++;
+  }
+  save();
+  return n;
+}
+export async function settleAll({ invoices = true, sent = true, all = false } = {}) {
+  const twoWeeks = Date.now() - 14 * 864e5;
+  const list = S.history.filter((x) => x.status === 'pending' && (all ? x.ts > twoWeeks : true)).slice(0, all ? 60 : 25);
+  for (const h of list) {
+    try {
+      if (h.kind === 'ln-in' && invoices) await checkInvoice(h);
+      else if (h.kind === 'ln-out') await settleMelt(h);
+      else if (h.kind === 'ecash-out' && sent) await checkClaimed(h);
+    } catch {}
+  }
+}
+export async function loadPrice() {
+  if (!S.settings.fiat) return false;
+  const cur = S.settings.fiatCur;
+  try {
+    const r = await (await fetch(`https://api.coinbase.com/v2/prices/BTC-${cur}/spot`)).json();
+    const p = parseFloat(r?.data?.amount);
+    if (p > 0) { S.price[cur] = p; save(); return true; }
+  } catch {}
+  return false;
+}
+export async function auditInfo(url) {
+  const api = S.settings.auditorApi.replace(/\/+$/, '');
+  const r = await fetch(`${api}/mints/url?url=${encodeURIComponent(url)}`);
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error('auditor error ' + r.status);
+  const m = await r.json();
+  if (!m) return null;
+  let swaps = [];
+  try { swaps = await (await fetch(`${api}/swaps/mint/${m.id}?skip=0&limit=50`)).json(); } catch {}
+  return { ...m, swaps: Array.isArray(swaps) ? swaps : [] };
+}
+export { getEncodedToken };

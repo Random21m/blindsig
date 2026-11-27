@@ -2,12 +2,17 @@
 
 A cypherpunk Cashu ecash wallet. Installs as a PWA.
 
-- 12-word seed (NUT-13 deterministic secrets) with full restore (NUT-09)
-- Multiple mints: pick, switch, add any URL, move funds between mints over Lightning
-- Receive: ecash tokens (paste/scan) or Lightning invoice (mint)
-- Send: ecash tokens (QR, copy, share) or Lightning: bolt11 invoice, lightning address, LNURL-pay
-- Unclaimed-token tracking and reclaim, spent-proof purge, token export, USD estimate
+- Soft charcoal look with three themes: green, white, amber
+- 12-word seed (NUT-13) with full restore (NUT-09), including restore from another seed
+- Multiple mints and units (sat, usd, eur…), mint details, MOTD, auditor data, move funds between mints
+- Receive: ecash (paste, scan, NFC, auto-paste), Lightning invoices, P2PK-locked ecash, swap-in from other mints
+- Send: ecash (static or animated BC-UR QR, link, NFC), Lightning invoices, Lightning addresses, LNURL, Multinut (NUT-15)
+- P2PK keys (generate or import nsec), lock tokens to a pubkey or npub
+- Privacy controls: invoice/sent-token checks, WebSockets (NUT-17), Coinbase price in 20 currencies
+- On-screen keypad, ₿ symbol, unclaimed-token tracking, spent-proof cleanup, keyset counters, export, new seed, reset
 - Built on @cashu/cashu-ts 4.14 (latest stable)
+
+Coming next: Lightning address (npub.cash), Nostr Wallet Connect, payment requests, mint discovery and reviews, languages.
 
 ## Deploy
 
