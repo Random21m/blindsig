@@ -247,10 +247,31 @@ export async function npcRefresh() {
   const info = await npcFetch('/api/v2/user/info');
   const u = info.data.user;
   if (u.name) S.npc.address = u.name + '@' + h;
+  S.npc.lock = !!u.lockQuote;
   if (u.mintUrl && mintOf(normUrl(u.mintUrl))) S.npc.mint = normUrl(u.mintUrl);
   else if (S.active) await npcSetMint(S.active);
   save();
   return S.npc;
+}
+// quote locking: npub.cash creates every incoming payment's quote locked to your nostr key (NUT-20),
+// so only a wallet holding that key can claim it. blindsig can sign for it only when it holds the key
+// itself (seed or pasted nsec), not through a browser extension or remote signer.
+export const npcCanLock = () => (N.signer === 'seed' && !!seedSk()) || (N.signer === 'nsec' && !!N.nsec);
+export async function npcSetLock(on) {
+  if (on && !npcCanLock()) throw new Error('locking needs your nostr key in this wallet (seed or nsec), not an extension or remote signer');
+  const j = await npcFetch('/api/v2/user/lock', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lockQuotes: !!on }) });
+  S.npc.lock = j?.data?.user?.lockQuote ?? !!on; save();
+  return S.npc.lock;
+}
+// public description of what the server offers (username price, mint, whether it's on sale)
+let npcInfoCache = null;
+export async function npcInfo() {
+  if (npcInfoCache && npcInfoCache.host === S.npc.host && Date.now() - npcInfoCache.at < 5 * 60e3) return npcInfoCache.data;
+  const r = await fetch(npcUrl('/api/v2/info'));
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.message || `npub.cash error ${r.status}`);
+  npcInfoCache = { host: S.npc.host, at: Date.now(), data: j.data };
+  return j.data;
 }
 export async function npcSetMint(url) {
   const j = await npcFetch('/api/v2/user/mint', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mint_url: url }) });

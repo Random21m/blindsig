@@ -613,3 +613,12 @@
 612	npub.cash vill ha {0}; byt enhet först
 613	Försök ändå
 614	npub.cash-servern kan för närvarande inte läsa ecash från {0} (den här minten använder nyare nycklar), så den nekar troligen betalningen. Gör den det kommer dina sats tillbaka direkt, minus en eller två sats i mintavgift.
+615	Lås betalningar till min nyckel
+616	Bara din plånbok kan ta emot betalningar till din adress, inte npub.cash eller någon som ser betalningsuppgifterna. Kräver en mint som stöder det.
+617	Låsning kräver din nostr-nyckel i den här plånboken (seed eller nsec). Det fungerar inte med ett webbläsartillägg eller en fjärrsignerare.
+618	Betalningar är låsta till din nyckel, men din nuvarande signerare kan inte ta emot dem. Byt tillbaka till seed eller nsec, eller stäng av låsningen.
+619	Betalningar är nu låsta till din nyckel
+620	Låsning av betalningar avstängd
+621	Den här servern säljer inga användarnamn just nu.
+622	Pris: {0}, betalas med ecash från {1}.
+623	låsning kräver din nostr-nyckel i plånboken (seed eller nsec), inte ett tillägg eller en fjärrsignerare

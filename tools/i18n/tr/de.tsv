@@ -613,3 +613,12 @@
 612	npub.cash möchte {0}; wechsle zuerst die Einheit
 613	Trotzdem versuchen
 614	Der Server von npub.cash kann Ecash von {0} derzeit nicht lesen (diese Mint nutzt neuere Schlüssel) und lehnt die Zahlung daher wahrscheinlich ab. Dann kommen deine Sats sofort zurück, abzüglich ein, zwei Sats Mint-Gebühr.
+615	Zahlungen an meinen Schlüssel binden
+616	Nur dein Wallet kann Zahlungen an deine Adresse einlösen, weder npub.cash noch jemand, der die Zahlungsdetails sieht. Braucht eine Mint, die das unterstützt.
+617	Das Binden von Zahlungen braucht deinen Nostr-Schlüssel in diesem Wallet (Seed oder nsec). Mit Browser-Erweiterung oder Remote-Signer geht es nicht.
+618	Zahlungen sind an deinen Schlüssel gebunden, aber dein aktueller Signer kann sie nicht einlösen. Stell den Nostr-Signer wieder auf Seed oder nsec oder schalte das Binden aus.
+619	Zahlungen sind jetzt an deinen Schlüssel gebunden
+620	Binden von Zahlungen ausgeschaltet
+621	Dieser Server verkauft gerade keine Benutzernamen.
+622	Preis: {0}, bezahlt mit Ecash von {1}.
+623	Das Binden braucht deinen Nostr-Schlüssel in diesem Wallet (Seed oder nsec), keine Erweiterung und keinen Remote-Signer

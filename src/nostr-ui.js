@@ -19,10 +19,12 @@ export function nostrUI(x) {
         <div id="aq"></div>
         ${toggle('t_show', 'Show when receiving', 'Show your address in Receive → Lightning.', n.showOnReceive)}
         ${toggle('t_auto', 'Claim automatically', 'Turn incoming payments into ecash right away.', n.auto)}
+        ${N.npcCanLock() || n.lock ? toggle('t_lock', 'Lock payments to my key', 'Only your wallet can claim payments to your address, not npub.cash or anyone who sees the payment details. Needs a mint that supports locking.', !!n.lock) : '<p class="dim small">Locking payments to your key needs your nostr key in this wallet (seed or nsec). It isn’t available with a browser extension or remote signer.</p>'}
+        ${n.lock && !N.npcCanLock() ? '<p class="warn">Payments are locked to your key, but your current signer can’t claim them. Switch the Nostr signer back to your seed or nsec, or turn locking off.</p>' : ''}
         <label class="lbl" for="nm">Mint for incoming payments</label>
         <select id="nm" class="field">${S.mints.filter((m) => (m.units || []).includes('sat')).map((m) => `<option value="${esc(m.url)}" ${m.url === n.mint ? 'selected' : ''}>${esc(mintLabel(m))}</option>`).join('')}</select>
         <button class="btn wide" id="ck">Check for payments</button>
-        <h3>Username</h3><p class="dim small">Replace the long npub with a short name, like satoshi@${esc(n.host)}. npub.cash may charge for this.</p>
+        <h3>Username</h3><p class="dim small">Replace the long npub with a short name, like satoshi@${esc(n.host)}. npub.cash may charge for this.</p><p class="dim small" id="unterms"></p>
         <form class="addm" id="un"><input id="uname" class="field" placeholder="satoshi" autocapitalize="off" autocomplete="off" maxlength="40"><button class="btn">Check</button></form>
         <div id="ux"></div>` : ''}
       <label class="lbl" for="hs">Server</label><input id="hs" class="field" value="${esc(n.host)}" autocapitalize="off">`, (b) => {
@@ -37,6 +39,18 @@ export function nostrUI(x) {
       $('#cpa', b).onclick = () => copy(n.address, 'Address copied');
       $('#sha', b).onclick = () => qrInto($('#aq', b), 'lightning:' + n.address);
       ['show', 'auto'].forEach((k) => { $('#t_' + k, b).onchange = (e) => { n[k === 'show' ? 'showOnReceive' : 'auto'] = e.target.checked; save(); }; });
+      const tl = $('#t_lock', b);
+      if (tl) tl.onchange = withBusy(tl, async () => {
+        try { await N.npcSetLock(tl.checked); toast(tl.checked ? 'Payments are now locked to your key' : 'Payment locking turned off'); }
+        catch (e) { tl.checked = !!n.lock; throw e; }
+      });
+      // what usernames cost here, before typing one
+      N.npcInfo().then((d) => {
+        const u = d?.features?.username, el = $('#unterms', b); if (!el || !u) return;
+        if (u.enabled === false) { el.textContent = 'This server doesn’t sell usernames right now.'; const f = $('#un', b); if (f) f.hidden = true; return; }
+        const pay = u.payment;
+        if (pay) el.textContent = `Price: ${fmt(pay.amount, pay.unit || 'sat')}, paid with ecash from ${(pay.mints || []).map(host).join(', ')}.`;
+      }).catch(() => {});
       $('#nm', b).onchange = withBusy($('#nm', b), async () => { await N.npcSetMint($('#nm', b).value); toast('Mint updated'); });
       const ck = $('#ck', b); ck.onclick = withBusy(ck, async () => { const a = await N.npcSync(); render(); toast(a ? `New payments: ${a}` : 'No new payments'); });
       const unb = $('#un button', b);

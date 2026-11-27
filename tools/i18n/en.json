@@ -613,5 +613,14 @@
 "npub.cash only takes ecash from {0}. Switch to that mint first.",
 "npub.cash wants {0}; switch unit first",
 "Try anyway",
-"npub.cash’s server can’t currently read ecash from {0} (this mint uses newer keys), so it will probably refuse the payment. If it does, your sats come straight back, minus a sat or two of mint fees."
+"npub.cash’s server can’t currently read ecash from {0} (this mint uses newer keys), so it will probably refuse the payment. If it does, your sats come straight back, minus a sat or two of mint fees.",
+"Lock payments to my key",
+"Only your wallet can claim payments to your address, not npub.cash or anyone who sees the payment details. Needs a mint that supports locking.",
+"Locking payments to your key needs your nostr key in this wallet (seed or nsec). It isn’t available with a browser extension or remote signer.",
+"Payments are locked to your key, but your current signer can’t claim them. Switch the Nostr signer back to your seed or nsec, or turn locking off.",
+"Payments are now locked to your key",
+"Payment locking turned off",
+"This server doesn’t sell usernames right now.",
+"Price: {0}, paid with ecash from {1}.",
+"locking needs your nostr key in this wallet (seed or nsec), not an extension or remote signer"
 ]

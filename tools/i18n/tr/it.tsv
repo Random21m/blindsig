@@ -613,3 +613,12 @@
 612	npub.cash vuole {0}; cambia prima l’unità
 613	Prova comunque
 614	Il server di npub.cash al momento non riesce a leggere l’ecash di {0} (questa mint usa chiavi più recenti), quindi probabilmente rifiuterà il pagamento. In quel caso i tuoi sats tornano subito, meno uno o due sats di commissione della mint.
+615	Blocca i pagamenti sulla mia chiave
+616	Solo il tuo wallet può riscuotere i pagamenti al tuo indirizzo, non npub.cash né chi vede i dettagli del pagamento. Serve una mint che lo supporti.
+617	Il blocco richiede la tua chiave nostr in questo wallet (seed o nsec). Non disponibile con un’estensione del browser o un firmatario remoto.
+618	I pagamenti sono bloccati sulla tua chiave, ma il firmatario attuale non può riscuoterli. Torna a seed o nsec come firmatario, oppure disattiva il blocco.
+619	I pagamenti ora sono bloccati sulla tua chiave
+620	Blocco dei pagamenti disattivato
+621	Questo server al momento non vende nomi utente.
+622	Prezzo: {0}, pagato con ecash di {1}.
+623	il blocco richiede la tua chiave nostr in questo wallet (seed o nsec), non un’estensione né un firmatario remoto

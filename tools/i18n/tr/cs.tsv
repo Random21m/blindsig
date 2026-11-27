@@ -613,3 +613,12 @@
 612	npub.cash chce {0}; nejdřív změň jednotku
 613	Přesto zkusit
 614	Server npub.cash zatím neumí číst ecash z {0} (tato mincovna používá novější klíče), takže platbu nejspíš odmítne. Pak se ti saty hned vrátí, minus sat nebo dva poplatku mincovně.
+615	Zamknout platby k mému klíči
+616	Platby na tvou adresu může přijmout jen tvoje peněženka, ne npub.cash ani nikdo, kdo uvidí detaily platby. Vyžaduje mincovnu, která to podporuje.
+617	Zamykání plateb potřebuje tvůj nostr klíč v této peněžence (seed nebo nsec). S rozšířením prohlížeče ani vzdáleným podepisovačem to nejde.
+618	Platby jsou zamčené k tvému klíči, ale aktuální podepisovač je nemůže přijmout. Přepni podepisovač zpět na seed nebo nsec, nebo zamykání vypni.
+619	Platby jsou teď zamčené k tvému klíči
+620	Zamykání plateb vypnuto
+621	Tento server teď uživatelská jména neprodává.
+622	Cena: {0}, placeno ecash z {1}.
+623	zamykání potřebuje tvůj nostr klíč v peněžence (seed nebo nsec), ne rozšíření ani vzdálený podepisovač

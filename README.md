@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.6.3-72d99b?style=flat-square&labelColor=161512" alt="version 1.6.3">
+  <img src="https://img.shields.io/badge/version-1.7.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.7.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -103,7 +103,7 @@ Green, white and amber, all on the same soft charcoal background. Change it unde
 **Nostr**
 
 - A Nostr identity from your seed (the same key as cashu.me), or an nsec, browser extension (NIP-07) or remote signer (NIP-46)
-- Lightning address via npub.cash, with automatic claiming, live updates and optional short usernames
+- Lightning address via npub.cash, with automatic claiming, live updates, optional short usernames (price shown up front), and payments locked to your key so only your wallet can claim them
 - Payment requests (NUT-18) with a description, an optional lock to your key, and delete. Delivered over Nostr or HTTP, checked in full before they're claimed, and payable from any of your mints when the request allows it. Ecash in Nostr DMs is picked up automatically
 - Nostr Wallet Connect (NIP-47) with a spending allowance, so other apps can use your wallet
 

@@ -613,3 +613,12 @@
 612	npub.cash veut des {0} ; changez d’abord d’unité
 613	Essayer quand même
 614	Le serveur de npub.cash ne sait pas encore lire l’ecash de {0} (cette mint utilise des clés plus récentes) : il refusera probablement le paiement. Dans ce cas, vos sats reviennent aussitôt, moins un ou deux sats de frais de mint.
+615	Verrouiller les paiements sur ma clé
+616	Seul votre portefeuille peut récupérer les paiements vers votre adresse, ni npub.cash ni quiconque voit les détails du paiement. Nécessite une mint compatible.
+617	Le verrouillage nécessite votre clé nostr dans ce portefeuille (seed ou nsec). Indisponible avec une extension de navigateur ou un signataire distant.
+618	Les paiements sont verrouillés sur votre clé, mais votre signataire actuel ne peut pas les récupérer. Revenez au seed ou au nsec comme signataire, ou désactivez le verrouillage.
+619	Les paiements sont maintenant verrouillés sur votre clé
+620	Verrouillage des paiements désactivé
+621	Ce serveur ne vend pas de noms d’utilisateur pour le moment.
+622	Prix : {0}, payé en ecash de {1}.
+623	le verrouillage nécessite votre clé nostr dans ce portefeuille (seed ou nsec), pas une extension ni un signataire distant

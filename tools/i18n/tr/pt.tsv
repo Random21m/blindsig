@@ -613,3 +613,12 @@
 612	O npub.cash quer {0}; mude a unidade primeiro
 613	Tentar mesmo assim
 614	O servidor do npub.cash ainda não consegue ler ecash de {0} (esta mint usa chaves mais novas), então provavelmente vai recusar o pagamento. Se recusar, seus sats voltam na hora, menos um ou dois sats de taxa da mint.
+615	Travar pagamentos na minha chave
+616	Só a sua carteira pode resgatar pagamentos ao seu endereço, nem o npub.cash nem quem vir os detalhes do pagamento. Precisa de uma mint compatível.
+617	Travar pagamentos precisa da sua chave nostr nesta carteira (seed ou nsec). Não funciona com extensão do navegador ou assinante remoto.
+618	Os pagamentos estão travados na sua chave, mas o assinante atual não consegue resgatá-los. Volte para seed ou nsec como assinante, ou desligue a trava.
+619	Os pagamentos agora estão travados na sua chave
+620	Trava de pagamentos desligada
+621	Este servidor não está vendendo nomes de usuário agora.
+622	Preço: {0}, pago com ecash de {1}.
+623	a trava precisa da sua chave nostr nesta carteira (seed ou nsec), não de uma extensão ou assinante remoto

@@ -613,3 +613,12 @@
 612	npub.cash {0} istiyor; önce birimi değiştir
 613	Yine de dene
 614	npub.cash sunucusu şu an {0} ecash’ini okuyamıyor (bu mint daha yeni anahtarlar kullanıyor), bu yüzden ödemeyi büyük ihtimalle reddedecek. Reddederse satların hemen geri gelir, bir iki sat mint ücreti düşülerek.
+615	Ödemeleri anahtarıma kilitle
+616	Adresine gelen ödemeleri yalnızca cüzdanın alabilir; npub.cash ya da ödeme ayrıntılarını gören biri alamaz. Destekleyen bir mint gerekir.
+617	Ödeme kilitleme, nostr anahtarının bu cüzdanda olmasını gerektirir (seed veya nsec). Tarayıcı eklentisi veya uzak imzalayıcıyla kullanılamaz.
+618	Ödemeler anahtarına kilitli ama şu anki imzalayıcın bunları alamaz. İmzalayıcıyı seed veya nsec’e geri al ya da kilitlemeyi kapat.
+619	Ödemeler artık anahtarına kilitli
+620	Ödeme kilitleme kapatıldı
+621	Bu sunucu şu anda kullanıcı adı satmıyor.
+622	Fiyat: {0}, {1} ecash’i ile ödenir.
+623	kilitleme, nostr anahtarının cüzdanda olmasını gerektirir (seed veya nsec), eklenti veya uzak imzalayıcı olmaz
