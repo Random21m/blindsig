@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.8.13-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.13">
+  <img src="https://img.shields.io/badge/version-1.9.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.9.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -120,6 +120,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 - You choose which background checks run: invoices, sent tokens, WebSockets (NUT-17) and price lookups
 - Sent tokens update live when someone claims them
+- Private notes on any transaction, kept only on your device (and encrypted with the PIN lock)
 - Optional PIN lock that also encrypts the wallet on the device (AES-256-GCM, key from the PIN via PBKDF2). It asks again after a time in the background you choose, before showing the seed phrase, and waits longer after repeated wrong guesses
 - Data stays in this browser's IndexedDB, and only one tab can run the wallet at a time, so two tabs can't spend the same ecash
 - Spent-proof cleanup, keyset counters, export and new-seed tools for when something looks off

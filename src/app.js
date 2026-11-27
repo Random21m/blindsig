@@ -211,11 +211,11 @@ function render() {
       const title = h.method === 'onchain' ? 'Deposit address' : 'Lightning offer';
       return `<li><button class="row s-live" data-id="${esc(h.id)}">
       <span class="ri in" aria-hidden="true">↓</span>
-      <span class="rt"><b>${title}</b><small><span>${stamp(h.ts)}</span>${h.memo ? ' · <span dir="auto">' + esc(h.memo) + '</span>' : ''}</small></span>
+      <span class="rt"><b>${title}</b><small><span>${stamp(h.ts)}</span>${h.note ? ' · <span dir="auto">✎ ' + esc(h.note) + '</span>' : h.memo ? ' · <span dir="auto">' + esc(h.memo) + '</span>' : ''}</small></span>
       <span class="ra"><span class="amtv in">+${esc(fmt(h.received || 0, h.unit || 'sat'))}</span><em class="pill p-live">Reusable</em></span></button></li>`;
     }
     const stx = open ? 'Unclaimed' : claim ? 'Tap to claim' : STATUS[h.status] ?? '';
-    const sub = h.kind === 'chain-out' && h.memo === h.request ? '' : h.memo;
+    const sub = h.note ? '✎ ' + h.note : h.kind === 'chain-out' && h.memo === h.request ? '' : h.memo;
     return `<li><button class="row s-${esc(h.status)}" data-id="${esc(h.id)}">
       <span class="ri ${out ? 'out' : 'in'}" aria-hidden="true">${out ? '↑' : '↓'}</span>
       <span class="rt"><b>${verb} · ${via}</b><small><span>${stamp(h.ts)}</span>${sub ? ' · <span dir="auto">' + esc(sub) + '</span>' : ''}</small></span>
@@ -227,9 +227,10 @@ function render() {
 }
 
 /* ================= sheet system ================= */
-let open = false, locked = false, onClose = null, lastFocus = null;
+let open = false, locked = false, onClose = null, lastFocus = null, flushNote = null;
 function sheet(title, html, mount, opts = {}) {
   locked = !!opts.locked;
+  if (flushNote) { const f = flushNote; flushNote = null; f(); }
   if (onClose) { const f = onClose; onClose = null; f(); }
   const body = $('#sheetBody');
   body.innerHTML = `<div class="bar">${opts.back ? '<button class="back" aria-label="Back">‹</button>' : ''}<h2 id="sheetTitle" tabindex="-1">${esc(title)}</h2>${locked ? '' : '<button class="x" aria-label="Close">✕</button>'}</div><div class="sb">${html}</div>`;
@@ -249,6 +250,7 @@ function closeSheet(fromPop) {
   if (!open) return;
   if (locked) { if (fromPop) history.pushState({ sheet: 1 }, ''); return; }
   open = false;
+  if (flushNote) { const f = flushNote; flushNote = null; f(); }
   if (onClose) { const f = onClose; onClose = null; f(); }
   $('.app').inert = false;
   if (lastFocus?.isConnected) lastFocus.focus({ preventScroll: true }); lastFocus = null;
@@ -456,6 +458,7 @@ function invoiceView(h) {
     <button class="btn wide" id="cp">Copy invoice</button>
     <button class="btn wide" id="ck">Check now</button>
     <p class="dim small center">Safe to close. Pending invoices are checked again later.</p>`, (b) => {
+    addNote(b, h);
     qrInvoice($('#iq', b), h.request);
     $('#cp', b).onclick = () => copy(h.request, 'Invoice copied');
     let timer, dead = false;
@@ -491,6 +494,7 @@ function liveView(h) {
     <button class="btn wide" id="cp">${chain ? 'Copy address' : 'Copy offer'}</button>
     <button class="btn wide" id="ck">Check now</button>
     <p class="dim small center">${chain ? 'On-chain deposits need confirmations before the mint credits them.' : 'Safe to close. The offer keeps working.'}</p>`, (b) => {
+    addNote(b, h);
     qrSvg(qrText).then((x) => { const q = $('#lq', b); if (q) q.innerHTML = x; });
     $('#cp', b).onclick = () => copy(h.request, chain ? 'Address copied' : 'Offer copied');
     let timer, dead = false, seen = h.received || 0;
@@ -664,6 +668,7 @@ function tokenView(h, fromLog) {
     ${'NDEFReader' in window ? '<button class="btn wide" id="nfw">Write to NFC card</button>' : ''}
     ${fromLog ? '<div class="btnrow"><button class="btn" id="chk">Check status</button><button class="btn" id="rc">Reclaim</button></div>' : ''}
     <p class="dim small center">Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.</p>`, (b) => {
+    addNote(b, h);
     stop = qrToken($('#tq', b), h.token);
     onClose = () => stop();
     $('#cp', b).onclick = () => copy(h.token, 'Token copied');
@@ -685,6 +690,7 @@ function done(h, verb) {
     ${h.fee ? `<p class="dim small center">Fee ${esc(fmt(h.fee, h.unit))}</p>` : ''}
     <button class="btn primary wide" id="dn">Done</button>`, (b) => {
     $('#dn', b).onclick = () => closeSheet();
+    addNote(b, h, $('#dn', b));
     if (h.amount) FX.countUp($('#dnAmt', b), h.amount, (n) => bigAmt(n, h.unit, out ? '−' : '+'));
     setTimeout(() => FX.success(out ? 'sent' : 'received', $('.okb', b)), 120);
   });
@@ -694,12 +700,28 @@ function done(h, verb) {
 const sentClaimed = () => { render(); };
 
 /* ================= history detail ================= */
+// a private note on any transaction: kept with your history on this device (encrypted with the
+// PIN lock), never sent anywhere
+function addNote(b, h, before) {
+  const sb = $('.sb', b); if (!sb || $('#hn', b)) return;
+  (before || sb).insertAdjacentHTML(before ? 'beforebegin' : 'beforeend', `<div class="note"><label class="lbl" for="hn">Note</label>
+    <textarea id="hn" rows="2" maxlength="280" placeholder="Add a private note" dir="auto" autocapitalize="sentences"></textarea>
+    <p class="dim small" id="hns">Only saved on this device.</p></div>`);
+  const t = $('#hn', b), st2 = $('#hns', b);
+  t.value = h.note || '';
+  let tm = null;
+  const store = () => { clearTimeout(tm); tm = null; const v = t.value.trim(); if ((h.note || '') === v) return; if (v) h.note = v; else delete h.note; save(); render(); st2.textContent = v ? 'Note saved.' : 'Only saved on this device.'; };
+  t.oninput = () => { clearTimeout(tm); tm = setTimeout(store, 500); };
+  t.onblur = store;
+  flushNote = () => { if (tm) store(); };
+}
 function detail(h) {
   if (h.live) return liveView(h);
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
   if (h.kind === 'ecash-out' && h.status === 'pending') return tokenView(h, true);
   if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) {
     receiveSheet('ecash', h.token);
+    later(() => addNote($('#sheetBody'), h));
     if (h.warn) later(() => $('#sheet .sb')?.insertAdjacentHTML('afterbegin', '<p class="warn">This payment doesn’t fully match your request: after the mint’s fees it comes up short, it isn’t from a mint you asked for, or it isn’t locked to your key as requested. You can still claim it.</p>'));
     return;
   }
@@ -711,6 +733,7 @@ function detail(h) {
     ${(h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' ? '<button class="btn wide" id="st">Check payment</button>' : ''}
     ${h.kind === 'ln-in' && h.status === 'expired' ? '<button class="btn wide" id="re">Check again</button>' : ''}
     ${h.status !== 'pending' ? '<button class="btn wide danger" id="del">Delete from history</button>' : ''}`, (b) => {
+    addNote(b, h); const dl = $('#del', b); if (dl) $('.sb', b).appendChild(dl);
     const del = $('#del', b); if (del) del.onclick = () => { S.history = S.history.filter((x) => x !== h); save(); render(); closeSheet(); };
     const cpi = $('#cpi', b); if (cpi) cpi.onclick = () => copy(h.request, h.method === 'bolt12' ? 'Offer copied' : 'Invoice copied');
     const s2 = $('#st', b); if (s2) s2.onclick = withBusy(s2, async () => { await C.settleMelt(h); render(); detail(h); });
