@@ -116,23 +116,35 @@ async function renderBackup() {
       const lim = oc.createDynamicsCompressor(); lim.threshold.value = -6; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.002; lim.release.value = 0.12;
       const g = oc.createGain(); g.gain.value = 2.6; g.connect(lim); lim.connect(oc.destination);
       const keep = out; out = g; try { SOUNDS[kind](oc); } finally { out = keep; }
-      const el = new Audio(wav(await oc.startRendering())); el.preload = 'auto';
+      // each element starts on a silent clip; the real sound goes in after its first start in a tap
+      const el = new Audio(silentUrl()); el.preload = 'auto'; el._real = wav(await oc.startRendering());
       backup[kind] = el;
     } catch {}
   }
 }
 renderBackup();
-// start each backup element once inside a real tap (muted), so it may play later without one
+let silent = null;
+function silentUrl() {
+  if (!silent) { const OCx = window.OfflineAudioContext || window.webkitOfflineAudioContext; const buf = new OCx(1, 2205, 44100).createBuffer(1, 2205, 44100); silent = wav(buf); }
+  return silent;
+}
+// start each backup element once inside a real tap, on its silent clip, so it may play later
+// without a tap. Only then is the real sound loaded into it: nothing audible can leak out of the
+// priming (a muted start isn't reliably silent on iPhone, and could be heard on the PIN screen).
 function primeBackup() {
   for (const el of Object.values(backup)) {
-    if (el._ok) continue;
-    try { el.muted = true; const pr = el.play(); el._ok = true; (pr?.then ? pr : Promise.resolve()).then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el._ok = false; el.muted = false; }); } catch {}
+    if (el._ok || el._priming) continue;
+    try {
+      el._priming = true;
+      const pr = el.play();
+      (pr?.then ? pr : Promise.resolve()).then(() => { el.pause(); el.src = el._real; el.load(); el._ok = true; }).catch(() => {}).finally(() => { el._priming = false; });
+    } catch { el._priming = false; }
   }
 }
 function playBackup(kind) {
   const el = backup[kind];
   if (!el || !el._ok) return false;
-  try { el.muted = false; el.currentTime = 0; el.play()?.catch?.(() => {}); lastEngine = 'backup'; return true; } catch { return false; }
+  try { el.currentTime = 0; el.play()?.catch?.(() => {}); lastEngine = 'backup'; return true; } catch { return false; }
 }
 export function play(kind) {
   if (st().sounds === false) return;
