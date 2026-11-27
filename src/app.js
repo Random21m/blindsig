@@ -10,9 +10,11 @@ import { UR, UREncoder, URDecoder } from '@gandlaf21/bc-ur';
 import {
   S, save, VERSION, DEFAULT_SETTINGS, getProofs, bal, total, sum, mintOf, mintLabel, host, esc, fmt, fmtParts, unitLabel,
   toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind, pinOn, pinInfo, setPin, clearPin, setLockAfter, flushSave,
+  encryptBackup, decryptBackup, replaceState,
 } from './store.js';
 import * as L from './lock.js';
 import { checkNow } from './update.js';
+import * as BIO from './bio.js';
 import * as C from './core.js';
 import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
@@ -198,7 +200,10 @@ function render() {
   $('#motd').hidden = !(motd && motd !== m.motdSeen);
   if (motd) $('#motdText').textContent = motd;
   // log
-  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash')));
+  const q = histQ.trim().toLowerCase();
+  $('#histQ').hidden = S.history.length < 2 && !q;
+  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash')))
+    .filter((h) => !q || q.split(/\s+/).every((w) => searchText(h).includes(w)));
   const shown = list.slice(0, logLimit);
   $('#moreHist').hidden = list.length <= logLimit;
   $$('#logTabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.f === logFilter));
@@ -223,7 +228,14 @@ function render() {
   }).join('');
   $('#empty').hidden = list.length > 0;
   $('#chkAll').hidden = !(logFilter === 'pending' && list.length);
-  $('#empty').textContent = S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
+  $('#empty').textContent = q ? 'No matches.' : S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
+}
+
+// history search: notes, memos, amounts (as shown and as plain digits), kind, status and mint
+let histQ = '';
+function searchText(h) {
+  const [verb, via] = KIND[h.kind] || ['', ''];
+  return [I18N.t(verb), I18N.t(via), verb, via, h.note, h.memo, fmt(h.amount || h.received || 0, h.unit || 'sat'), String(h.amount || h.received || 0), I18N.t(STATUS[h.status] || ''), host(h.mint || '')].filter(Boolean).join(' ').toLowerCase();
 }
 
 /* ================= sheet system ================= */
@@ -310,9 +322,11 @@ function welcome(i = 0, replay = false) {
   sheet('Set up', `<p class="lead">Create a new wallet, or restore one from your seed phrase.</p>
     <button class="btn primary wide" id="nw">Create new wallet</button>
     <button class="btn wide" id="rs">Restore from seed phrase</button>
+    <button class="btn wide" id="rf">Restore from backup file</button>
     <p class="dim small">Keys are generated on this device and never leave it.</p>`, (b) => {
     $('#nw', b).onclick = () => showSeed(generateMnemonic(wordlist, 128), true);
     $('#rs', b).onclick = () => restoreSheet(true);
+    $('#rf', b).onclick = () => backupRestoreSheet(true);
   }, { locked: true });
 }
 const seedGrid = (m) => `<ol class="seed">${m.split(' ').map((w, i) => `<li><span>${String(i + 1).padStart(2, '0')}</span>${esc(w)}</li>`).join('')}</ol>`;
@@ -343,10 +357,14 @@ function restoreSheet(onboarding) {
     go.onclick = () => { C.setSeed(norm()); S.onboarded = true; save(); restoring = true; mintsSheet(true); };
   }, { locked: onboarding, back: onboarding ? () => welcome(SLIDES.length) : undefined });
 }
-function restoreRun(urls, mnemonic) {
-  sheet('Restoring', `<pre class="term" id="lg"></pre><button class="btn primary wide" id="dn" disabled>Done</button>`, async (b) => {
+function restoreRun(urls, mnemonic, afterBackup) {
+  sheet(afterBackup ? 'Checking your mints' : 'Restoring', `${afterBackup ? '<p class="dim small">Your backup is loaded. Now checking which ecash is still unspent and picking up anything newer than the backup.</p>' : ''}<pre class="term" id="lg"></pre><button class="btn primary wide" id="dn" disabled>Done</button>`, async (b) => {
     const lg = $('#lg', b), log = (s) => { lg.textContent += '> ' + s + '\n'; lg.scrollTop = lg.scrollHeight; };
     const got = {};
+    if (afterBackup) {
+      log('checking for spent ecash');
+      try { const r = await C.sweepSpent(); log(r ? `removed ${fmt(r)} already spent` : 'all ecash is unspent'); } catch (e) { log('error: ' + niceErr(e)); }
+    }
     for (const u of urls) {
       log('mint ' + host(u));
       try { const r = await C.restoreMint(u, mnemonic || S.mnemonic, log); for (const [k, v] of Object.entries(r)) got[k] = (got[k] || 0) + v; } catch (e) { log('error: ' + niceErr(e)); }
@@ -885,7 +903,11 @@ const SECTIONS = {
       <h3>Restore ecash</h3><p class="dim">Scan your mints for ecash made by a seed phrase: this wallet’s, or another one. Ecash found with another seed is moved into this wallet.</p>
       <textarea id="other" rows="3" placeholder="Leave empty to use this wallet’s seed" spellcheck="false" autocapitalize="off"></textarea>
       <button class="btn wide" id="rst">Restore</button>
+      <h3>Backup file</h3><p class="dim">One file with everything: seed phrase, ecash, history, notes and keys, locked with a password. Use it to move to a new phone, or from Safari to the Home Screen app.</p>
+      <div class="btnrow"><button class="btn" id="bkc">Create backup file</button><button class="btn" id="bkr">Restore from file</button></div>
       <h3>Export</h3><button class="btn wide" id="exp">Export all ecash as tokens</button>`, (b) => {
+      $('#bkc', b).onclick = () => backupCreateSheet();
+      $('#bkr', b).onclick = () => backupRestoreSheet(false);
       $('#seed', b).onclick = async () => { if (await L.confirmPin(sheet, 'Show seed phrase', SECTIONS.backup)) showSeed(S.mnemonic, false, SECTIONS.backup); };
       $('#rst', b).onclick = () => {
         const o = $('#other', b).value.trim().toLowerCase().split(/\s+/).filter(Boolean).join(' ');
@@ -914,10 +936,28 @@ const SECTIONS = {
     sheet('PIN lock', `<p class="okline">PIN lock is on. Your wallet is encrypted on this device.</p>
       <h3>Ask again</h3><p class="dim small">How long blindsig can be in the background before it asks for your PIN again. It always asks when the app starts.</p>
       ${AFTER.map(([v, l]) => `<label class="radio"><input type="radio" name="aft" value="${v}" ${info.after === v ? 'checked' : ''}><span class="mt"><b>${l}</b></span></label>`).join('')}
+      <div id="bioRow"></div>
       <button class="btn wide" id="lk">Lock now</button>
       <button class="btn wide" id="ch">Change PIN</button>
       <button class="btn wide danger" id="off">Turn off PIN lock</button>`, (b) => {
       $$('input[name=aft]', b).forEach((r) => (r.onchange = () => setLockAfter(+r.value)));
+      // Face ID / Touch ID, where the phone supports it
+      BIO.bioAvailable().then((ok) => {
+        const row = $('#bioRow', b); if (!ok || !row) return;
+        const apple = BIO.bioLabel() === 'Face ID or Touch ID';
+        row.innerHTML = toggle('t_bio', apple ? 'Unlock with Face ID or Touch ID' : 'Unlock with fingerprint or face unlock', 'Your PIN still works, and is still needed to change these settings.', BIO.bioOn());
+        I18N.translateTree(row);
+        const t = $('#t_bio', row);
+        t.onchange = async () => {
+          if (!t.checked) { await BIO.clearBio(); return; }
+          t.checked = false;
+          const pin = await L.confirmPin(sheet, apple ? 'Face ID or Touch ID' : 'Fingerprint or face unlock', SECTIONS.security);
+          if (typeof pin !== 'string') return;
+          try { await BIO.bioEnroll(pin); toast(apple ? 'Face ID or Touch ID is on' : 'Fingerprint or face unlock is on'); }
+          catch (e) { toast(e?.message === 'no-prf' ? 'This phone can’t unlock blindsig this way yet. Your PIN still works.' : e?.name === 'NotAllowedError' ? 'Cancelled.' : niceErr(e), 'warn'); }
+          SECTIONS.security();
+        };
+      });
       $('#lk', b).onclick = () => { closeSheet(); L.relock(); };
       $('#ch', b).onclick = async () => { if (await L.confirmPin(sheet, 'Change PIN', SECTIONS.security)) choosePin(true); };
       $('#off', b).onclick = async () => {
@@ -1085,6 +1125,65 @@ function choosePin(change) {
     });
     first();
   }, { back: SECTIONS.security });
+}
+/* ---------- backup file ---------- */
+function saveFile(text, name) {
+  const blob = new Blob([text], { type: 'application/json' });
+  const file = typeof File === 'function' ? new File([blob], name, { type: 'application/json' }) : null;
+  const download = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60e3); };
+  // phones: the share sheet has "Save to Files"; computers: a normal download
+  if (file && navigator.canShare?.({ files: [file] })) return navigator.share({ files: [file], title: 'blindsig backup' }).then(() => true, (e) => { if (e?.name === 'AbortError') return false; download(); return true; });
+  download(); return Promise.resolve(true);
+}
+function backupCreateSheet() {
+  sheet('Create backup file', `<p class="dim">Choose a password for the file. You’ll need it to restore. If you lose it, the file can’t be opened.</p>
+    <label class="lbl" for="bp1">Password</label><input id="bp1" class="field" type="password" autocomplete="new-password" minlength="8">
+    <label class="lbl" for="bp2">Same password again</label><input id="bp2" class="field" type="password" autocomplete="new-password">
+    <p class="hint" id="bph">At least 8 characters.</p>
+    <button class="btn primary wide" id="bgo">Create backup file</button>`, (b) => {
+    const go = $('#bgo', b);
+    go.onclick = withBusy(go, async () => {
+      const p1 = $('#bp1', b).value, p2 = $('#bp2', b).value;
+      if (p1.length < 8) return nope('Use at least 8 characters.');
+      if (p1 !== p2) return nope('The passwords don’t match.');
+      const text = await encryptBackup(p1);
+      const d = new Date(), name = `blindsig-backup-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+      sheet('Backup ready', `<p class="okline">Your backup file is ready.</p>
+        <p class="warn">Anyone with this file and its password can take your ecash. Keep both safe, and don’t use the same wallet on two phones at once.</p>
+        <button class="btn primary wide" id="bsv">Save file</button>
+        <p class="dim small center">${esc(name)}</p>`, (b2) => {
+        $('#bsv', b2).onclick = async () => { if (await saveFile(text, name)) { S.lastBackup = Date.now(); save(); toast('Backup file saved'); } };
+      }, { back: SECTIONS.backup });
+    });
+  }, { back: SECTIONS.backup });
+}
+function backupRestoreSheet(onboarding) {
+  sheet('Restore from backup file', `<p class="dim">Pick a blindsig backup file and enter its password.</p>
+    <input id="bf" type="file" accept=".json,application/json,text/plain" class="field">
+    <label class="lbl" for="bpw">Password</label><input id="bpw" class="field" type="password" autocomplete="current-password">
+    <button class="btn primary wide" id="bgo">Restore</button>`, (b) => {
+    const go = $('#bgo', b);
+    go.onclick = withBusy(go, async () => {
+      const f = $('#bf', b).files?.[0];
+      if (!f) return nope('Choose the backup file first.');
+      let r;
+      try { r = await decryptBackup(await f.text(), $('#bpw', b).value); } catch (e) {
+        return nope({ 'not-backup': 'That file isn’t a blindsig backup.', 'wrong-password': 'Wrong password, or the file is damaged.', damaged: 'The backup file is damaged.' }[e.message] || niceErr(e));
+      }
+      const finish = async () => { r.state.afterImport = 1; r.state.onboarded = true; await replaceState(r.state); location.reload(); };
+      const have = S.mnemonic && (S.mints.some((m) => bal(m.url) > 0) || S.history.length);
+      if (onboarding || !have) return finish();
+      // replacing a wallet that's in use: make sure its owner can get it back
+      const now = S.mints.reduce((t, m) => t + bal(m.url), 0);
+      sheet('Replace this wallet?', `<p class="warn">Restoring replaces the wallet on this device. Make sure you have its seed phrase or a backup file first.</p>
+        ${kv([['Balance on this device', esc(fmt(now))], ['Backup made', esc(r.created ? new Date(r.created).toLocaleString() : '?')]])}
+        <label class="chk"><input type="checkbox" id="rok"> I can get the current wallet back</label>
+        <button class="btn wide danger" id="rgo" disabled>Replace with backup</button>`, (b2) => {
+        $('#rok', b2).onchange = (e) => ($('#rgo', b2).disabled = !e.target.checked);
+        const rg = $('#rgo', b2); rg.onclick = withBusy(rg, finish);
+      }, { back: () => backupRestoreSheet(false) });
+    });
+  }, { locked: onboarding, back: onboarding ? () => welcome(SLIDES.length) : SECTIONS.backup });
 }
 function importNsecSheet() {
   sheet('Import nsec', `<p class="dim">Use a nostr private key as a P2PK key, so ecash locked to your npub can be redeemed here.</p>
@@ -1273,6 +1372,7 @@ $('#motdX').onclick = () => { const m = mintOf(S.active); if (m) { m.motdSeen = 
 $('#sheet .backdrop').onclick = () => closeSheet();
 $('#logTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { logFilter = b.dataset.f; logLimit = 100; render(); } };
 $('#moreHist').onclick = () => { logLimit += 100; render(); };
+{ let t = null; $('#histQ').oninput = (e) => { clearTimeout(t); t = setTimeout(() => { histQ = e.target.value; logLimit = 100; render(); }, 120); }; }
 $('#chkAll').onclick = withBusy($('#chkAll'), async () => { await C.settleAll({ invoices: true, sent: true, all: true }); render(); toast('Checked all pending'); });
 $('#hist').onclick = (e) => { const r = e.target.closest('.row'); if (r) { const h = S.history.find((x) => x.id === r.dataset.id); if (h) detail(h); } };
 if (!navigator.standalone && !matchMedia('(display-mode: standalone)').matches && /iphone|ipad/i.test(navigator.userAgent)) $('#instBtn').hidden = false;
@@ -1315,6 +1415,7 @@ setTimeout(() => {
   schedule();
   if (!S.mnemonic) welcome(0);
   else if (!S.mints.length) mintsSheet(true);
+  else if (S.afterImport) { delete S.afterImport; save(); restoreRun(S.mints.map((m) => m.url), undefined, true); C.watchSent(sentClaimed); }
   else {
     if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render);
     S.mints.forEach((m) => { if (!m.updated || Date.now() - m.updated > 6 * 3600e3) C.refreshMint(m.url).then(render).catch(() => {}); });

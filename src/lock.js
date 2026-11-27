@@ -3,6 +3,7 @@
 import { checkPin, unlock, pinInfo, wipeStore, KEY, esc } from './store.js';
 import * as I18N from './i18n.js';
 import * as FX from './fx.js';
+import { bioOn, bioUnlock, bioLabel } from './bio.js';
 
 const t = (s) => I18N.t(s);
 const LOCK_KEY = KEY + '.lock'; // { fails, until } — wrong-PIN counter, kept outside the encrypted state
@@ -91,8 +92,8 @@ function show(onDone) {
   const box = document.createElement('div'); box.className = 'plbox';
   overlay.innerHTML = '<div class="brand"><b>$</b> blindsig<span class="cur">_</span></div>';
   overlay.appendChild(box);
-  const forgot = '<button type="button" class="lnk pforgot" id="plF">Forgot PIN?</button>';
-  pinPad(box, {
+  const forgot = (bioOn() ? `<button type="button" class="btn wide pbio" id="plB">${bioLabel() === 'Face ID or Touch ID' ? 'Use Face ID or Touch ID' : 'Use fingerprint or face unlock'}</button>` : '') + '<button type="button" class="lnk pforgot" id="plF">Forgot PIN?</button>';
+  const pad = pinPad(box, {
     len: info.len, title: 'Enter your PIN', extra: forgot,
     onPin: async (pin) => {
       const ok = await onDone(pin);
@@ -101,6 +102,19 @@ function show(onDone) {
     },
   });
   box.querySelector('#plF').onclick = () => forgotPin(box, () => show(onDone));
+  const bb = box.querySelector('#plB');
+  if (bb) bb.onclick = async () => {
+    bb.disabled = true; pad.setMsg('');
+    try {
+      const pin = await bioUnlock();
+      pad.setMsg('Checking…');
+      if (await onDone(pin)) { resetFails(); hide(); return; }
+      pad.setMsg('Face ID didn’t work this time. Use your PIN.', true);
+    } catch (e) {
+      // cancelled: say nothing; anything else: fall back to the PIN
+      if (e?.name !== 'NotAllowedError' && e?.name !== 'AbortError') pad.setMsg('Face ID didn’t work this time. Use your PIN.', true);
+    } finally { if (bb.isConnected) bb.disabled = false; }
+  };
   I18N.translateTree(overlay);
   if (!overlay._focus) overlay._focus = document.activeElement;
   box.querySelector('#plT').focus({ preventScroll: true });
@@ -147,7 +161,8 @@ export function relock() {
   if (isShowing() || !pinInfo()) return;
   show(async (pin) => !!(await checkPin(pin)));
 }
-// ask for the PIN before a sensitive step (showing the seed phrase); resolves true/false
+// ask for the PIN before a sensitive step (showing the seed phrase); resolves to the PIN (or true
+// when no PIN is set); stays pending if the person goes back
 export function confirmPin(sheetFn, title, back) {
   return new Promise((done) => {
     const info = pinInfo(); if (!info) return done(true);
@@ -155,7 +170,7 @@ export function confirmPin(sheetFn, title, back) {
       pinPad(b.querySelector('#pcBox'), {
         len: info.len, title: 'Enter your PIN',
         onPin: async (pin) => {
-          if (await checkPin(pin)) { resetFails(); done(true); return true; }
+          if (await checkPin(pin)) { resetFails(); done(pin); return true; }
           failed(); return 'Wrong PIN.';
         },
       });

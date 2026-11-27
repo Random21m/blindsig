@@ -705,3 +705,47 @@
 704	Solo se guarda en este dispositivo.
 705	Nota guardada.
 706	Un sonido de moneda cuando llega dinero y un suave «pop» cuando sale.
+707	Buscar notas, memos, importes
+708	Buscar en el historial
+709	Sin resultados.
+710	Restaurar desde archivo de copia
+711	Revisando tus mints
+712	Tu copia está cargada. Ahora se comprueba qué ecash sigue sin gastar y se recoge lo que sea más nuevo que la copia.
+713	Archivo de copia
+714	Un solo archivo con todo: frase semilla, ecash, historial, notas y claves, protegido con contraseña. Úsalo para pasar a otro teléfono, o de Safari a la app de la pantalla de inicio.
+715	Crear archivo de copia
+716	Restaurar desde archivo
+717	Elige una contraseña para el archivo. La necesitarás para restaurar. Si la pierdes, el archivo no se puede abrir.
+718	Contraseña
+719	Repite la contraseña
+720	Al menos 8 caracteres.
+721	Usa al menos 8 caracteres.
+722	Las contraseñas no coinciden.
+723	Copia lista
+724	Tu archivo de copia está listo.
+725	Quien tenga este archivo y su contraseña puede llevarse tu ecash. Guarda ambos a salvo y no uses el mismo monedero en dos teléfonos a la vez.
+726	Guardar archivo
+727	Archivo de copia guardado
+728	Elige un archivo de copia de blindsig e introduce su contraseña.
+729	Elige primero el archivo de copia.
+730	Ese archivo no es una copia de blindsig.
+731	Contraseña incorrecta o archivo dañado.
+732	El archivo de copia está dañado.
+733	¿Reemplazar este monedero?
+734	Restaurar reemplaza el monedero de este dispositivo. Asegúrate de tener su frase semilla o un archivo de copia antes.
+735	Saldo en este dispositivo
+736	Copia creada
+737	Puedo recuperar el monedero actual
+738	Reemplazar con la copia
+739	Usar Face ID o Touch ID
+740	Usar huella o desbloqueo facial
+741	Face ID no funcionó esta vez. Usa tu PIN.
+742	Desbloquear con Face ID o Touch ID
+743	Desbloquear con huella o rostro
+744	Tu PIN sigue funcionando y sigue siendo necesario para cambiar estos ajustes.
+745	Face ID o Touch ID
+746	Huella o desbloqueo facial
+747	Face ID o Touch ID activado
+748	Huella o desbloqueo facial activado
+749	Este teléfono aún no puede desbloquear blindsig así. Tu PIN sigue funcionando.
+750	Cancelado.

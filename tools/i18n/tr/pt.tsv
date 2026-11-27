@@ -705,3 +705,47 @@
 704	Salva apenas neste dispositivo.
 705	Nota salva.
 706	Um som de moeda quando o dinheiro chega e um “pop” suave quando sai.
+707	Buscar notas, memos, valores
+708	Buscar no histórico
+709	Nenhum resultado.
+710	Restaurar de arquivo de backup
+711	Verificando suas mints
+712	Seu backup foi carregado. Agora verificando qual ecash ainda não foi gasto e pegando o que for mais novo que o backup.
+713	Arquivo de backup
+714	Um arquivo com tudo: frase semente, ecash, histórico, notas e chaves, protegido por senha. Use para passar para outro celular, ou do Safari para o app na tela de início.
+715	Criar arquivo de backup
+716	Restaurar de arquivo
+717	Escolha uma senha para o arquivo. Você vai precisar dela para restaurar. Se perdê-la, o arquivo não abre.
+718	Senha
+719	Repita a senha
+720	Pelo menos 8 caracteres.
+721	Use pelo menos 8 caracteres.
+722	As senhas não conferem.
+723	Backup pronto
+724	Seu arquivo de backup está pronto.
+725	Quem tiver este arquivo e a senha pode levar seu ecash. Guarde os dois com segurança e não use a mesma carteira em dois celulares ao mesmo tempo.
+726	Salvar arquivo
+727	Arquivo de backup salvo
+728	Escolha um arquivo de backup do blindsig e digite a senha.
+729	Escolha primeiro o arquivo de backup.
+730	Esse arquivo não é um backup do blindsig.
+731	Senha errada, ou o arquivo está danificado.
+732	O arquivo de backup está danificado.
+733	Substituir esta carteira?
+734	Restaurar substitui a carteira deste dispositivo. Confirme que você tem a frase semente dela ou um arquivo de backup antes.
+735	Saldo neste dispositivo
+736	Backup feito em
+737	Consigo recuperar a carteira atual
+738	Substituir pelo backup
+739	Usar Face ID ou Touch ID
+740	Usar digital ou desbloqueio facial
+741	O Face ID não funcionou desta vez. Use seu PIN.
+742	Desbloquear com Face ID ou Touch ID
+743	Desbloquear com digital ou rosto
+744	Seu PIN continua funcionando e ainda é necessário para mudar estes ajustes.
+745	Face ID ou Touch ID
+746	Digital ou desbloqueio facial
+747	Face ID ou Touch ID ativado
+748	Digital ou desbloqueio facial ativado
+749	Este celular ainda não consegue desbloquear o blindsig assim. Seu PIN continua funcionando.
+750	Cancelado.

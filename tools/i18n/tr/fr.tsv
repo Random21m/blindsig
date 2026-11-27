@@ -705,3 +705,47 @@
 704	Enregistrée uniquement sur cet appareil.
 705	Note enregistrée.
 706	Un son de pièce quand l’argent arrive, un léger « pop » quand il part.
+707	Rechercher notes, mémos, montants
+708	Rechercher dans l’historique
+709	Aucun résultat.
+710	Restaurer depuis un fichier de sauvegarde
+711	Vérification de vos mints
+712	Votre sauvegarde est chargée. Vérification de l’ecash encore non dépensé et récupération de ce qui est plus récent que la sauvegarde.
+713	Fichier de sauvegarde
+714	Un seul fichier avec tout : phrase seed, ecash, historique, notes et clés, protégé par un mot de passe. Pour passer à un nouveau téléphone, ou de Safari à l’app de l’écran d’accueil.
+715	Créer un fichier de sauvegarde
+716	Restaurer depuis un fichier
+717	Choisissez un mot de passe pour le fichier. Il vous faudra pour restaurer. Si vous le perdez, le fichier ne peut pas être ouvert.
+718	Mot de passe
+719	Répétez le mot de passe
+720	Au moins 8 caractères.
+721	Utilisez au moins 8 caractères.
+722	Les mots de passe ne correspondent pas.
+723	Sauvegarde prête
+724	Votre fichier de sauvegarde est prêt.
+725	Quiconque a ce fichier et son mot de passe peut prendre votre ecash. Gardez les deux en sûreté et n’utilisez pas le même portefeuille sur deux téléphones à la fois.
+726	Enregistrer le fichier
+727	Fichier de sauvegarde enregistré
+728	Choisissez un fichier de sauvegarde blindsig et saisissez son mot de passe.
+729	Choisissez d’abord le fichier de sauvegarde.
+730	Ce fichier n’est pas une sauvegarde blindsig.
+731	Mot de passe incorrect, ou fichier endommagé.
+732	Le fichier de sauvegarde est endommagé.
+733	Remplacer ce portefeuille ?
+734	La restauration remplace le portefeuille de cet appareil. Assurez-vous d’avoir sa phrase seed ou un fichier de sauvegarde avant.
+735	Solde sur cet appareil
+736	Sauvegarde créée le
+737	Je peux récupérer le portefeuille actuel
+738	Remplacer par la sauvegarde
+739	Utiliser Face ID ou Touch ID
+740	Utiliser l’empreinte ou le visage
+741	Face ID n’a pas fonctionné cette fois. Utilisez votre code.
+742	Déverrouiller avec Face ID ou Touch ID
+743	Déverrouiller avec l’empreinte ou le visage
+744	Votre code fonctionne toujours et reste nécessaire pour modifier ces réglages.
+745	Face ID ou Touch ID
+746	Empreinte ou visage
+747	Face ID ou Touch ID activé
+748	Empreinte ou visage activé
+749	Ce téléphone ne peut pas encore déverrouiller blindsig ainsi. Votre code fonctionne toujours.
+750	Annulé.

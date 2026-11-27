@@ -705,3 +705,47 @@
 704	Nur auf diesem Gerät gespeichert.
 705	Notiz gespeichert.
 706	Ein Münzklang, wenn Geld ankommt, ein sanftes „Plopp“, wenn es rausgeht.
+707	Notizen, Memos, Beträge suchen
+708	Verlauf durchsuchen
+709	Keine Treffer.
+710	Aus Backup-Datei wiederherstellen
+711	Deine Mints werden geprüft
+712	Dein Backup ist geladen. Jetzt wird geprüft, welches Ecash noch unausgegeben ist, und alles Neuere als das Backup wird abgeholt.
+713	Backup-Datei
+714	Eine Datei mit allem: Seed-Phrase, Ecash, Verlauf, Notizen und Schlüssel, mit einem Passwort geschützt. Damit ziehst du auf ein neues Telefon um oder von Safari zur Home-Bildschirm-App.
+715	Backup-Datei erstellen
+716	Aus Datei wiederherstellen
+717	Wähle ein Passwort für die Datei. Du brauchst es zum Wiederherstellen. Ohne Passwort lässt sich die Datei nicht öffnen.
+718	Passwort
+719	Passwort wiederholen
+720	Mindestens 8 Zeichen.
+721	Nutze mindestens 8 Zeichen.
+722	Die Passwörter stimmen nicht überein.
+723	Backup fertig
+724	Deine Backup-Datei ist fertig.
+725	Wer diese Datei und ihr Passwort hat, kann dein Ecash nehmen. Bewahre beides sicher auf und nutze dieselbe Wallet nicht gleichzeitig auf zwei Telefonen.
+726	Datei sichern
+727	Backup-Datei gesichert
+728	Wähle eine blindsig-Backup-Datei und gib ihr Passwort ein.
+729	Wähle zuerst die Backup-Datei.
+730	Diese Datei ist kein blindsig-Backup.
+731	Falsches Passwort oder beschädigte Datei.
+732	Die Backup-Datei ist beschädigt.
+733	Diese Wallet ersetzen?
+734	Die Wiederherstellung ersetzt die Wallet auf diesem Gerät. Sorge vorher dafür, dass du ihre Seed-Phrase oder eine Backup-Datei hast.
+735	Guthaben auf diesem Gerät
+736	Backup erstellt am
+737	Ich kann die aktuelle Wallet zurückholen
+738	Durch Backup ersetzen
+739	Face ID oder Touch ID verwenden
+740	Fingerabdruck oder Gesicht verwenden
+741	Face ID hat diesmal nicht geklappt. Nutze deine PIN.
+742	Mit Face ID oder Touch ID entsperren
+743	Mit Fingerabdruck oder Gesicht entsperren
+744	Deine PIN funktioniert weiter und wird weiterhin gebraucht, um diese Einstellungen zu ändern.
+745	Face ID oder Touch ID
+746	Fingerabdruck oder Gesicht
+747	Face ID oder Touch ID ist an
+748	Fingerabdruck oder Gesicht ist an
+749	Dieses Telefon kann blindsig noch nicht so entsperren. Deine PIN funktioniert weiter.
+750	Abgebrochen.

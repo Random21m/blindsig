@@ -32,5 +32,7 @@ Fixes ship to the live wallet at <https://random21m.github.io/blindsig/> as soon
 ## Known limits
 
 - Without the PIN lock, your seed phrase and ecash are stored **unencrypted** in the browser, and anyone with your unlocked device can spend them. With the PIN lock on (Settings → PIN lock), the wallet is encrypted with AES-256-GCM under a key derived from the PIN (PBKDF2-SHA256, 600,000 rounds). Only the theme, language, PIN length, lock delay and sound and vibration choices stay readable, so the lock screen can be drawn. A 4- or 6-digit PIN protects against someone picking up the phone. An attacker who copies the browser's storage can still try every PIN offline, so write the seed down and keep it offline either way.
+- Face ID / Touch ID unlock uses a passkey kept by your phone (WebAuthn with the PRF extension). The passkey's secret, released only after Face ID or Touch ID, seals a copy of your PIN; that sealed copy sits next to the encrypted wallet. No server is involved, and changing the PIN turns it off.
+- Backup files are encrypted with AES-256-GCM under a key from your password (PBKDF2-SHA256, 600,000 rounds). The file holds the whole wallet, including the seed phrase, so its safety rests on the password: use a long one. Anyone with the file and the password can spend your ecash.
 - Mints are custodians. A mint can refuse to redeem ecash or go offline. Use small amounts and mints you trust.
 - GitHub Pages controls the hosting. If you want to remove that trust, build the site yourself (see the README) and host it on your own domain.

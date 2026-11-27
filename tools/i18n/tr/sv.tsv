@@ -705,3 +705,47 @@
 704	Sparas bara på den här enheten.
 705	Anteckningen sparad.
 706	Ett myntljud när pengar kommer in, ett mjukt ”pop” när de går ut.
+707	Sök anteckningar, memon, belopp
+708	Sök i historiken
+709	Inga träffar.
+710	Återställ från säkerhetskopia
+711	Kontrollerar dina mintar
+712	Säkerhetskopian är inläst. Nu kontrolleras vilken ecash som fortfarande är ospenderad, och allt nyare än kopian hämtas.
+713	Säkerhetskopia
+714	En fil med allt: seed-fras, ecash, historik, anteckningar och nycklar, låst med ett lösenord. Använd den för att flytta till en ny telefon, eller från Safari till hemskärmsappen.
+715	Skapa säkerhetskopia
+716	Återställ från fil
+717	Välj ett lösenord för filen. Du behöver det för att återställa. Tappar du bort det går filen inte att öppna.
+718	Lösenord
+719	Samma lösenord igen
+720	Minst 8 tecken.
+721	Använd minst 8 tecken.
+722	Lösenorden stämmer inte.
+723	Säkerhetskopian är klar
+724	Din säkerhetskopia är klar.
+725	Den som har filen och lösenordet kan ta din ecash. Förvara båda säkert och använd inte samma plånbok på två telefoner samtidigt.
+726	Spara fil
+727	Säkerhetskopia sparad
+728	Välj en blindsig-säkerhetskopia och ange dess lösenord.
+729	Välj säkerhetskopian först.
+730	Filen är ingen blindsig-säkerhetskopia.
+731	Fel lösenord, eller så är filen skadad.
+732	Säkerhetskopian är skadad.
+733	Ersätta den här plånboken?
+734	Återställningen ersätter plånboken på den här enheten. Se till att du har dess seed-fras eller en säkerhetskopia först.
+735	Saldo på den här enheten
+736	Säkerhetskopia gjord
+737	Jag kan få tillbaka den nuvarande plånboken
+738	Ersätt med säkerhetskopian
+739	Använd Face ID eller Touch ID
+740	Använd fingeravtryck eller ansikte
+741	Face ID fungerade inte den här gången. Använd din PIN-kod.
+742	Lås upp med Face ID eller Touch ID
+743	Lås upp med fingeravtryck eller ansikte
+744	Din PIN-kod fungerar fortfarande och behövs för att ändra de här inställningarna.
+745	Face ID eller Touch ID
+746	Fingeravtryck eller ansikte
+747	Face ID eller Touch ID är på
+748	Fingeravtryck eller ansikte är på
+749	Den här telefonen kan inte låsa upp blindsig så ännu. Din PIN-kod fungerar fortfarande.
+750	Avbrutet.

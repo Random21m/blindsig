@@ -705,3 +705,47 @@
 704	Yalnızca bu cihazda saklanır.
 705	Not kaydedildi.
 706	Para geldiğinde bozuk para sesi, çıktığında yumuşak bir “pop”.
+707	Not, mesaj, tutar ara
+708	Geçmişte ara
+709	Sonuç yok.
+710	Yedek dosyasından geri yükle
+711	Mint’leriniz denetleniyor
+712	Yedeğiniz yüklendi. Şimdi hangi ecash’in harcanmadığı denetleniyor ve yedekten daha yeni olanlar alınıyor.
+713	Yedek dosyası
+714	Her şey tek dosyada: seed ifadesi, ecash, geçmiş, notlar ve anahtarlar, bir parolayla kilitli. Yeni bir telefona veya Safari’den Ana Ekran uygulamasına geçmek için kullanın.
+715	Yedek dosyası oluştur
+716	Dosyadan geri yükle
+717	Dosya için bir parola seçin. Geri yüklemek için gerekecek. Kaybederseniz dosya açılamaz.
+718	Parola
+719	Aynı parola tekrar
+720	En az 8 karakter.
+721	En az 8 karakter kullanın.
+722	Parolalar eşleşmiyor.
+723	Yedek hazır
+724	Yedek dosyanız hazır.
+725	Bu dosyaya ve parolasına sahip olan herkes ecash’inizi alabilir. İkisini de güvende tutun ve aynı cüzdanı aynı anda iki telefonda kullanmayın.
+726	Dosyayı kaydet
+727	Yedek dosyası kaydedildi
+728	Bir blindsig yedek dosyası seçin ve parolasını girin.
+729	Önce yedek dosyasını seçin.
+730	Bu dosya bir blindsig yedeği değil.
+731	Parola yanlış veya dosya bozuk.
+732	Yedek dosyası bozuk.
+733	Bu cüzdan değiştirilsin mi?
+734	Geri yükleme bu cihazdaki cüzdanın yerini alır. Önce onun seed ifadesine veya bir yedek dosyasına sahip olduğunuzdan emin olun.
+735	Bu cihazdaki bakiye
+736	Yedek tarihi
+737	Mevcut cüzdanı geri alabilirim
+738	Yedekle değiştir
+739	Face ID veya Touch ID kullan
+740	Parmak izi veya yüz kullan
+741	Face ID bu sefer çalışmadı. PIN’inizi kullanın.
+742	Face ID veya Touch ID ile kilit aç
+743	Parmak izi veya yüzle kilit aç
+744	PIN’iniz çalışmaya devam eder ve bu ayarları değiştirmek için hâlâ gereklidir.
+745	Face ID veya Touch ID
+746	Parmak izi veya yüz
+747	Face ID veya Touch ID açık
+748	Parmak izi veya yüz açık
+749	Bu telefon blindsig’i henüz bu şekilde açamıyor. PIN’iniz çalışmaya devam ediyor.
+750	İptal edildi.

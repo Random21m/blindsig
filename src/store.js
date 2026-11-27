@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.9.1';
+export const VERSION = '1.10.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -86,8 +86,8 @@ function openDb() {
 const idbGet = (k) => new Promise((res) => { try { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => res(undefined); } catch { res(undefined); } });
 
 // in chunks: spreading a large wallet's bytes into one call overflows the stack
-const b64 = (buf) => { const u8 = new Uint8Array(buf); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
-const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+export const b64 = (buf) => { const u8 = new Uint8Array(buf); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+export const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 const enc = new TextEncoder(), dec = new TextDecoder();
 const CHECK = 'blindsig-pin-check';
 export const PIN_ITER = 600000;
@@ -145,12 +145,45 @@ export async function unlock(pin) {
   key = k;
   return true;
 }
+/* ---------- backup file: the whole wallet, encrypted with a password ---------- */
+// { blindsig: 'backup', v: 1, created, kdf, iter, salt, iv, ct } — AES-256-GCM, key from the password
+// with PBKDF2-SHA256. Holds everything in S: seed, ecash, history, notes, keys and settings.
+export async function encryptBackup(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const k = await deriveKey(password, salt, PIN_ITER);
+  const box = await seal(k, JSON.stringify(S));
+  return JSON.stringify({ blindsig: 'backup', v: 1, created: new Date().toISOString(), kdf: 'pbkdf2-sha256', iter: PIN_ITER, salt: b64(salt), ...box });
+}
+// returns the wallet inside, or throws 'not-backup' / 'wrong-password' / 'damaged'
+export async function decryptBackup(text, password) {
+  let f; try { f = JSON.parse(text); } catch { throw new Error('not-backup'); }
+  if (!f || f.blindsig !== 'backup' || !f.ct || !f.iv || !f.salt) throw new Error('not-backup');
+  let json;
+  try { json = await open_(await deriveKey(password, unb64(f.salt), f.iter || PIN_ITER), f); } catch { throw new Error('wrong-password'); }
+  let st; try { st = JSON.parse(json); } catch { throw new Error('damaged'); }
+  if (!st || typeof st !== 'object' || !st.mnemonic || !Array.isArray(st.mints)) throw new Error('damaged');
+  return { state: normalize(st), created: f.created };
+}
+// put a wallet from a backup file in place of the current one and write it to disk
+export async function replaceState(st) {
+  for (const x of Object.keys(S)) delete S[x];
+  Object.assign(S, normalize(st));
+  await flushSave(true);
+}
+
 export const pinOn = () => !!env;
+// Face ID / Touch ID: the PIN, sealed with a key that only the passkey's PRF output can make.
+// Kept in the readable header (it's encrypted), so the lock screen can offer it before unlocking.
+export const bioInfo = () => (env?.bio ? { id: env.bio.id, salt: env.bio.salt } : null);
+export async function setBio(id, salt, prfKey, pin) { if (!env) return; env.bio = { id, salt, ...(await seal(prfKey, pin)) }; await flushSave(true); }
+export async function clearBio() { if (!env?.bio) return; delete env.bio; await flushSave(true); }
+export async function bioPin(prfKey) { return open_(prfKey, env.bio); }
 export const pinInfo = () => (env ? { len: env.pub?.len || 6, after: env.pub?.after ?? 300 } : null);
 // turn the PIN on, or change it: re-encrypt everything under a new salt and key
 export async function setPin(pin, after) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const k = await deriveKey(pin, salt, PIN_ITER);
+  // a new PIN drops Face ID: the PIN sealed for it would be the old one
   env = { enc: 1, kdf: 'pbkdf2-sha256', iter: PIN_ITER, salt: b64(salt), chk: await seal(k, CHECK), pub: { len: pin.length, after: after ?? env?.pub?.after ?? 300 } };
   key = k;
   await flushSave(true);

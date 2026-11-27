@@ -705,3 +705,47 @@
 704	Uloženo jen v tomto zařízení.
 705	Poznámka uložena.
 706	Zvuk mince, když peníze přijdou, a jemné „pop“, když odejdou.
+707	Hledat poznámky, zprávy, částky
+708	Hledat v historii
+709	Žádné výsledky.
+710	Obnovit ze záložního souboru
+711	Kontroluji vaše minty
+712	Záloha je načtená. Teď kontroluji, který ecash je stále neutracený, a vyzvedávám vše novější než záloha.
+713	Záložní soubor
+714	Jeden soubor se vším: seed fráze, ecash, historie, poznámky a klíče, zamčený heslem. Použijte ho k přechodu na nový telefon nebo ze Safari do aplikace na ploše.
+715	Vytvořit záložní soubor
+716	Obnovit ze souboru
+717	Zvolte heslo k souboru. Budete ho potřebovat k obnově. Když ho ztratíte, soubor nepůjde otevřít.
+718	Heslo
+719	Heslo znovu
+720	Alespoň 8 znaků.
+721	Použijte alespoň 8 znaků.
+722	Hesla se neshodují.
+723	Záloha připravena
+724	Váš záložní soubor je připravený.
+725	Kdo má tento soubor a jeho heslo, může vzít váš ecash. Obojí dobře uschovejte a nepoužívejte stejnou peněženku na dvou telefonech zároveň.
+726	Uložit soubor
+727	Záložní soubor uložen
+728	Vyberte záložní soubor blindsig a zadejte jeho heslo.
+729	Nejdřív vyberte záložní soubor.
+730	Tento soubor není záloha blindsig.
+731	Špatné heslo nebo poškozený soubor.
+732	Záložní soubor je poškozený.
+733	Nahradit tuto peněženku?
+734	Obnova nahradí peněženku v tomto zařízení. Nejdřív se ujistěte, že máte její seed frázi nebo záložní soubor.
+735	Zůstatek v tomto zařízení
+736	Záloha vytvořena
+737	Současnou peněženku umím získat zpět
+738	Nahradit zálohou
+739	Použít Face ID nebo Touch ID
+740	Použít otisk prstu nebo obličej
+741	Face ID tentokrát nefungovalo. Použijte PIN.
+742	Odemykat pomocí Face ID nebo Touch ID
+743	Odemykat otiskem prstu nebo obličejem
+744	PIN dál funguje a je stále potřeba ke změně těchto nastavení.
+745	Face ID nebo Touch ID
+746	Otisk prstu nebo obličej
+747	Face ID nebo Touch ID zapnuto
+748	Otisk prstu nebo obličej zapnut
+749	Tento telefon zatím neumí takto odemknout blindsig. PIN dál funguje.
+750	Zrušeno.

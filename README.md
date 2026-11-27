@@ -14,6 +14,8 @@
   &nbsp;·&nbsp;
   <a href="#features">Features</a>
   &nbsp;·&nbsp;
+  <a href="#demo">Demo</a>
+  &nbsp;·&nbsp;
   <a href="#screenshots">Screenshots</a>
   &nbsp;·&nbsp;
   <a href="#run-it-yourself">Run it yourself</a>
@@ -22,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.9.1-72d99b?style=flat-square&labelColor=161512" alt="version 1.9.1">
+  <img src="https://img.shields.io/badge/version-1.10.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.10.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -42,10 +44,18 @@
 1. Open **<https://random21m.github.io/blindsig/>** on your phone.
 2. Add it to your home screen (Share → Add to Home Screen on iPhone, ⋮ → Install app on Android).
 3. Write down your 12-word seed phrase, pick a mint, and receive some sats over Lightning.
-4. Turn on the PIN lock under Settings → PIN lock, so the wallet is encrypted on your phone.
+4. Turn on the PIN lock under Settings → PIN lock, so the wallet is encrypted on your phone. Face ID or Touch ID can unlock it too.
+5. Make a backup file (Settings → Backup & restore) and keep it with its password somewhere safe.
 
 > [!WARNING]
 > Mints hold the bitcoin behind your ecash, so they are custodians. Use small amounts and mints you trust, and keep your seed phrase offline.
+
+## Demo
+
+<p align="center">
+  <a href="assets/blindsig-demo.mp4"><img src="assets/demo-thumb.jpg" width="300" alt="Play the one-minute blindsig demo video"></a><br>
+  <sub>One minute: a new wallet, receiving over Lightning, sending ecash, the PIN lock and the themes. Tap to play.</sub>
+</p>
 
 ## Screenshots
 
@@ -70,6 +80,11 @@
     <td align="center"><img src="assets/screens/pin-settings.png" width="250" alt="PIN lock settings"><br><sub><b>PIN settings</b>: when to ask again, change or turn off</sub></td>
     <td align="center"><img src="assets/screens/appearance.png" width="250" alt="Appearance settings"><br><sub><b>Appearance</b>: four themes, sound, vibration and motion</sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/note.png" width="250" alt="A private note on a transaction"><br><sub><b>Notes</b>: a private note on any transaction</sub></td>
+    <td align="center"><img src="assets/screens/search.png" width="250" alt="Searching history"><br><sub><b>Search</b>: find payments by note, memo or amount</sub></td>
+    <td align="center"><img src="assets/screens/backup.png" width="250" alt="Backup file"><br><sub><b>Backup file</b>: the whole wallet in one password-locked file</sub></td>
+  </tr>
 </table>
 
 ### Four themes
@@ -92,6 +107,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 **Wallet**
 
 - 12-word seed (NUT-13) with full restore (NUT-09), including restoring from another seed
+- Backup file: the whole wallet (seed, ecash, history, notes, keys and settings) in one file locked with a password. Restoring it checks your mints so spent ecash is dropped and anything newer is picked up. Handy for moving to a new phone, or from Safari to the Home Screen app
 - Multiple mints and units (sat, usd, eur…), mint messages, nicknames, and moving funds between mints
 - Mint discovery and reviews over Nostr (NIP-87), auditor results, and mint-list backup (compatible with cashu.me)
 
@@ -120,8 +136,8 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 - You choose which background checks run: invoices, sent tokens, WebSockets (NUT-17) and price lookups
 - Sent tokens update live when someone claims them
-- Private notes on any transaction, kept only on your device (and encrypted with the PIN lock)
-- Optional PIN lock that also encrypts the wallet on the device (AES-256-GCM, key from the PIN via PBKDF2). It asks again after a time in the background you choose, before showing the seed phrase, and waits longer after repeated wrong guesses
+- Private notes on any transaction, kept only on your device (and encrypted with the PIN lock), and search across notes, memos and amounts
+- Optional PIN lock that also encrypts the wallet on the device (AES-256-GCM, key from the PIN via PBKDF2). It asks again after a time in the background you choose, before showing the seed phrase, and waits longer after repeated wrong guesses. Face ID or Touch ID can unlock it, using a passkey on your phone (WebAuthn PRF), with no server involved
 - Data stays in this browser's IndexedDB, and only one tab can run the wallet at a time, so two tabs can't spend the same ecash
 - Spent-proof cleanup, keyset counters, export and new-seed tools for when something looks off
 

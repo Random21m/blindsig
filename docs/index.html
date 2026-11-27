@@ -100,6 +100,7 @@ a{color:var(--ac)}
 /* history */
 .loghead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;overflow-x:auto}
+.field.hq{margin:12px 0 0;padding:11px 14px;font-size:16px;border-radius:12px}
 .tabs button{min-height:36px;padding:0 12px;border-radius:999px;font:500 13px var(--mono);color:var(--dim);border:1px solid var(--line2)}
 .tabs button[aria-selected=true]{background:var(--ac-soft);color:var(--ac);border-color:transparent}
 .log ul{list-style:none;margin:10px 0 0;padding:0}
@@ -281,7 +282,7 @@ details.more[open]{padding-bottom:14px}
 .pinpad .pkp{grid-template-columns:repeat(3,74px);justify-content:center;gap:14px 28px;margin:0 auto 10px}
 .pinpad .pkp button{width:74px;height:74px;min-height:0;padding:0;border-radius:50%;font-size:26px}
 .pinpad .lnk{display:inline-block;margin-top:8px;padding:10px;color:var(--dim)}
-.okline{color:var(--ac)}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
+.okline{color:var(--ac)}.pinpad .pbio{display:block;max-width:300px;margin:4px auto 0}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
 @media (max-height:700px){.pinpad .pkp{grid-template-columns:repeat(3,64px);gap:10px 26px}.pinpad .pkp button{width:64px;height:64px;font-size:23px}.pinpad .ps{margin-bottom:10px}}
 .note{margin-top:18px}.note .lbl{margin-top:0}.note textarea{font:16px/1.45 var(--sans);word-break:normal;overflow-wrap:anywhere}.note .small{margin:6px 0 0}
 #chkAll{margin-top:10px}
@@ -349,6 +350,7 @@ details.more[open]{padding-bottom:14px}
   <section class="log">
     <div class="loghead"><div class="lab">History</div>
       <div class="tabs" id="logTabs" role="tablist" aria-label="Filter history"><button role="tab" data-f="all" aria-selected="true">All</button><button role="tab" data-f="ecash" aria-selected="false">Ecash</button><button role="tab" data-f="ln" aria-selected="false">Lightning</button><button role="tab" data-f="pending" aria-selected="false">Pending</button></div></div>
+    <input type="search" id="histQ" class="field hq" placeholder="Search notes, memos, amounts" aria-label="Search history" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" hidden>
     <button class="btn wide" id="chkAll" hidden>Check all pending</button>
     <ul id="hist"></ul>
     <button class="btn wide" id="moreHist" hidden>Show older</button>

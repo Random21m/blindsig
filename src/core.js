@@ -507,8 +507,12 @@ export async function restoreMint(url, mnemonic = S.mnemonic, log = () => {}) {
     const g = await w.groupProofsByState(found);
     let mine = g.unspent;
     if (foreign && mine.length) { log('re-keying to this wallet…'); mine = await (await walletFor(url, unit)).receive(mine); }
+    // count only ecash this wallet didn't already hold (running a restore twice, or after loading a
+    // backup file, mustn't add the same money to the history again)
+    const held = new Set(getProofs(url, unit).map((p) => p.secret));
+    const fresh = mine.filter((p) => !held.has(p.secret));
     addProofs(url, mine, unit);
-    const amt = sum(mine);
+    const amt = sum(fresh);
     if (amt) { H({ kind: 'ecash-in', amount: amt, unit, mint: url, status: 'done', memo: 'restored from seed' }); log(`found ${fmt(amt, unit)}`); }
     totals[unit] = (totals[unit] || 0) + amt;
   }

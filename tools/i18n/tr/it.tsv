@@ -705,3 +705,47 @@
 704	Salvata solo su questo dispositivo.
 705	Nota salvata.
 706	Un suono di moneta quando arriva denaro e un leggero “pop” quando esce.
+707	Cerca note, memo, importi
+708	Cerca nella cronologia
+709	Nessun risultato.
+710	Ripristina da file di backup
+711	Controllo dei tuoi mint
+712	Il backup è caricato. Ora controllo quale ecash non è ancora speso e recupero ciò che è più recente del backup.
+713	File di backup
+714	Un unico file con tutto: frase seed, ecash, cronologia, note e chiavi, protetto da password. Usalo per passare a un nuovo telefono, o da Safari all’app nella schermata Home.
+715	Crea file di backup
+716	Ripristina da file
+717	Scegli una password per il file. Ti servirà per ripristinare. Se la perdi, il file non si può aprire.
+718	Password
+719	Ripeti la password
+720	Almeno 8 caratteri.
+721	Usa almeno 8 caratteri.
+722	Le password non coincidono.
+723	Backup pronto
+724	Il tuo file di backup è pronto.
+725	Chi ha questo file e la sua password può prendere il tuo ecash. Conservali entrambi al sicuro e non usare lo stesso wallet su due telefoni insieme.
+726	Salva file
+727	File di backup salvato
+728	Scegli un file di backup di blindsig e inserisci la password.
+729	Scegli prima il file di backup.
+730	Quel file non è un backup di blindsig.
+731	Password errata, o file danneggiato.
+732	Il file di backup è danneggiato.
+733	Sostituire questo wallet?
+734	Il ripristino sostituisce il wallet su questo dispositivo. Assicurati prima di avere la sua frase seed o un file di backup.
+735	Saldo su questo dispositivo
+736	Backup creato il
+737	Posso recuperare il wallet attuale
+738	Sostituisci con il backup
+739	Usa Face ID o Touch ID
+740	Usa impronta o volto
+741	Face ID non ha funzionato questa volta. Usa il PIN.
+742	Sblocca con Face ID o Touch ID
+743	Sblocca con impronta o volto
+744	Il PIN funziona ancora ed è ancora necessario per cambiare queste impostazioni.
+745	Face ID o Touch ID
+746	Impronta o volto
+747	Face ID o Touch ID attivo
+748	Impronta o volto attivo
+749	Questo telefono non può ancora sbloccare blindsig così. Il PIN funziona ancora.
+750	Annullato.
