@@ -591,3 +591,12 @@
 590	Mostrar anteriores
 591	Filtrar historial
 592	La mint tarda demasiado en responder. Inténtalo de nuevo en un momento.
+593	Comisión por pagar desde esta mint
+594	{0} (preferida)
+595	Esta mint no está en la lista de la solicitud, así que el destinatario cobra una comisión por llevar el ecash a la suya.
+596	Un pago de {0} no coincide del todo con tu solicitud. Revísalo en el historial antes de reclamarlo.
+597	Este pago no coincide del todo con tu solicitud: tras las comisiones de la mint se queda corto, no viene de una mint que pediste o no está bloqueado a tu clave como pediste. Aun así puedes reclamarlo.
+598	Eliminar solicitud
+599	Toca otra vez para eliminar
+600	Solicitud eliminada
+601	Al eliminarla, esta solicitud deja de reconocerse. Los pagos ya recibidos siguen en tu historial.

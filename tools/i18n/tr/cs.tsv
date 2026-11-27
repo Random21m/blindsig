@@ -591,3 +591,12 @@
 590	Zobrazit starší
 591	Filtrovat historii
 592	Mincovna odpovídá příliš dlouho. Zkus to za chvíli znovu.
+593	Poplatek za platbu z této mincovny
+594	{0} (preferovaná)
+595	Tato mincovna není na seznamu žádosti, takže příjemce si účtuje poplatek za přesun ecash do své.
+596	Platba {0} úplně neodpovídá tvé žádosti. Před přijetím ji zkontroluj v historii.
+597	Tato platba úplně neodpovídá tvé žádosti: po poplatcích mincovny nestačí, nepochází z požadované mincovny nebo není uzamčena k tvému klíči. Přesto ji můžeš přijmout.
+598	Smazat žádost
+599	Klepni znovu pro smazání
+600	Žádost smazána
+601	Po smazání se žádost už nerozpozná. Přijaté platby zůstanou v historii.

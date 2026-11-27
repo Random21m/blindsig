@@ -591,3 +591,12 @@
 590	Mostrar anteriores
 591	Filtrar histórico
 592	A mint está demorando demais para responder. Tente de novo em instantes.
+593	Taxa para pagar desta mint
+594	{0} (preferida)
+595	Esta mint não está na lista da solicitação, então o destinatário cobra uma taxa para levar o ecash para a dele.
+596	Um pagamento de {0} não corresponde totalmente à sua solicitação. Confira no histórico antes de resgatar.
+597	Este pagamento não corresponde totalmente à sua solicitação: depois das taxas da mint ele fica abaixo, não veio de uma mint pedida ou não está travado à sua chave como pedido. Você ainda pode resgatá-lo.
+598	Excluir solicitação
+599	Toque de novo para excluir
+600	Solicitação excluída
+601	Depois de excluída, esta solicitação deixa de ser reconhecida. Pagamentos já recebidos continuam no histórico.

@@ -591,3 +591,12 @@
 590	Afficher plus ancien
 591	Filtrer l’historique
 592	La mint met trop de temps à répondre. Réessayez dans un instant.
+593	Frais pour payer depuis cette mint
+594	{0} (préférée)
+595	Cette mint n’est pas dans la liste de la demande : le destinataire prend des frais pour transférer l’ecash vers la sienne.
+596	Un paiement de {0} ne correspond pas tout à fait à votre demande. Vérifiez-le dans l’historique avant de le récupérer.
+597	Ce paiement ne correspond pas tout à fait à votre demande : après les frais de la mint il est insuffisant, il ne vient pas d’une mint demandée ou il n’est pas verrouillé à votre clé comme demandé. Vous pouvez quand même le récupérer.
+598	Supprimer la demande
+599	Touchez à nouveau pour supprimer
+600	Demande supprimée
+601	Une fois supprimée, cette demande n’est plus reconnue. Les paiements déjà reçus restent dans l’historique.

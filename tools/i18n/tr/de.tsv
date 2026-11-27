@@ -591,3 +591,12 @@
 590	Ältere anzeigen
 591	Verlauf filtern
 592	Die Mint antwortet zu langsam. Versuch es gleich noch einmal.
+593	Gebühr für Zahlung von dieser Mint
+594	{0} (bevorzugt)
+595	Diese Mint steht nicht auf der Liste der Anfrage, daher berechnet der Empfänger eine Gebühr, um das Ecash zu seiner Mint zu bringen.
+596	Eine Zahlung über {0} passt nicht ganz zu deiner Anfrage. Prüfe sie im Verlauf, bevor du sie einlöst.
+597	Diese Zahlung passt nicht ganz zu deiner Anfrage: Nach den Gebühren der Mint ist sie zu niedrig, sie kommt nicht von einer gewünschten Mint oder ist nicht wie verlangt an deinen Schlüssel gebunden. Du kannst sie trotzdem einlösen.
+598	Anfrage löschen
+599	Zum Löschen nochmal tippen
+600	Anfrage gelöscht
+601	Nach dem Löschen wird diese Anfrage nicht mehr erkannt. Bereits erhaltene Zahlungen bleiben im Verlauf.

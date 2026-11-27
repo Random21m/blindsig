@@ -591,5 +591,14 @@
 "Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.",
 "Show older",
 "Filter history",
-"The mint is taking too long to answer. Try again in a moment."
+"The mint is taking too long to answer. Try again in a moment.",
+"Fee for paying from this mint",
+"{0} (preferred)",
+"This mint isn’t on the request’s list, so the recipient adds a fee to move the ecash to theirs.",
+"A payment of {0} doesn’t fully match your request. Check it in your history before claiming.",
+"This payment doesn’t fully match your request: after the mint’s fees it comes up short, it isn’t from a mint you asked for, or it isn’t locked to your key as requested. You can still claim it.",
+"Delete request",
+"Tap again to delete",
+"Request deleted",
+"Deleting stops this request from being recognised. Payments already received stay in your history."
 ]

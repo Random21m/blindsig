@@ -591,3 +591,12 @@
 590	Eskileri göster
 591	Geçmişi filtrele
 592	Mint yanıt vermekte çok gecikiyor. Birazdan tekrar dene.
+593	Bu mintten ödeme ücreti
+594	{0} (tercih edilen)
+595	Bu mint isteğin listesinde değil, bu yüzden alıcı ecash’i kendi mintine taşımak için ücret alır.
+596	{0} tutarındaki bir ödeme isteğinle tam uyuşmuyor. Almadan önce geçmişte kontrol et.
+597	Bu ödeme isteğinle tam uyuşmuyor: mint ücretlerinden sonra eksik kalıyor, istediğin bir mintten gelmiyor ya da istendiği gibi anahtarına kilitli değil. Yine de alabilirsin.
+598	İsteği sil
+599	Silmek için tekrar dokun
+600	İstek silindi
+601	Silindikten sonra bu istek artık tanınmaz. Alınmış ödemeler geçmişte kalır.

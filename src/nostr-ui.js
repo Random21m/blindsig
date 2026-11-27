@@ -145,9 +145,16 @@ export function nostrUI(x) {
       <button class="btn primary wide" id="cp">Copy request</button>
       ${kv([['Mint', r.mint ? esc(host(r.mint)) : 'Any'], ['Locked', r.lock ? 'Yes, P2PK' : 'No'], ['Payments', String(paid.length)]])}
       ${paid.map((h) => `<p class="small">${h.status === 'done' ? '✓' : '•'} ${esc(fmt(h.amount, h.unit))} · ${new Date(h.ts).toLocaleString()}${h.status === 'pending' ? ' · <span class="warnt">not claimed</span>' : ''}</p>`).join('')}
-      <p class="dim small center">${S.pr.enabled ? 'Listening for payments while the app is open.' : 'Payment requests are off; turn them on to receive.'}</p>`, (b) => {
+      <p class="dim small center">${S.pr.enabled ? 'Listening for payments while the app is open.' : 'Payment requests are off; turn them on to receive.'}</p>
+      <button class="btn wide danger" id="rdel">Delete request</button>
+      <p class="dim small center">Deleting stops this request from being recognised. Payments already received stay in your history.</p>`, (b) => {
       qrInto($('#rq', b), r.encoded);
       $('#cp', b).onclick = () => copy(r.encoded, 'Request copied');
+      $('#rdel', b).onclick = () => {
+        const btn = $('#rdel', b);
+        if (!btn.dataset.sure) { btn.dataset.sure = '1'; btn.textContent = 'Tap again to delete'; return; }
+        N.deleteRequest(r.id); toast('Request deleted'); (back || closeSheet)();
+      };
     }, { back });
   }
 

@@ -591,3 +591,12 @@
 590	Mostra precedenti
 591	Filtra cronologia
 592	La mint impiega troppo a rispondere. Riprova tra poco.
+593	Commissione per pagare da questa mint
+594	{0} (preferita)
+595	Questa mint non è nella lista della richiesta, quindi il destinatario applica una commissione per spostare l’ecash sulla sua.
+596	Un pagamento di {0} non corrisponde del tutto alla tua richiesta. Controllalo nella cronologia prima di riscuoterlo.
+597	Questo pagamento non corrisponde del tutto alla tua richiesta: dopo le commissioni della mint è insufficiente, non arriva da una mint richiesta o non è bloccato alla tua chiave come richiesto. Puoi comunque riscuoterlo.
+598	Elimina richiesta
+599	Tocca di nuovo per eliminare
+600	Richiesta eliminata
+601	Dopo l’eliminazione questa richiesta non viene più riconosciuta. I pagamenti già ricevuti restano nella cronologia.

@@ -570,15 +570,18 @@ function sendSheet(tab = 'ecash', prefill = '') {
       }
       if (stage === 'creq') {
         req = N.decodeRequest(v);
-        const okMint = !req.mints.length || req.mints.includes(S.active);
+        const okMint = N.requestMintOk(req, S.active), fee = okMint ? N.requestFee(req, S.active) : 0;
         const alt = req.mints.find((u) => mintOf(u));
-        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], req.memo && ['For', esc(req.memo)], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
+        const short = req.amount && req.amount + fee > bal(S.active);
+        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee for paying from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
           + (req.unit !== S.unit ? `<p class="warn">This request is in ${esc(unitLabel(req.unit))}. Switch unit first.</p>` : '')
           + (okMint ? '' : `<p class="warn">The request only accepts ${esc(req.mints.map(host).join(', '))}.</p>${alt ? `<button class="btn wide" id="swm">Switch to ${esc(host(alt))}</button>` : ''}`)
+          + (fee ? '<p class="dim small">This mint isn’t on the request’s list, so the recipient adds a fee to move the ecash to theirs.</p>' : '')
+          + (short ? '<p class="warn">Not enough at this mint.</p>' : '')
           + (req.amount ? '' : amountField('ramt', `Available: ${esc(fmt(bal(S.active)))}`));
         bindKeypads(x);
         const swm = $('#swm', b); if (swm) swm.onclick = () => { C.selectMint(alt); render(); sendSheet('ln', v); };
-        stage = 'creqpay'; setPay(req.amount ? `Pay ${fmt(req.amount, req.unit)}` : 'Pay', !okMint || req.unit !== S.unit); return;
+        stage = 'creqpay'; setPay(req.amount ? `Pay ${fmt(req.amount + fee, req.unit)}` : 'Pay', !okMint || req.unit !== S.unit || short); return;
       }
       if (stage === 'creqpay') {
         const a = req.amount || readAmt(b, 'ramt'); if (!a) return nope('Enter an amount.');
@@ -680,7 +683,11 @@ function detail(h) {
   if (h.live) return liveView(h);
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
   if (h.kind === 'ecash-out' && h.status === 'pending') return tokenView(h, true);
-  if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) return receiveSheet('ecash', h.token);
+  if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) {
+    receiveSheet('ecash', h.token);
+    if (h.warn) later(() => $('#sheet .sb')?.insertAdjacentHTML('afterbegin', '<p class="warn">This payment doesn’t fully match your request: after the mint’s fees it comes up short, it isn’t from a mint you asked for, or it isn’t locked to your key as requested. You can still claim it.</p>'));
+    return;
+  }
   const [verb, via] = KIND[h.kind];
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
@@ -1122,7 +1129,7 @@ function installHelp() {
 const NU = nostrUI({ $, $$, sheet, closeSheet, toast, copy, withBusy, kv, toggle, qrSvg, render, niceErr, amountField, readAmt, settingsSheet, isLocked: () => locked });
 MENU.splice(1, 0, ...NU.menu);
 Object.assign(SECTIONS, NU.sections);
-N.on('incoming', (h) => { toast(`Incoming ecash: ${fmt(h.amount, h.unit)}. Tap it in your history to claim.`, 'warn'); render(); });
+N.on('incoming', (h) => { toast(h.warn ? `A payment of ${fmt(h.amount, h.unit)} doesn’t fully match your request. Check it in your history before claiming.` : `Incoming ecash: ${fmt(h.amount, h.unit)}. Tap it in your history to claim.`, 'warn'); render(); });
 N.on('received', (h) => { toast(`Received ${fmt(h.amount, h.unit)}`); FX.success('received'); render(); });
 N.on('nwc', () => render());
 $('#recvBtn').onclick = () => receiveSheet();

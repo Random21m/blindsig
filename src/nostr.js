@@ -136,11 +136,22 @@ function satisfies(req, t) {
   if (req.mint && normUrl(req.mint) !== t.mint) return false;
   return true;
 }
+// full NUT-18 check against our own request: amount after the mint's fees, the mint, and the
+// "lock to my key" setting. Anything short is kept for the owner to look at, not claimed automatically.
+async function fullySatisfies(req, t, token) {
+  if (!req) return true;
+  if (!satisfies(req, t)) return false;
+  try {
+    const w = await C.walletFor(t.mint, t.unit);
+    const { proofs } = w.decodeToken(token);
+    return w.isPaymentRequestSatisfied(decodePaymentRequest(req.encoded), proofs, req.amount ? undefined : 1, { privkeys: S.p2pk.map((k) => k.priv) });
+  } catch (e) { console.warn('payment request check', e); return false; }
+}
 async function incoming(token, req, payload) {
   if (S.history.some((h) => h.token === token)) return;
   let t; try { t = C.parseToken(token); } catch { return; }
-  const ok = satisfies(req, t);
-  const h = C.H({ kind: 'ecash-in', amount: t.amount, unit: t.unit, mint: t.mint, status: 'pending', token, memo: payload?.memo || (req ? 'payment request' : 'nostr message'), prId: req?.id });
+  const ok = await fullySatisfies(req, t, token);
+  const h = C.H({ kind: 'ecash-in', amount: t.amount, unit: t.unit, mint: t.mint, status: 'pending', token, memo: payload?.memo || (req ? 'payment request' : 'nostr message'), prId: req?.id, ...(req && !ok ? { warn: 'short' } : {}) });
   if (req) { req.payments = [...(req.payments || []), h.id]; save(); }
   const known = !!mintOf(t.mint);
   if (S.pr.auto && known && ok) {
@@ -171,14 +182,31 @@ export function decodeRequest(s) {
     raw: s.trim(), pr, id: pr.id, amount: pr.amount ? pr.amount.toNumber() : 0, unit: pr.unit || 'sat',
     mints: (pr.mints || []).map(normUrl), memo: pr.description || '', lock: pr.nut10 && pr.nut10.kind === 'P2PK' ? pr.nut10.data : '',
     transport: tr || null, ours: S.pr.requests.some((r) => r.id === pr.id),
+    // NUT-18: a list marked "preferred" (not strict) also accepts other mints, sometimes for a fee
+    strict: pr.isMintListStrict !== false, methods: (pr.supportedMethods || []).map((m) => ({ method: m.method, fee: m.fee ? m.fee.toNumber() : 0 })),
   };
 }
+const meltMethodsOf = (url, unit) => (mintOf(url)?.info?.meltMethods || []).filter((m) => m.unit === unit).map((m) => m.method);
+// can `url` pay request `r`?  listed mints always; others only if the list isn't strict and the mint
+// can melt via one of the methods the request accepts (when it names any)
+export function requestMintOk(r, url) {
+  if (!r.mints.length || r.mints.includes(url)) return true;
+  if (r.strict) return false;
+  return !r.methods.length || r.methods.some((m) => meltMethodsOf(url, r.unit).includes(m.method));
+}
+// extra the payer adds when paying from a mint the request doesn't list (0 from a listed mint)
+export function requestFee(r, url) {
+  try { return r.pr.feesFor(url, meltMethodsOf(url, r.unit)).toNumber(); } catch { return 0; }
+}
+export function deleteRequest(id) { S.pr.requests = S.pr.requests.filter((r) => r.id !== id); save(); }
 // create the token and deliver it over the request's transport
 export async function payRequest(r, amount) {
   if (!r.transport) throw new Error('this request has no way to deliver the payment');
-  if (r.mints.length && !r.mints.includes(S.active)) throw new Error('select one of the mints the request accepts');
+  if (!requestMintOk(r, S.active)) throw new Error('select one of the mints the request accepts');
   if (r.unit !== S.unit) throw new Error(`the request is in ${r.unit}; switch unit first`);
-  const h = await C.sendEcash(amount, { memo: r.memo || 'payment request', lockTo: r.lock || undefined });
+  const fee = requestFee(r, S.active);
+  const h = await C.sendEcash(amount + fee, { memo: r.memo || 'payment request', lockTo: r.lock || undefined });
+  if (fee) { h.fee = (h.fee || 0) + fee; save(); }
   const w = await C.walletFor(h.mint, h.unit);
   const { proofs } = w.decodeToken(h.token);
   const body = r.pr.encodePayload(h.mint, proofs, { unit: h.unit, memo: r.memo || undefined });
