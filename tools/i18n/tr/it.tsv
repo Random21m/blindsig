@@ -622,3 +622,7 @@
 621	Questo server al momento non vende nomi utente.
 622	Prezzo: {0}, pagato con ecash di {1}.
 623	il blocco richiede la tua chiave nostr in questo wallet (seed o nsec), non un’estensione né un firmatario remoto
+624	Verifica con npub.cash…
+625	✓ npub.cash conferma: i pagamenti sono bloccati sulla tua chiave.
+626	Non bloccato: npub.cash o chiunque abbia i dettagli del pagamento potrebbe riscuoterlo.
+627	Impossibile contattare npub.cash per verificare il blocco.

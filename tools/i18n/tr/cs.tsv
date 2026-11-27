@@ -622,3 +622,7 @@
 621	Tento server teď uživatelská jména neprodává.
 622	Cena: {0}, placeno ecash z {1}.
 623	zamykání potřebuje tvůj nostr klíč v peněžence (seed nebo nsec), ne rozšíření ani vzdálený podepisovač
+624	Ověřuji u npub.cash…
+625	✓ npub.cash potvrzuje: platby jsou zamčené k tvému klíči.
+626	Nezamčeno: npub.cash nebo kdokoli s detaily platby by si ji mohl vzít.
+627	Nepodařilo se spojit s npub.cash a ověřit zamykání.

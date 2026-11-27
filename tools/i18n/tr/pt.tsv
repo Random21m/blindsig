@@ -622,3 +622,7 @@
 621	Este servidor não está vendendo nomes de usuário agora.
 622	Preço: {0}, pago com ecash de {1}.
 623	a trava precisa da sua chave nostr nesta carteira (seed ou nsec), não de uma extensão ou assinante remoto
+624	Verificando com o npub.cash…
+625	✓ O npub.cash confirma: os pagamentos estão travados na sua chave.
+626	Sem trava: o npub.cash ou qualquer pessoa com os detalhes do pagamento poderia resgatá-lo.
+627	Não foi possível falar com o npub.cash para verificar a trava.

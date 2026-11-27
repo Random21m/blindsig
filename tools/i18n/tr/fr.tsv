@@ -622,3 +622,7 @@
 621	Ce serveur ne vend pas de noms d’utilisateur pour le moment.
 622	Prix : {0}, payé en ecash de {1}.
 623	le verrouillage nécessite votre clé nostr dans ce portefeuille (seed ou nsec), pas une extension ni un signataire distant
+624	Vérification auprès de npub.cash…
+625	✓ npub.cash confirme : les paiements sont verrouillés sur votre clé.
+626	Non verrouillé : npub.cash ou toute personne ayant les détails du paiement pourrait le récupérer.
+627	Impossible de joindre npub.cash pour vérifier le verrouillage.

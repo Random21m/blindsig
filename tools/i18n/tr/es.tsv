@@ -622,3 +622,7 @@
 621	Este servidor no vende nombres de usuario ahora mismo.
 622	Precio: {0}, pagado con ecash de {1}.
 623	el bloqueo necesita tu clave de nostr en esta billetera (semilla o nsec), no una extensión ni un firmante remoto
+624	Comprobando con npub.cash…
+625	✓ npub.cash lo confirma: los pagos están bloqueados a tu clave.
+626	Sin bloquear: npub.cash o cualquiera con los detalles del pago podría reclamar un pago.
+627	No se pudo contactar con npub.cash para comprobar el bloqueo.

@@ -622,3 +622,7 @@
 621	Bu sunucu şu anda kullanıcı adı satmıyor.
 622	Fiyat: {0}, {1} ecash’i ile ödenir.
 623	kilitleme, nostr anahtarının cüzdanda olmasını gerektirir (seed veya nsec), eklenti veya uzak imzalayıcı olmaz
+624	npub.cash ile kontrol ediliyor…
+625	✓ npub.cash onaylıyor: ödemeler anahtarına kilitli.
+626	Kilitli değil: npub.cash veya ödeme ayrıntılarına sahip biri ödemeyi alabilir.
+627	Kilit ayarını kontrol etmek için npub.cash’e ulaşılamadı.

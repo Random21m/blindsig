@@ -256,6 +256,12 @@ export async function npcRefresh() {
 // quote locking: npub.cash creates every incoming payment's quote locked to your nostr key (NUT-20),
 // so only a wallet holding that key can claim it. blindsig can sign for it only when it holds the key
 // itself (seed or pasted nsec), not through a browser extension or remote signer.
+// read-only: what npub.cash currently has for the lock setting
+export async function npcLockState() {
+  const info = await npcFetch('/api/v2/user/info');
+  S.npc.lock = !!info?.data?.user?.lockQuote; save();
+  return S.npc.lock;
+}
 export const npcCanLock = () => (N.signer === 'seed' && !!seedSk()) || (N.signer === 'nsec' && !!N.nsec);
 export async function npcSetLock(on) {
   if (on && !npcCanLock()) throw new Error('locking needs your nostr key in this wallet (seed or nsec), not an extension or remote signer');

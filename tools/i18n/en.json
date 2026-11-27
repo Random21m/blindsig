@@ -622,5 +622,9 @@
 "Payment locking turned off",
 "This server doesn’t sell usernames right now.",
 "Price: {0}, paid with ecash from {1}.",
-"locking needs your nostr key in this wallet (seed or nsec), not an extension or remote signer"
+"locking needs your nostr key in this wallet (seed or nsec), not an extension or remote signer",
+"Checking with npub.cash…",
+"✓ npub.cash confirms: payments are locked to your key.",
+"Not locked: npub.cash or anyone with the payment details could claim a payment.",
+"Couldn’t reach npub.cash to check the lock setting."
 ]

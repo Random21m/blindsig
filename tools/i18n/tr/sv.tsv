@@ -622,3 +622,7 @@
 621	Den här servern säljer inga användarnamn just nu.
 622	Pris: {0}, betalas med ecash från {1}.
 623	låsning kräver din nostr-nyckel i plånboken (seed eller nsec), inte ett tillägg eller en fjärrsignerare
+624	Kontrollerar med npub.cash…
+625	✓ npub.cash bekräftar: betalningar är låsta till din nyckel.
+626	Inte låst: npub.cash eller någon med betalningsuppgifterna skulle kunna ta emot en betalning.
+627	Kunde inte nå npub.cash för att kontrollera låsningen.

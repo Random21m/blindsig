@@ -622,3 +622,7 @@
 621	Dieser Server verkauft gerade keine Benutzernamen.
 622	Preis: {0}, bezahlt mit Ecash von {1}.
 623	Das Binden braucht deinen Nostr-Schlüssel in diesem Wallet (Seed oder nsec), keine Erweiterung und keinen Remote-Signer
+624	Wird bei npub.cash geprüft…
+625	✓ npub.cash bestätigt: Zahlungen sind an deinen Schlüssel gebunden.
+626	Nicht gebunden: npub.cash oder jeder mit den Zahlungsdetails könnte eine Zahlung einlösen.
+627	npub.cash war nicht erreichbar, um die Einstellung zu prüfen.
