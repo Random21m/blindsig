@@ -7,7 +7,7 @@ mkdirSync('docs/icons', { recursive: true });
 cpSync('public', 'docs', { recursive: true });
 
 await build({
-  entryPoints: ['src/app.js'],
+  entryPoints: ['src/main.js'],
   bundle: true,
   minify: true,
   format: 'esm',

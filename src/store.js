@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber
@@ -55,9 +55,53 @@ function load() {
 }
 
 export const S = load();
-export function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch { return false; }
+function normalize(s) {
+  s = Object.assign(blank(), s);
+  s.settings = { ...DEFAULT_SETTINGS, ...(s.settings || {}) };
+  return s;
 }
+
+/* ---------- persistence: IndexedDB (no 5 MB limit), localStorage fallback ---------- */
+let db = null;
+function openDb() {
+  return new Promise((res) => {
+    try {
+      const r = indexedDB.open('blindsig', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => res(null);
+    } catch { res(null); }
+  });
+}
+const idbGet = (k) => new Promise((res) => { try { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => res(undefined); } catch { res(undefined); } });
+// load the newest saved state before the rest of the app starts
+export async function initStore() {
+  db = await openDb();
+  if (!db) return;
+  const raw = await idbGet('state');
+  if (raw) {
+    try { const st = normalize(JSON.parse(raw)); for (const k of Object.keys(S)) delete S[k]; Object.assign(S, st); } catch {}
+  } else if (localStorage.getItem(KEY)) save(); // migrate localStorage -> IndexedDB
+}
+let migrated = false;
+export function save() {
+  const json = JSON.stringify(S);
+  if (db) {
+    try {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(json, 'state');
+      tx.oncomplete = () => { if (!migrated) { migrated = true; try { localStorage.removeItem(KEY); } catch {} } };
+      tx.onerror = () => { try { localStorage.setItem(KEY, json); } catch {} };
+      return true;
+    } catch {}
+  }
+  try { localStorage.setItem(KEY, json); return true; } catch { return false; }
+}
+export async function wipeStore() {
+  try { localStorage.removeItem(KEY); } catch {}
+  if (db) await new Promise((res) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').delete('state'); tx.oncomplete = res; tx.onerror = res; });
+}
+export const storageKind = () => (db ? 'IndexedDB' : 'localStorage');
 export const set = () => S.settings;
 
 /* ---------- proofs ---------- */

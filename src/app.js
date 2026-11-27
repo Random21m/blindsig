@@ -8,7 +8,7 @@ import jsQR from 'jsqr';
 import { UR, UREncoder, URDecoder } from '@gandlaf21/bc-ur';
 import {
   S, save, VERSION, DEFAULT_SETTINGS, getProofs, bal, total, sum, mintOf, mintLabel, host, esc, fmt, fmtParts, unitLabel,
-  toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY,
+  toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind,
 } from './store.js';
 import * as C from './core.js';
 import * as N from './nostr.js';
@@ -122,6 +122,7 @@ function scramble(el, txt) {
 }
 const KIND = {
   'ln-in': ['Received', 'Lightning'], 'ln-out': ['Sent', 'Lightning'], 'ecash-in': ['Received', 'Ecash'], 'ecash-out': ['Sent', 'Ecash'],
+  'chain-in': ['Received', 'On-chain'], 'chain-out': ['Sent', 'On-chain'],
 };
 const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed' };
 let logFilter = 'all';
@@ -148,7 +149,7 @@ function render() {
   $('#motd').hidden = !(motd && motd !== m.motdSeen);
   if (motd) $('#motdText').textContent = motd;
   // log
-  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') : h.kind.startsWith('ecash'))).slice(0, 100);
+  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash'))).slice(0, 100);
   $$('#logTabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.f === logFilter));
   $('#hist').innerHTML = list.map((h) => {
     const out = h.kind.endsWith('out');
@@ -162,6 +163,7 @@ function render() {
       <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${out ? '−' : '+'}${esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
   }).join('');
   $('#empty').hidden = list.length > 0;
+  $('#chkAll').hidden = !(logFilter === 'pending' && list.length);
   $('#empty').textContent = S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
 }
 
@@ -285,6 +287,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
   if (needMint()) return;
   const k = C.currentP2pk();
   const tabs = [['ecash', 'Ecash'], ['ln', 'Lightning'], ['req', 'Request']];
+  const chain = C.supports(S.active, 'mint', 'onchain'), b12 = C.supports(S.active, 'mint', 'bolt12');
+  if (chain) tabs.splice(2, 0, ['btc', 'Bitcoin']);
   if (st.p2pkQuick && k) tabs.push(['lock', 'Lock key']);
   sheet('Receive', `${seg(tabs, tab)}
     <div class="pane" data-p="ecash" ${tab !== 'ecash' ? 'hidden' : ''}>
@@ -292,14 +296,23 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button>${st.nfcQuick && 'NDEFReader' in window ? '<button class="btn" id="nfc">NFC</button>' : ''}</div>
       <div id="prev"></div>
       <button class="btn primary wide" id="rcv" disabled>Receive</button>
-      <button class="btn wide" id="swp" hidden>Swap to active mint</button>
+      <div id="swpbox" hidden><label class="lbl" for="swto">Swap to mint</label><select id="swto" class="field"></select>
+      <p class="dim small">This swap will incur Lightning network fees.</p><button class="btn wide" id="swp">Swap</button></div>
+      <button class="btn wide" id="later" hidden>Receive later</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
       ${S.npc.enabled && S.npc.showOnReceive && S.npc.address ? `<div class="addrcard"><small class="dim">Your Lightning address</small><b>${esc(S.npc.address)}</b><div class="btnrow"><button class="btn" id="cpa">Copy</button><button class="btn" id="qra">QR code</button></div><div id="aq"></div></div><p class="dim small center">Or create a one-time invoice:</p>` : ''}
       ${amountField('amt', `Into ${esc(mintLabel(mintOf(S.active)))}`)}
       <input id="desc" class="field" placeholder="Description (optional)" maxlength="80">
+      ${b12 ? '<label class="chk"><input type="checkbox" id="b12"> <span>Reusable offer (BOLT12)</span></label>' : ''}
       <button class="btn primary wide" id="inv">Create invoice</button>
     </div>
+    ${chain ? `<div class="pane" data-p="btc" ${tab !== 'btc' ? 'hidden' : ''}>
+      <p class="dim">Deposit bitcoin on-chain. The mint credits ecash after the transaction confirms.</p>
+      ${amountField('camt', 'Optional amount for the QR code')}
+      ${limitNote(chain)}
+      <button class="btn primary wide" id="addr">Get deposit address</button>
+    </div>` : ''}
     <div class="pane" data-p="req" ${tab !== 'req' ? 'hidden' : ''}>
       <p class="dim">A payment request (NUT-18) lets someone pay you ecash over nostr, even when you’re not online at the same time.</p>
       <button class="btn primary wide" id="nreq">Create payment request</button>
@@ -313,7 +326,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     const ta = $('#tok', b), rcv = $('#rcv', b), swp = $('#swp', b);
     let parsed = null, seq = 0;
     ta.oninput = async () => {
-      parsed = null; rcv.disabled = true; swp.hidden = true; $('#prev', b).innerHTML = '';
+      parsed = null; rcv.disabled = true; $('#swpbox', b).hidden = true; $('#later', b).hidden = true; $('#prev', b).innerHTML = '';
       if (!ta.value.trim()) return;
       try { parsed = C.parseToken(ta.value); } catch { $('#prev', b).innerHTML = '<p class="warn">That isn’t a valid cashu token.</p>'; return; }
       const known = mintOf(parsed.mint), me = ++seq;
@@ -325,24 +338,36 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       draw();
       rcv.textContent = known ? 'Receive' : 'Trust mint and receive';
       rcv.disabled = false;
-      if (st.receiveSwaps && parsed.mint !== S.active && parsed.unit === S.unit) { swp.hidden = false; swp.textContent = `Swap to ${mintLabel(mintOf(S.active))}`; }
+      $('#later', b).hidden = false;
+      const targets = S.mints.filter((m) => m.url !== parsed.mint && (m.units || ['sat']).includes(parsed.unit));
+      if (st.receiveSwaps && targets.length) { $('#swpbox', b).hidden = false; $('#swto', b).innerHTML = targets.map((m) => `<option value="${esc(m.url)}" ${m.url === S.active ? 'selected' : ''}>${esc(mintLabel(m))}</option>`).join(''); }
       C.tokenLockInfo(parsed).then((lock) => { if (me === seq) { parsed.lockKeys = lock.keys; draw(lock); } }).catch(() => {});
     };
     $('#pst', b).onclick = () => pasteInto(ta);
     $('#scn', b).onclick = () => startScan((t) => { ta.value = t; ta.oninput(); });
     const nfc = $('#nfc', b); if (nfc) nfc.onclick = () => nfcRead((t) => { ta.value = t; ta.oninput(); });
     rcv.onclick = withBusy(rcv, async () => done(await C.receiveEcash(parsed), 'Received'));
-    swp.onclick = withBusy(swp, async () => done(await C.swapIncoming(parsed), 'Swapped in'));
+    swp.onclick = withBusy(swp, async () => done(await C.swapIncoming(parsed, $('#swto', b).value), 'Swapped in'));
+    $('#later', b).onclick = () => {
+      if (S.history.some((h) => h.kind === 'ecash-in' && h.token === parsed.str)) return toast('Ecash already in history', 'warn');
+      C.H({ kind: 'ecash-in', amount: parsed.amount, unit: parsed.unit, mint: parsed.mint, status: 'pending', token: parsed.str, memo: parsed.memo || 'receive later' });
+      toast('Ecash added to history'); closeSheet();
+    };
     const autoPaste = async () => {
       if (!st.autoPaste || ta.value) return;
-      try { const t = (await navigator.clipboard.readText()).trim(); if (/^(cashu:)?cashu[AB]/i.test(t)) { ta.value = t; ta.oninput(); } } catch {}
+      try { const t = (await navigator.clipboard.readText()).trim(); if (/^(cashu:)?cashu[AB]/i.test(t) || C.hasEmojiToken(t)) { ta.value = t; ta.oninput(); } } catch {}
     };
     if (prefill) { ta.value = prefill; ta.oninput(); } else if (tab === 'ecash') autoPaste();
     const ib = $('#inv', b);
     ib.onclick = withBusy(ib, async () => {
-      const a = readAmt(b); if (!a) return toast('Enter an amount.', 'warn');
-      invoiceView(await C.createInvoice(a, S.active, S.unit, $('#desc', b).value.trim() || undefined));
+      const a = readAmt(b);
+      const desc = $('#desc', b).value.trim() || undefined;
+      if ($('#b12', b)?.checked) return liveView(await C.createOffer(a || 0, S.active, S.unit, desc));
+      if (!a) return toast('Enter an amount.', 'warn');
+      invoiceView(await C.createInvoice(a, S.active, S.unit, desc));
     });
+    const ad = $('#addr', b);
+    if (ad) ad.onclick = withBusy(ad, async () => liveView(await C.createDepositAddress(S.active, S.unit, readAmt(b, 'camt'))));
     const cpa = $('#cpa', b); if (cpa) { cpa.onclick = () => copy(S.npc.address, 'Address copied'); $('#qra', b).onclick = () => qrSvg('lightning:' + S.npc.address).then((s) => { $('#aq', b).innerHTML = `<div class="qr">${s}</div>`; }); N.npcSync().then((n) => n && render()).catch(() => {}); }
     $('#nreq', b).onclick = () => NU.newRequest(() => receiveSheet('req'));
     const lreq = $('#lreq', b); if (lreq) lreq.onclick = () => NU.showRequest(S.pr.requests[0], () => receiveSheet('req'));
@@ -372,6 +397,37 @@ function invoiceView(h) {
   });
 }
 
+function limitNote(m) {
+  if (!m || (m.min == null && m.max == null)) return '';
+  const f = (v) => fmt(v);
+  const t = m.min != null && m.max != null ? `Deposits outside ${f(m.min)}–${f(m.max)} won’t be credited.` : m.min != null ? `Deposits below ${f(m.min)} won’t be credited.` : `Deposits above ${f(m.max)} won’t be credited.`;
+  return `<p class="warn small">${esc(t)}</p>`;
+}
+// reusable receive targets: BOLT12 offers and on-chain deposit addresses
+function liveView(h) {
+  const chain = h.method === 'onchain';
+  const qrText = chain ? `bitcoin:${h.request}${h.requested ? `?amount=${(h.requested / 1e8).toFixed(8)}` : ''}` : h.request.toUpperCase();
+  sheet(chain ? 'Deposit address' : 'Lightning offer', `<div class="qr" id="lq"></div>
+    ${h.amount && !chain ? `<p class="big">${bigAmt(h.amount, h.unit)}</p>` : h.requested ? `<p class="big">${bigAmt(h.requested, h.unit)}</p>` : ''}
+    <pre class="armor sm">${esc(h.request)}</pre>
+    <p class="wait" id="ws">${chain ? 'Waiting for a deposit' : 'Waiting for payment'}<span class="cur">_</span></p>
+    ${kv([['Received so far', `<b id="rsf">${esc(fmt(h.received || 0, h.unit))}</b>`], ['Reusable', chain ? 'Yes, send more anytime' : 'Yes, pay as often as you like']])}
+    ${chain ? limitNote(C.supports(h.mint, 'mint', 'onchain', h.unit)) : ''}
+    <button class="btn wide" id="cp">${chain ? 'Copy address' : 'Copy offer'}</button>
+    <button class="btn wide" id="ck">Check now</button>
+    <p class="dim small center">${chain ? 'On-chain deposits need confirmations before the mint credits them.' : 'Safe to close. The offer keeps working.'}</p>`, (b) => {
+    qrSvg(qrText).then((x) => { const q = $('#lq', b); if (q) q.innerHTML = x; });
+    $('#cp', b).onclick = () => copy(h.request, chain ? 'Address copied' : 'Offer copied');
+    let timer, dead = false, seen = h.received || 0;
+    const update = () => { const r = $('#rsf', b); if (r) r.textContent = fmt(h.received || 0, h.unit); if ((h.received || 0) > seen) { toast(`Received ${fmt(h.received - seen, h.unit)}`); seen = h.received; render(); } };
+    const ck = $('#ck', b);
+    ck.onclick = withBusy(ck, async () => { await C.checkInvoice(h); update(); if ((h.received || 0) === seen) toast('Nothing new yet.', 'warn'); });
+    const tick = async () => { if (dead || !h.live) return; try { await C.checkInvoice(h); update(); } catch {} timer = setTimeout(tick, chain ? 15000 : 4000); };
+    if (st.checkIncoming) timer = setTimeout(tick, 3000);
+    onClose = () => { dead = true; clearTimeout(timer); };
+  });
+}
+
 /* ================= send ================= */
 function sendSheet(tab = 'ecash', prefill = '') {
   if (needMint()) return;
@@ -380,13 +436,14 @@ function sendSheet(tab = 'ecash', prefill = '') {
     <div class="pane" data-p="ecash" ${tab !== 'ecash' ? 'hidden' : ''}>
       ${amountField('amt', `Available: ${esc(fmt(have))}`)}
       <input id="memo" class="field" placeholder="Memo (optional)" maxlength="80" autocomplete="off">
+      <label class="chk"><input type="checkbox" id="off"> <span>Send offline (exact amount only, no mint contact)</span></label>
       <details class="more"><summary>Lock to a public key (P2PK)</summary>
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
         <p class="hint">Only the holder of the matching private key can redeem it.</p></details>
       <button class="btn primary wide" id="mk">Create token</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
-      <textarea id="ln" rows="3" placeholder="Invoice, Lightning address, LNURL or payment request" spellcheck="false" autocapitalize="off"></textarea>
+      <textarea id="ln" rows="3" placeholder="Invoice, address, LNURL, offer, request or bitcoin address" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button></div>
       <div id="lnx"></div>
       <button class="btn primary wide" id="pay" disabled>Continue</button>
@@ -397,15 +454,23 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const a = readAmt(b); if (!a) return toast('Enter an amount.', 'warn');
       const lockRaw = $('#lock', b).value.trim();
       const lockTo = lockRaw ? C.parsePubkey(lockRaw) : undefined;
-      const h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo }); render(); tokenView(h);
+      const offline = $('#off', b).checked;
+      let h;
+      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, offline }); }
+      catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
+      render(); tokenView(h); C.watchSent(render);
     });
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
-    let stage = null, quote = null, meta = null, label = '', invoice = '', req = null;
+    let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
     const setPay = (t, dis = false) => later(() => { pay.textContent = t; pay.disabled = dis; });
     ln.oninput = () => {
       const v = ln.value.trim().replace(/^lightning:/i, '');
       stage = quote = meta = null; x.innerHTML = '';
-      if (N.isRequest(v)) { stage = 'creq'; label = 'payment request'; }
+      chainInfo = C.parseBitcoin(v);
+      if (chainInfo && (chainInfo.lightning || chainInfo.lno)) { ln.value = chainInfo.lightning || chainInfo.lno; return ln.oninput(); }
+      if (chainInfo) { stage = 'chain'; label = chainInfo.address; }
+      else if (C.isOffer(v)) { stage = 'offer'; label = 'BOLT12 offer'; }
+      else if (N.isRequest(v)) { stage = 'creq'; label = 'payment request'; }
       else if (C.isInvoice(v)) { stage = 'invoice'; label = ''; }
       else if (C.isAddress(v) || C.isLnurl(v)) { stage = 'lnurl'; label = C.isAddress(v) ? v.toLowerCase() : 'LNURL'; }
       pay.textContent = 'Continue'; pay.disabled = !stage;
@@ -416,12 +481,32 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const others = S.mints.filter((m) => m.url !== S.active && (m.units || []).includes(S.unit) && bal(m.url) > 0);
       x.innerHTML = kv([label && ['To', esc(label)], ['Amount', esc(fmt(a))], ['Lightning fee', `up to ${esc(fmt(f))}`], ['Total', `<b>${esc(fmt(a + f))}</b>`], ['Balance', esc(fmt(haveNow))]])
         + (short ? '<p class="warn">Not enough at this mint.</p>' : '<p class="dim small">Unused fee reserve comes back as change.</p>')
-        + (st.multinut && others.length && mintOf(S.active)?.info?.nut15 ? '<button class="btn wide" id="mn">Pay from several mints (Multinut)</button>' : '');
+        + (method === 'bolt11' && st.multinut && others.length && mintOf(S.active)?.info?.nut15 ? '<button class="btn wide" id="mn">Pay from several mints (Multinut)</button>' : '');
       stage = 'pay'; setPay(`Pay ${fmt(a)}`, short);
       const mn = $('#mn', b); if (mn) mn.onclick = () => multinutSheet(invoice, a);
     };
     pay.onclick = withBusy(pay, async () => {
       const v = ln.value.trim().replace(/^lightning:/i, '');
+      if (stage === 'offer' || stage === 'chain') {
+        const kind = stage === 'offer' ? 'bolt12' : 'onchain';
+        if (!C.supports(S.active, 'melt', kind)) return toast(kind === 'bolt12' ? 'This mint can’t pay BOLT12 offers.' : 'This mint can’t send on-chain.', 'err');
+        x.innerHTML = amountField('oamt', kind === 'bolt12' ? 'Leave empty if the offer has an amount' : `Available: ${esc(fmt(bal(S.active)))}`) + (kind === 'onchain' ? limitNote(C.supports(S.active, 'melt', 'onchain')) : '');
+        bindKeypads(x);
+        if (chainInfo?.sats) $('#oamt', b).value = String(chainInfo.sats);
+        stage = stage === 'offer' ? 'offeramt' : 'chainamt'; setPay('Get quote'); return;
+      }
+      if (stage === 'offeramt') { method = 'bolt12'; quote = await C.quoteOffer(v, readAmt(b, 'oamt')); return showQuote(); }
+      if (stage === 'chainamt') {
+        const a = readAmt(b, 'oamt'); if (!a) return toast('Enter an amount.', 'warn');
+        method = 'onchain'; quote = await C.quoteOnchain(chainInfo.address, a);
+        const opts = quote.fee_options || [];
+        feeIndex = opts[0]?.fee_index;
+        x.innerHTML = kv([['To', `<code>${esc(chainInfo.address)}</code>`], ['Amount', esc(fmt(quote.amount.toNumber()))]])
+          + '<h3>Network fee</h3>' + opts.map((o, i) => `<label class="radio"><input type="radio" name="fee" value="${o.fee_index}" ${i === 0 ? 'checked' : ''}><span class="mt"><b>${esc(fmt(o.fee_reserve.toNumber()))}</b><small>${`~${o.estimated_blocks} blocks`}</small></span></label>`).join('')
+          + `<p class="dim small">Balance: ${esc(fmt(bal(S.active)))}</p>`;
+        $$('input[name=fee]', x).forEach((r) => (r.onchange = () => { feeIndex = +r.value; }));
+        stage = 'pay'; setPay(`Pay ${fmt(quote.amount.toNumber())}`); return;
+      }
       if (stage === 'creq') {
         req = N.decodeRequest(v);
         const okMint = !req.mints.length || req.mints.includes(S.active);
@@ -438,7 +523,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const a = req.amount || readAmt(b, 'ramt'); if (!a) return toast('Enter an amount.', 'warn');
         const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
       }
-      if (stage === 'invoice') { invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
+      if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
       if (stage === 'lnurl') {
         meta = await C.lnurlMeta(v);
         let desc = ''; try { desc = (JSON.parse(meta.metadata).find((e) => e[0] === 'text/plain') || [])[1] || ''; } catch {}
@@ -453,13 +538,13 @@ function sendSheet(tab = 'ecash', prefill = '') {
         quote = await C.quoteInvoice(invoice); return showQuote();
       }
       if (stage === 'pay') {
-        const h = await C.payInvoice(quote, label || undefined);
-        if (h.status === 'done') done(h, 'Paid'); else { toast('Payment in flight. It will settle.', 'warn'); closeSheet(); }
+        const h = await C.payInvoice(quote, label || undefined, S.active, S.unit, method, feeIndex);
+        if (h.status === 'done') done(h, 'Paid'); else { toast(method === 'onchain' ? 'Transaction submitted. It confirms on-chain.' : 'Payment in flight. It will settle.', 'warn'); render(); closeSheet(); }
       }
     });
     $('#pst', b).onclick = () => pasteInto(ln);
-    $('#scn', b).onclick = () => startScan((t) => { ln.value = t; ln.oninput(); });
-    if (prefill) { ln.value = prefill; ln.oninput(); }
+    $('#scn', b).onclick = () => startScan((t) => { ln.value = t; ln.oninput(); later(() => pay.click()); });
+    if (prefill) { ln.value = prefill; ln.oninput(); later(() => pay.click()); }
   });
 }
 function multinutSheet(invoice, amount) {
@@ -496,7 +581,7 @@ function tokenView(h, fromLog) {
     ${h.fee ? `<p class="dim small center">Includes ${esc(fmt(h.fee, h.unit))} mint fee</p>` : ''}
     ${h.lockTo ? `<p class="dim small center">Locked to ${esc(h.lockTo.slice(0, 12))}…</p>` : ''}
     ${armor(h.token)}
-    <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
+    <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji">🥜</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
     ${'NDEFReader' in window ? '<button class="btn wide" id="nfw">Write to NFC card</button>' : ''}
     ${fromLog ? '<div class="btnrow"><button class="btn" id="chk">Check status</button><button class="btn" id="rc">Reclaim</button></div>' : ''}
     <p class="dim small center">Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.</p>`, (b) => {
@@ -504,6 +589,7 @@ function tokenView(h, fromLog) {
     onClose = () => stop();
     $('#cp', b).onclick = () => copy(h.token, 'Token copied');
     $('#cl', b).onclick = () => copy(link, 'Link copied');
+    $('#ce', b).onclick = () => copy(C.encodeEmoji(h.token), 'Emoji copied. Paste it anywhere.');
     const sh = $('#sh', b); if (sh) sh.onclick = () => navigator.share({ text: h.token }).catch(() => {});
     const nw = $('#nfw', b); if (nw) nw.onclick = withBusy(nw, () => nfcWrite(h.token));
     if (fromLog) {
@@ -525,16 +611,19 @@ function done(h, verb) {
 
 /* ================= history detail ================= */
 function detail(h) {
+  if (h.live) return liveView(h);
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
   if (h.kind === 'ecash-out' && h.status === 'pending') return tokenView(h, true);
   if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) return receiveSheet('ecash', h.token);
   const [verb, via] = KIND[h.kind];
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
-    ${kv([['Status', stx], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && ['Memo', esc(h.memo)], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`]])}
+    ${kv([['Status', stx], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && ['Memo', esc(h.memo)], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
     ${h.request ? `<details class="more"><summary>Invoice</summary><pre class="armor sm">${esc(h.request)}</pre><button class="btn wide" id="cpi">Copy invoice</button></details>` : ''}
-    ${h.kind === 'ln-out' && h.status === 'pending' ? '<button class="btn wide" id="st">Check payment</button>' : ''}
-    ${h.kind === 'ln-in' && h.status === 'expired' ? '<button class="btn wide" id="re">Check again</button>' : ''}`, (b) => {
+    ${(h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' ? '<button class="btn wide" id="st">Check payment</button>' : ''}
+    ${h.kind === 'ln-in' && h.status === 'expired' ? '<button class="btn wide" id="re">Check again</button>' : ''}
+    ${h.status !== 'pending' ? '<button class="btn wide danger" id="del">Delete from history</button>' : ''}`, (b) => {
+    const del = $('#del', b); if (del) del.onclick = () => { S.history = S.history.filter((x) => x !== h); save(); render(); closeSheet(); };
     const cpi = $('#cpi', b); if (cpi) cpi.onclick = () => copy(h.request, 'Invoice copied');
     const s2 = $('#st', b); if (s2) s2.onclick = withBusy(s2, async () => { await C.settleMelt(h); render(); detail(h); });
     const re = $('#re', b); if (re) re.onclick = withBusy(re, async () => { h.status = 'pending'; const s = await C.checkInvoice(h); if (s === 'pending') { h.status = 'expired'; save(); toast('Still unpaid.', 'warn'); } render(); detail(h); });
@@ -604,8 +693,17 @@ function mintDetails(url, back) {
       const el = $('#aud', b); if (!el) return;
       if (!a) { el.innerHTML = `This mint isn’t audited yet. <a href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">${esc(host(st.auditorUrl))}</a>`; return; }
       const ok = a.swaps.filter((s) => s.state === 'OK').length;
-      el.innerHTML = kv([['State', esc(a.state)], ['Mints / melts', `${a.n_mints} / ${a.n_melts}`], ['Errors', String(a.n_errors)], ['Recent swaps', a.swaps.length ? `${ok}/${a.swaps.length} ok` : '–'], ['Updated', esc(new Date(a.updated_at).toLocaleString())]])
-        + `<a class="dim small" href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">Full report at ${esc(host(st.auditorUrl))}</a>`;
+      const bars = a.swaps.slice(0, 40).reverse().map((s) => `<i class="${s.state === 'OK' ? 'ok' : 'bad'}" title="${esc(s.state)}"></i>`).join('');
+      el.innerHTML = (a.swaps.length ? `<div class="audbars" aria-label="Recent swaps">${bars}</div><p class="dim small">Recent test swaps, oldest to newest. Tall bars succeeded.</p>` : '') + kv([['State', esc(a.state)], ['Mints / melts', `${a.n_mints} / ${a.n_melts}`], ['Errors', String(a.n_errors)], ['Recent swaps', a.swaps.length ? `${ok}/${a.swaps.length} ok` : '–'], ['Updated', esc(new Date(a.updated_at).toLocaleString())]])
+        + `<a class="dim small" href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">Full report at ${esc(host(st.auditorUrl))}</a>`
+        + `<p class="dim small">The auditor holds ${esc(fmt(a.balance || 0, 'sat'))} at this mint for testing.</p><button class="btn wide" id="don">Support the auditor</button>`;
+      const don = $('#don', b);
+      if (don) don.onclick = withBusy(don, async () => {
+        const r = await (await fetch(`${st.auditorApi.replace(/\/+$/, '')}/pr?url=${encodeURIComponent(url)}`)).json();
+        const pr = String(r.pr || '').replace(/"/g, '');
+        if (!pr) throw new Error('The auditor has no payment request right now.');
+        C.selectMint(url); render(); sendSheet('ln', pr);
+      });
     }).catch((e) => { const el = $('#aud', b); if (el) el.textContent = 'Auditor unavailable: ' + niceErr(e); });
   }, { back });
 }
@@ -752,6 +850,8 @@ const SECTIONS = {
       <button class="btn wide" id="rel">Release pending payments</button>
       <h3>New seed phrase</h3><p class="dim small">Generate a new seed and move your whole balance onto it. Your old seed will no longer restore this ecash.</p>
       <button class="btn wide" id="ns">Generate new seed phrase</button>
+      <h3>Debug console</h3><p class="dim small">Opens a JavaScript console for debugging. Never paste anything into it that you don’t understand. A thief might try to trick you into it.</p>
+      <button class="btn wide" id="dbg">Toggle debug console</button>
       <h3>Onboarding</h3><button class="btn wide" id="ob">Show onboarding again</button>
       <h3>Reset</h3><p class="dim small">Deletes everything on this device. Back up your seed first.</p>
       <button class="btn wide danger" id="wipe">Reset wallet data</button>`, (b) => {
@@ -761,6 +861,14 @@ const SECTIONS = {
       $('#rel', b).onclick = () => { const n = C.releasePending(); render(); toast(n ? `Pending payments released: ${n}` : 'Nothing pending'); };
       $('#ns', b).onclick = newSeedSheet;
       $('#ob', b).onclick = () => welcome(0, true);
+      $('#dbg', b).onclick = () => {
+        const el = document.querySelector('#eruda');
+        if (el) { try { window.eruda?.destroy(); } catch {} el.remove(); return; }
+        const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/eruda@3';
+        sc.onload = () => { try { window.eruda.init(); } catch {} };
+        sc.onerror = () => toast('Could not load the debug console.', 'err');
+        document.body.appendChild(sc);
+      };
       $('#wipe', b).onclick = wipeSheet;
     }, { back });
   },
@@ -773,7 +881,7 @@ const SECTIONS = {
   about() {
     sheet('About', `<p><b>blindsig ${VERSION}</b></p>
       <p class="dim">A Cashu ecash wallet built on cashu-ts. Ecash and your seed are stored only in this browser. Mints are custodians: use ones you trust and keep amounts small.</p>
-      ${kv([['Library', 'cashu-ts 4.14'], ['Proofs held', String(Object.values(S.proofs).reduce((t, a) => t + (a?.length || 0), 0))], ['Mints', String(S.mints.length)]])}
+      ${kv([['Library', 'cashu-ts 4.14'], ['Proofs held', String(Object.values(S.proofs).reduce((t, a) => t + (a?.length || 0), 0))], ['Mints', String(S.mints.length)], ['Storage', storageKind()]])}
       <a class="btn wide" href="https://cashu.space" target="_blank" rel="noopener">cashu.space</a>
       <a class="btn wide" href="https://github.com/Random21m/blindsig" target="_blank" rel="noopener">Source code</a>`, null, { back });
   },
@@ -824,7 +932,7 @@ function wipeSheet() {
     <p>Type “reset” to confirm.</p><input id="cf" class="field" autocomplete="off" autocapitalize="off">
     <button class="btn wide danger" id="go" disabled>Reset everything</button>`, (b) => {
     $('#cf', b).oninput = (e) => ($('#go', b).disabled = e.target.value.trim().toLowerCase() !== 'reset');
-    $('#go', b).onclick = () => { localStorage.removeItem(KEY); location.replace(location.pathname); };
+    $('#go', b).onclick = async () => { N.stopAll(); await wipeStore(); location.replace(location.pathname); };
   }, { back: SECTIONS.advanced });
 }
 
@@ -906,7 +1014,8 @@ function stopScan() {
 function route(txt) {
   const t = txt.trim().replace(/^lightning:/i, '');
   if (/^(cashu:)?cashu[AB]/i.test(t) || /^web\+cashu:/i.test(t)) return receiveSheet('ecash', t);
-  if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t) || N.isRequest(t)) return sendSheet('ln', t);
+  if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t) || N.isRequest(t) || C.isOffer(t) || C.parseBitcoin(t)) return sendSheet('ln', t);
+  if (C.hasEmojiToken(t)) return receiveSheet('ecash', t);
   if (/[#?]token=/.test(t)) { const m = t.match(/token=([^&]+)/); if (m) return receiveSheet('ecash', decodeURIComponent(m[1])); }
   if (/^https?:\/\//i.test(t)) { mintsSheet(); later(() => { const f = $('#mu'); if (f) f.value = t; }); return; }
   toast('Didn’t recognise that code.', 'warn');
@@ -948,22 +1057,48 @@ $('#scanClose').onclick = stopScan;
 $('#motdX').onclick = () => { const m = mintOf(S.active); if (m) { m.motdSeen = m.info.motd; save(); render(); } };
 $('#sheet .backdrop').onclick = () => closeSheet();
 $('#logTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { logFilter = b.dataset.f; render(); } };
+$('#chkAll').onclick = withBusy($('#chkAll'), async () => { await C.settleAll({ invoices: true, sent: true, all: true }); render(); toast('Checked all pending'); });
 $('#hist').onclick = (e) => { const r = e.target.closest('.row'); if (r) { const h = S.history.find((x) => x.id === r.dataset.id); if (h) detail(h); } };
 if (!navigator.standalone && !matchMedia('(display-mode: standalone)').matches && /iphone|ipad/i.test(navigator.userAgent)) $('#instBtn').hidden = false;
 
 I18N.startObserver();
 I18N.setLang(st.lang || I18N.detect()).then(render);
 render();
-schedule();
-if (!S.mnemonic) setTimeout(() => welcome(0), 300);
-else if (!S.mints.length) setTimeout(() => mintsSheet(true), 300);
-else {
-  if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render);
-  S.mints.forEach((m) => { if (!m.updated || Date.now() - m.updated > 6 * 3600e3) C.refreshMint(m.url).then(render).catch(() => {}); });
+
+/* only one tab may run the wallet at a time (two tabs could reuse the same secrets) */
+const tabId = Math.random().toString(36).slice(2);
+const chan = 'BroadcastChannel' in window ? new BroadcastChannel('blindsig') : null;
+let blocked = false;
+function blockTab() {
+  if (blocked) return;
+  blocked = true;
+  N.stopAll(); C.unwatchAll(); bg.forEach(clearInterval); bg = [];
+  $('#tabLock').hidden = false;
 }
-C.loadPrice().then(render);
-if (S.mnemonic) N.startAll();
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.mints.length && st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render); });
+if (chan) {
+  chan.onmessage = (e) => {
+    const d = e.data || {};
+    if (d.from === tabId) return;
+    if (d.type === 'hello' && !blocked) chan.postMessage({ type: 'running', from: tabId });
+    else if (d.type === 'running' || d.type === 'takeover') blockTab();
+  };
+  chan.postMessage({ type: 'hello', from: tabId });
+}
+$('#tlUse').onclick = () => { chan?.postMessage({ type: 'takeover', from: tabId }); location.reload(); };
+setTimeout(() => {
+  if (blocked) return;
+  schedule();
+  if (!S.mnemonic) welcome(0);
+  else if (!S.mints.length) mintsSheet(true);
+  else {
+    if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render);
+    S.mints.forEach((m) => { if (!m.updated || Date.now() - m.updated > 6 * 3600e3) C.refreshMint(m.url).then(render).catch(() => {}); });
+    C.watchSent(render);
+  }
+  C.loadPrice().then(render);
+  if (S.mnemonic) N.startAll();
+}, chan ? 350 : 0);
+document.addEventListener('visibilitychange', () => { if (!blocked && !document.hidden && S.mints.length && st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render); });
 
 const incoming = (location.hash.match(/token=([^&]+)/) || [])[1] || new URLSearchParams(location.search).get('token');
 if (incoming && S.mnemonic) { history.replaceState(null, '', location.pathname); setTimeout(() => route(decodeURIComponent(incoming)), 500); }

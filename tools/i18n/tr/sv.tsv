@@ -508,3 +508,72 @@
 508	✓ Beloppen stämmer
 509	✓ Låst till din nyckel
 510	✓ Giltig fras
+
+511	Redan öppen
+512	Använd här i stället
+513	blindsig är öppen i en annan flik eller ett annat fönster. För att hålla din ecash säker kan bara en köras åt gången.
+514	Bitcoin
+515	On-chain
+516	Kontrollera alla väntande
+517	Alla väntande kontrollerade
+518	Kopiera adress
+519	Kopiera erbjudande
+520	Erbjudande kopierat
+521	Kopiera som emoji
+522	Emoji kopierad. Klistra in den var som helst.
+523	Felsökningskonsol
+524	Visa/dölj felsökningskonsol
+525	Kunde inte ladda felsökningskonsolen.
+526	Öppnar en JavaScript-konsol för felsökning. Klistra aldrig in något där som du inte förstår. En tjuv kan försöka lura dig.
+527	Genomsök ODELLs tillitsnätverk
+528	Ta bort från historiken
+529	Insättningsadress
+530	Sätt in bitcoin on-chain. Minten krediterar ecash när transaktionen är bekräftad.
+531	Insättningar utanför {0}–{1} krediteras inte.
+532	Insättningar under {0} krediteras inte.
+533	Insättningar över {0} krediteras inte.
+534	Hämta insättningsadress
+535	Valfritt belopp för QR-koden
+536	Väntar på en insättning
+537	On-chain-insättningar behöver bekräftelser innan minten krediterar dem.
+538	Ja, skicka mer när som helst
+539	Ecash tillagd i historiken
+540	Ecash finns redan i historiken
+541	Ta emot senare
+542	Faktura, adress, LNURL, erbjudande, begäran eller bitcoinadress
+543	Lämna tomt om erbjudandet har ett belopp
+544	Lightning-erbjudande
+545	BOLT12-erbjudande
+546	Återanvändbart erbjudande (BOLT12)
+547	Återanvändbar
+548	Mottaget hittills
+549	Ja, betala så ofta du vill
+550	Du kan stänga. Erbjudandet fortsätter att fungera.
+551	Nätverksavgift
+552	~{0} block
+553	Saldo: {0}
+554	Transaktion
+555	Transaktionen skickad. Den bekräftas on-chain.
+556	Den här minten kan inte betala BOLT12-erbjudanden.
+557	Den här minten kan inte skicka on-chain.
+558	Ingen exakt matchning för offline-sändning. Stäng av offlineläget eller välj ett annat belopp.
+559	Skicka offline (bara exakt belopp, ingen kontakt med minten)
+560	Inget nytt än.
+561	Senaste testswappar, äldst till nyast. Höga staplar lyckades.
+562	Stöd granskaren
+563	Granskaren har ingen betalningsbegäran just nu.
+564	Granskaren har {0} hos den här minten för tester.
+565	{0}/{1} ok
+566	Växla
+567	Växla till minten
+568	Den här växlingen medför avgifter i Lightning-nätverket.
+569	Lagring
+570	Användarnamn
+571	Byt ut den långa npub mot ett kort namn, som satoshi@{0}. npub.cash kan ta betalt för detta.
+572	Använd bokstäver, siffror, punkter, bindestreck eller understreck.
+573	Betala och gör anspråk
+574	Betala från
+575	Pris
+576	Användarnamnet är ditt
+577	Användarnamn angivet
+578	Kontrollera

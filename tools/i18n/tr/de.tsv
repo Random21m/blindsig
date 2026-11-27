@@ -508,3 +508,72 @@
 508	✓ Beträge stimmen
 509	✓ Für deinen Schlüssel gesperrt
 510	✓ Gültige Phrase
+
+511	Bereits geöffnet
+512	Hier verwenden
+513	blindsig ist in einem anderen Tab oder Fenster geöffnet. Damit dein Ecash sicher bleibt, darf nur eins laufen.
+514	Bitcoin
+515	On-Chain
+516	Alle offenen prüfen
+517	Alle offenen geprüft
+518	Adresse kopieren
+519	Angebot kopieren
+520	Angebot kopiert
+521	Als Emoji kopieren
+522	Emoji kopiert. Füge es überall ein.
+523	Debug-Konsole
+524	Debug-Konsole umschalten
+525	Debug-Konsole konnte nicht geladen werden.
+526	Öffnet eine JavaScript-Konsole zum Debuggen. Füge dort nie etwas ein, das du nicht verstehst. Diebe versuchen, dich dazu zu bringen.
+527	ODELLs Web of Trust durchsuchen
+528	Aus dem Verlauf löschen
+529	Einzahlungsadresse
+530	Bitcoin on-chain einzahlen. Die Mint schreibt Ecash gut, sobald die Transaktion bestätigt ist.
+531	Einzahlungen außerhalb von {0}–{1} werden nicht gutgeschrieben.
+532	Einzahlungen unter {0} werden nicht gutgeschrieben.
+533	Einzahlungen über {0} werden nicht gutgeschrieben.
+534	Einzahlungsadresse anzeigen
+535	Optionaler Betrag für den QR-Code
+536	Warte auf eine Einzahlung
+537	On-Chain-Einzahlungen brauchen Bestätigungen, bevor die Mint sie gutschreibt.
+538	Ja, jederzeit mehr senden
+539	Ecash zum Verlauf hinzugefügt
+540	Ecash ist schon im Verlauf
+541	Später empfangen
+542	Rechnung, Adresse, LNURL, Angebot, Anfrage oder Bitcoin-Adresse
+543	Leer lassen, wenn das Angebot einen Betrag hat
+544	Lightning-Angebot
+545	BOLT12-Angebot
+546	Wiederverwendbares Angebot (BOLT12)
+547	Wiederverwendbar
+548	Bisher empfangen
+549	Ja, so oft du willst
+550	Kann geschlossen werden. Das Angebot bleibt gültig.
+551	Netzwerkgebühr
+552	~{0} Blöcke
+553	Guthaben: {0}
+554	Transaktion
+555	Transaktion gesendet. Sie wird on-chain bestätigt.
+556	Diese Mint kann keine BOLT12-Angebote bezahlen.
+557	Diese Mint kann nicht on-chain senden.
+558	Kein exakter Treffer für Offline-Senden. Schalte den Offline-Modus aus oder wähle einen anderen Betrag.
+559	Offline senden (nur exakter Betrag, ohne Kontakt zur Mint)
+560	Noch nichts Neues.
+561	Letzte Test-Swaps, von alt nach neu. Hohe Balken waren erfolgreich.
+562	Den Auditor unterstützen
+563	Der Auditor hat gerade keine Zahlungsanfrage.
+564	Der Auditor hält {0} bei dieser Mint zum Testen.
+565	{0}/{1} ok
+566	Tauschen
+567	Zur Mint tauschen
+568	Dieser Tausch verursacht Lightning-Netzwerkgebühren.
+569	Speicher
+570	Benutzername
+571	Ersetze den langen npub durch einen kurzen Namen wie satoshi@{0}. npub.cash kann dafür Geld verlangen.
+572	Nutze Buchstaben, Zahlen, Punkte, Bindestriche oder Unterstriche.
+573	Bezahlen und sichern
+574	Bezahlen von
+575	Preis
+576	Benutzername gesichert
+577	Benutzername festgelegt
+578	Prüfen

@@ -10,6 +10,12 @@ A cypherpunk Cashu ecash wallet. Installs as a PWA.
 - P2PK keys (generate or import nsec), lock tokens to a pubkey or npub
 - Privacy controls: invoice/sent-token checks, WebSockets (NUT-17), Coinbase price in 20 currencies
 - On-screen keypad, ₿ symbol, unclaimed-token tracking, spent-proof cleanup, keyset counters, export, new seed, reset
+- BOLT12 offers (NUT-25): reusable receive offers and paying offers
+- On-chain bitcoin: reusable deposit addresses and on-chain sends with fee choice (BIP21 aware)
+- Offline sending (exact-match proofs, no mint contact), ecash hidden in an emoji, receive-later, check all pending
+- Live updates for sent tokens over WebSockets (NUT-17) and for npub.cash payments
+- npub.cash usernames (paid with ecash), ODELL web of trust, auditor chart and donations
+- IndexedDB storage, single-tab lock (so two tabs never spend the same proofs), optional debug console
 - Built on @cashu/cashu-ts 4.14 (latest stable)
 
 - Nostr: identity from your seed (same key as cashu.me), nsec, NIP-07 extension or NIP-46 bunker; custom relays
@@ -24,7 +30,7 @@ A cypherpunk Cashu ecash wallet. Installs as a PWA.
 
 UI text is English in the source and swapped at runtime from `public/i18n/<code>.json`.
 Source strings live in `tools/i18n/en.json`; translations in `tools/i18n/tr/<code>.tsv`
-(`index<TAB>text`). Run `python3 tools/i18n/build.py` to regenerate the JSON files.
+(`index<TAB>text`). New strings are appended to the end of `en.json` so existing indices stay put. Run `python3 tools/i18n/build.py` to regenerate the JSON files.
 Translations were machine-assisted and have not been reviewed by native speakers; corrections are welcome.
 
 ## Deploy
@@ -40,10 +46,10 @@ Open the URL on your phone, then "Add to Home Screen".
 ## Develop
 
     npm install
-    npm run build      # bundles src/app.js + public/ into docs/
+    npm run build      # bundles src/main.js + public/ into docs/
 
 ## Security notes
 
-- The seed phrase and ecash live in this browser's localStorage, unencrypted.
+- The seed phrase and ecash live in this browser's IndexedDB, unencrypted.
   Anyone with access to the unlocked device can spend. Write the seed down offline.
 - Mints are custodians. Use small amounts and mints you trust.

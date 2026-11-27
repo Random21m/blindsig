@@ -21,7 +21,10 @@ export function nostrUI(x) {
         ${toggle('t_auto', 'Claim automatically', 'Turn incoming payments into ecash right away.', n.auto)}
         <label class="lbl" for="nm">Mint for incoming payments</label>
         <select id="nm" class="field">${S.mints.filter((m) => (m.units || []).includes('sat')).map((m) => `<option value="${esc(m.url)}" ${m.url === n.mint ? 'selected' : ''}>${esc(mintLabel(m))}</option>`).join('')}</select>
-        <button class="btn wide" id="ck">Check for payments</button>` : ''}
+        <button class="btn wide" id="ck">Check for payments</button>
+        <h3>Username</h3><p class="dim small">Replace the long npub with a short name, like satoshi@${esc(n.host)}. npub.cash may charge for this.</p>
+        <form class="addm" id="un"><input id="uname" class="field" placeholder="satoshi" autocapitalize="off" autocomplete="off" maxlength="40"><button class="btn">Check</button></form>
+        <div id="ux"></div>` : ''}
       <label class="lbl" for="hs">Server</label><input id="hs" class="field" value="${esc(n.host)}" autocapitalize="off">`, (b) => {
       $('#t_npc', b).onchange = withBusy($('#t_npc', b), async () => {
         n.enabled = $('#t_npc', b).checked; save();
@@ -36,6 +39,19 @@ export function nostrUI(x) {
       ['show', 'auto'].forEach((k) => { $('#t_' + k, b).onchange = (e) => { n[k === 'show' ? 'showOnReceive' : 'auto'] = e.target.checked; save(); }; });
       $('#nm', b).onchange = withBusy($('#nm', b), async () => { await N.npcSetMint($('#nm', b).value); toast('Mint updated'); });
       const ck = $('#ck', b); ck.onclick = withBusy(ck, async () => { const a = await N.npcSync(); render(); toast(a ? `New payments: ${a}` : 'No new payments'); });
+      const unb = $('#un button', b);
+      $('#un', b).onsubmit = (e) => { e.preventDefault(); claim(); };
+      const claim = withBusy(unb, async () => {
+        const name = $('#uname', b).value.trim().toLowerCase();
+        if (!/^[a-z0-9._-]{1,40}$/.test(name)) return toast('Use letters, numbers, dots, dashes or underscores.', 'warn');
+        const r = await N.npcUsernameQuote(name);
+        if (r.done) { toast('Username set'); return lnaddr(); }
+        const q = N.decodeRequest(r.creq);
+        const ux = $('#ux', b);
+        ux.innerHTML = kv([['Username', esc(name + '@' + n.host)], ['Price', `<b>${esc(fmt(q.amount, q.unit))}</b>`], ['Pay from', esc(host(S.active))]]) + '<button class="btn primary wide" id="buy">Pay and claim</button>';
+        const buy = $('#buy', ux);
+        buy.onclick = withBusy(buy, async () => { await N.npcBuyUsername(name, r.creq); render(); toast('Username claimed'); lnaddr(); });
+      });
     }, { back: x.settingsSheet });
   }
 
@@ -62,7 +78,8 @@ export function nostrUI(x) {
       <h3>Web of trust</h3>
       <p class="dim small"><span>Collects the people you follow and the people they follow, to highlight mint reviews from them.</span> ${nn.wot ? `<span>Currently ${nn.wot.pubkeys.length.toLocaleString()} keys.</span>` : ''}</p>
       <input id="wr" class="field" placeholder="Start from npub (leave empty for yours)" autocapitalize="off">
-      <button class="btn wide" id="wb">Build web of trust</button><p class="dim small" id="wp"></p>`, (b) => {
+      <button class="btn wide" id="wb">Build web of trust</button>
+      <button class="btn wide" id="wo">Crawl ODELL’s web of trust</button><p class="dim small" id="wp"></p>`, (b) => {
       const cnp = $('#cnp', b); if (cnp) cnp.onclick = () => copy(N.npubOf(pk), 'npub copied');
       const cns = $('#cns', b); if (cns) cns.onclick = () => copy(N.nsecOfSigner(), 'nsec copied. Keep it secret.');
       $$('input[name=sg]', b).forEach((r) => (r.onchange = () => {
@@ -84,7 +101,10 @@ export function nostrUI(x) {
       $('#t_bk', b).onchange = withBusy($('#t_bk', b), async () => { nn.backup = $('#t_bk', b).checked; save(); if (nn.backup) { await N.backupMints(); toast('Mint list backed up'); } nostr(); });
       const bkn = $('#bkn', b); if (bkn) bkn.onclick = withBusy(bkn, async () => { await N.backupMints(); toast('Mint list backed up'); nostr(); });
       const wb = $('#wb', b);
-      wb.onclick = withBusy(wb, async () => { const n = await N.buildWot($('#wr', b).value, (t) => { const p = $('#wp', b); if (p) p.textContent = t; }); toast(`Web of trust: ${n.toLocaleString()} keys`); });
+      const prog = (t) => { const p = $('#wp', b); if (p) p.textContent = t; };
+      wb.onclick = withBusy(wb, async () => { const n = await N.buildWot($('#wr', b).value, prog); toast(`Web of trust: ${n.toLocaleString()} keys`); });
+      const wo = $('#wo', b);
+      wo.onclick = withBusy(wo, async () => { const n = await N.buildWot(N.ODELL, prog); toast(`Web of trust: ${n.toLocaleString()} keys`); });
     }, { back: x.settingsSheet });
   }
 

@@ -508,3 +508,72 @@
 508	✓ Gli importi tornano
 509	✓ Bloccato per la tua chiave
 510	✓ Frase valida
+
+511	Già aperto
+512	Usalo qui
+513	blindsig è aperto in un’altra scheda o finestra. Per tenere al sicuro il tuo ecash, può funzionarne solo uno alla volta.
+514	Bitcoin
+515	On-chain
+516	Controlla tutti i pendenti
+517	Controllati tutti i pendenti
+518	Copia indirizzo
+519	Copia offerta
+520	Offerta copiata
+521	Copia come emoji
+522	Emoji copiata. Incollala dove vuoi.
+523	Console di debug
+524	Attiva/disattiva console di debug
+525	Impossibile caricare la console di debug.
+526	Apre una console JavaScript per il debug. Non incollarci mai nulla che non capisci. Un ladro potrebbe cercare di ingannarti.
+527	Esplora la rete di fiducia di ODELL
+528	Elimina dalla cronologia
+529	Indirizzo di deposito
+530	Deposita bitcoin on-chain. La mint accredita ecash dopo la conferma della transazione.
+531	I depositi fuori da {0}–{1} non verranno accreditati.
+532	I depositi sotto {0} non verranno accreditati.
+533	I depositi sopra {0} non verranno accreditati.
+534	Ottieni indirizzo di deposito
+535	Importo facoltativo per il codice QR
+536	In attesa di un deposito
+537	I depositi on-chain richiedono conferme prima che la mint li accrediti.
+538	Sì, invia ancora quando vuoi
+539	Ecash aggiunto alla cronologia
+540	Ecash già nella cronologia
+541	Ricevi più tardi
+542	Fattura, indirizzo, LNURL, offerta, richiesta o indirizzo bitcoin
+543	Lascia vuoto se l’offerta ha un importo
+544	Offerta Lightning
+545	Offerta BOLT12
+546	Offerta riutilizzabile (BOLT12)
+547	Riutilizzabile
+548	Ricevuto finora
+549	Sì, paga tutte le volte che vuoi
+550	Puoi chiudere. L’offerta continua a funzionare.
+551	Commissione di rete
+552	~{0} blocchi
+553	Saldo: {0}
+554	Transazione
+555	Transazione inviata. Verrà confermata on-chain.
+556	Questa mint non può pagare offerte BOLT12.
+557	Questa mint non può inviare on-chain.
+558	Nessuna corrispondenza esatta per l’invio offline. Disattiva la modalità offline o scegli un altro importo.
+559	Invia offline (solo importo esatto, senza contattare la mint)
+560	Ancora niente di nuovo.
+561	Swap di prova recenti, dal più vecchio al più recente. Le barre alte sono riuscite.
+562	Sostieni l’auditor
+563	L’auditor non ha una richiesta di pagamento al momento.
+564	L’auditor detiene {0} su questa mint per i test.
+565	{0}/{1} ok
+566	Scambia
+567	Scambia verso la mint
+568	Questo scambio comporta commissioni della rete Lightning.
+569	Archiviazione
+570	Nome utente
+571	Sostituisci il lungo npub con un nome breve, come satoshi@{0}. npub.cash potrebbe chiedere un pagamento.
+572	Usa lettere, numeri, punti, trattini o trattini bassi.
+573	Paga e rivendica
+574	Paga da
+575	Prezzo
+576	Nome utente rivendicato
+577	Nome utente impostato
+578	Verifica

@@ -508,3 +508,72 @@
 508	✓ Tutarlar tutuyor
 509	✓ Anahtarına kilitli
 510	✓ Geçerli ifade
+
+511	Zaten açık
+512	Burada kullan
+513	blindsig başka bir sekmede veya pencerede açık. Ecash’inin güvenliği için aynı anda yalnızca biri çalışabilir.
+514	Bitcoin
+515	Zincir üstü
+516	Bekleyenlerin hepsini kontrol et
+517	Bekleyenlerin hepsi kontrol edildi
+518	Adresi kopyala
+519	Teklifi kopyala
+520	Teklif kopyalandı
+521	Emoji olarak kopyala
+522	Emoji kopyalandı. İstediğin yere yapıştır.
+523	Hata ayıklama konsolu
+524	Hata ayıklama konsolunu aç/kapat
+525	Hata ayıklama konsolu yüklenemedi.
+526	Hata ayıklama için bir JavaScript konsolu açar. Anlamadığın hiçbir şeyi buraya yapıştırma. Bir hırsız seni kandırmaya çalışabilir.
+527	ODELL’in güven ağını tara
+528	Geçmişten sil
+529	Yatırma adresi
+530	Zincir üstü bitcoin yatır. Mint, işlem onaylandıktan sonra ecash yükler.
+531	{0}–{1} dışındaki yatırmalar yüklenmez.
+532	{0} altındaki yatırmalar yüklenmez.
+533	{0} üstündeki yatırmalar yüklenmez.
+534	Yatırma adresi al
+535	QR kod için isteğe bağlı tutar
+536	Yatırma bekleniyor
+537	Zincir üstü yatırmalar, mint yüklemeden önce onay gerektirir.
+538	Evet, istediğin zaman daha fazla gönder
+539	Ecash geçmişe eklendi
+540	Bu ecash zaten geçmişte
+541	Sonra al
+542	Fatura, adres, LNURL, teklif, istek veya bitcoin adresi
+543	Teklifte tutar varsa boş bırak
+544	Lightning teklifi
+545	BOLT12 teklifi
+546	Yeniden kullanılabilir teklif (BOLT12)
+547	Yeniden kullanılabilir
+548	Şu ana kadar alınan
+549	Evet, istediğin kadar öde
+550	Kapatabilirsin. Teklif çalışmaya devam eder.
+551	Ağ ücreti
+552	~{0} blok
+553	Bakiye: {0}
+554	İşlem
+555	İşlem gönderildi. Zincir üstünde onaylanacak.
+556	Bu mint BOLT12 tekliflerini ödeyemez.
+557	Bu mint zincir üstü gönderemez.
+558	Çevrimdışı gönderim için tam eşleşme yok. Çevrimdışı modu kapat veya başka bir tutar seç.
+559	Çevrimdışı gönder (yalnızca tam tutar, mint ile iletişim yok)
+560	Henüz yeni bir şey yok.
+561	Son test swapları, eskiden yeniye. Uzun çubuklar başarılı oldu.
+562	Denetçiyi destekle
+563	Denetçinin şu anda ödeme isteği yok.
+564	Denetçi test için bu mintte {0} tutuyor.
+565	{0}/{1} tamam
+566	Takas et
+567	Minte takas et
+568	Bu takas Lightning ağ ücretlerine yol açar.
+569	Depolama
+570	Kullanıcı adı
+571	Uzun npub yerine satoshi@{0} gibi kısa bir ad kullan. npub.cash bunun için ücret alabilir.
+572	Harf, rakam, nokta, tire veya alt çizgi kullan.
+573	Öde ve al
+574	Şuradan öde
+575	Fiyat
+576	Kullanıcı adı alındı
+577	Kullanıcı adı ayarlandı
+578	Kontrol et

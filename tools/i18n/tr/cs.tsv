@@ -508,3 +508,72 @@
 508	✓ Částky sedí
 509	✓ Uzamčeno k vašemu klíči
 510	✓ Platná fráze
+
+511	Už je otevřeno
+512	Použít zde
+513	blindsig je otevřený v jiné kartě nebo okně. Aby byl tvůj ecash v bezpečí, může běžet jen jeden.
+514	Bitcoin
+515	On-chain
+516	Zkontrolovat vše čekající
+517	Vše čekající zkontrolováno
+518	Kopírovat adresu
+519	Kopírovat nabídku
+520	Nabídka zkopírována
+521	Kopírovat jako emoji
+522	Emoji zkopírováno. Vlož ho kamkoli.
+523	Ladicí konzole
+524	Přepnout ladicí konzoli
+525	Ladicí konzoli se nepodařilo načíst.
+526	Otevře konzoli JavaScriptu pro ladění. Nikdy do ní nevkládej nic, čemu nerozumíš. Zloděj se tě o to může pokusit.
+527	Projít síť důvěry ODELLa
+528	Smazat z historie
+529	Adresa pro vklad
+530	Vlož bitcoin on-chain. Mincovna připíše ecash po potvrzení transakce.
+531	Vklady mimo {0}–{1} nebudou připsány.
+532	Vklady pod {0} nebudou připsány.
+533	Vklady nad {0} nebudou připsány.
+534	Získat adresu pro vklad
+535	Volitelná částka pro QR kód
+536	Čekám na vklad
+537	Vklady on-chain potřebují potvrzení, než je mincovna připíše.
+538	Ano, posílej další kdykoli
+539	Ecash přidán do historie
+540	Ecash už je v historii
+541	Přijmout později
+542	Faktura, adresa, LNURL, nabídka, žádost nebo bitcoinová adresa
+543	Nech prázdné, pokud nabídka má částku
+544	Lightning nabídka
+545	BOLT12 nabídka
+546	Opakovaně použitelná nabídka (BOLT12)
+547	Opakovaně použitelná
+548	Zatím přijato
+549	Ano, plať, kolikrát chceš
+550	Můžeš zavřít. Nabídka dál funguje.
+551	Síťový poplatek
+552	~{0} bloků
+553	Zůstatek: {0}
+554	Transakce
+555	Transakce odeslána. Potvrdí se on-chain.
+556	Tato mincovna neumí platit BOLT12 nabídky.
+557	Tato mincovna neumí posílat on-chain.
+558	Žádná přesná shoda pro odeslání offline. Vypni offline režim nebo zvol jinou částku.
+559	Poslat offline (jen přesná částka, bez kontaktu s mincovnou)
+560	Zatím nic nového.
+561	Nedávné testovací swapy, od nejstaršího po nejnovější. Vysoké sloupce uspěly.
+562	Podpořit auditora
+563	Auditor teď nemá žádnou platební žádost.
+564	Auditor drží u této mincovny {0} na testy.
+565	{0}/{1} ok
+566	Vyměnit
+567	Vyměnit do mincovny
+568	Tato výměna zahrnuje poplatky sítě Lightning.
+569	Úložiště
+570	Uživatelské jméno
+571	Nahraď dlouhý npub krátkým jménem, třeba satoshi@{0}. npub.cash si za to může účtovat poplatek.
+572	Použij písmena, čísla, tečky, pomlčky nebo podtržítka.
+573	Zaplatit a získat
+574	Platit z
+575	Cena
+576	Uživatelské jméno získáno
+577	Uživatelské jméno nastaveno
+578	Ověřit

@@ -229,6 +229,10 @@ details.more[open]{padding-bottom:14px}
 .rate button{width:52px;height:52px;font-size:32px;color:var(--ac);border-radius:12px;background:var(--card)}
 [dir=rtl] .menu button>span:last-child,[dir=rtl] .back{transform:scaleX(-1)}
 .langs{list-style:none;margin:0;padding:0}
+#tabLock{position:fixed;inset:0;z-index:90;background:var(--bg);display:grid;place-items:center;padding:24px}
+#tabLock>div{max-width:380px;text-align:center}#tabLock h2{font:600 20px var(--mono);color:var(--ac)}#tabLock p{color:var(--dim);margin-bottom:20px}
+#chkAll{margin-top:10px}
+.audbars{display:flex;align-items:flex-end;gap:2px;height:44px;margin:6px 0}.audbars i{flex:1;border-radius:2px}.audbars i.ok{height:100%;background:var(--ac)}.audbars i.bad{height:35%;background:var(--err)}
 .spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:r .7s linear infinite;display:inline-block}
 @keyframes r{to{transform:rotate(1turn)}}
 
@@ -276,6 +280,7 @@ details.more[open]{padding-bottom:14px}
   <section class="log">
     <div class="loghead"><div class="lab">History</div>
       <div class="tabs" id="logTabs"><button data-f="all" aria-selected="true">All</button><button data-f="ecash">Ecash</button><button data-f="ln">Lightning</button><button data-f="pending">Pending</button></div></div>
+    <button class="btn wide" id="chkAll" hidden>Check all pending</button>
     <ul id="hist"></ul>
     <p class="empty" id="empty">No transactions yet.</p>
   </section>
@@ -284,6 +289,7 @@ details.more[open]{padding-bottom:14px}
 <div class="sheetw" id="sheet" hidden><div class="backdrop"></div><div class="sheet" role="dialog" aria-modal="true"><div id="sheetBody"></div></div></div>
 <div id="scanner" hidden><video playsinline muted></video><div class="frame"></div><p class="scanlab">Point at a QR code<span id="scanProg"></span></p><button class="btn" id="scanClose">Close</button></div>
 <div id="toast" role="status"></div>
+<div id="tabLock" hidden><div><h2>Already open</h2><p>blindsig is open in another tab or window. To keep your ecash safe, only one can run at a time.</p><button class="btn primary wide" id="tlUse">Use it here instead</button></div></div>
 <script type="module" src="app.js"></script>
 </body>
 </html>

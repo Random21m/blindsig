@@ -1,7 +1,7 @@
 // Wallet logic: mints, units, Lightning, ecash, P2PK, swaps, multinut, restore.
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
-  getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey,
+  getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount,
 } from '@cashu/cashu-ts';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
@@ -63,6 +63,8 @@ async function infoSnapshot(w) {
       contact: (c.contact || []).map((x) => ({ method: x.method, info: x.info })), icon_url: c.icon_url || '',
       version: c.version || '', nuts: Object.keys(c.nuts || {}), tos_url: c.tos_url || '', urls: c.urls || [],
       nut15: !!(c.nuts && c.nuts['15']), nut17: !!(c.nuts && c.nuts['17']),
+      mintMethods: ((c.nuts && c.nuts['4'] && c.nuts['4'].methods) || []).map((x) => ({ method: x.method, unit: x.unit, min: x.min_amount ?? null, max: x.max_amount ?? null })),
+      meltMethods: ((c.nuts && c.nuts['5'] && c.nuts['5'].methods) || []).map((x) => ({ method: x.method, unit: x.unit, min: x.min_amount ?? null, max: x.max_amount ?? null })),
     },
     keysets: ks.map((k) => ({ id: k.id, unit: k.unit, active: !!k.active, fee: k.input_fee_ppk || 0 })),
     updated: Date.now(),
@@ -103,8 +105,46 @@ export async function createInvoice(amount, url = S.active, unit = S.unit, memo)
   const q = await w.createMintQuoteBolt11(amount);
   return H({ kind: 'ln-in', amount, mint: url, unit, status: 'pending', quote: q.quote, request: q.request, expiry: q.expiry, memo });
 }
+export const supports = (url, dir, method, unit = S.unit) => {
+  const m = mintOf(url); const list = m?.info?.[dir === 'mint' ? 'mintMethods' : 'meltMethods'] || [];
+  return list.find((x) => x.method === method && x.unit === unit) || null;
+};
+// BOLT12 offers and on-chain addresses can be paid more than once: mint whatever arrived
+async function checkReusable(h) {
+  const w = await walletFor(h.mint, h.unit);
+  const q = h.method === 'bolt12' ? await w.checkMintQuoteBolt12(h.quote) : await w.checkMintQuoteOnchain(h.quote);
+  const delta = q.amount_paid.toNumber() - q.amount_issued.toNumber();
+  h.paid = q.amount_paid.toNumber();
+  if (delta > 0) {
+    const proofs = h.method === 'bolt12' ? await w.mintProofsBolt12(delta, q, h.privkey) : await w.mintProofsOnchain(delta, q, h.privkey);
+    addProofs(h.mint, proofs, h.unit);
+    if (h.status === 'pending') { h.status = 'done'; h.amount = delta; h.ts = Date.now(); }
+    else H({ kind: h.kind, method: h.method, amount: delta, unit: h.unit, mint: h.mint, status: 'done', memo: h.method === 'bolt12' ? 'offer payment' : 'deposit', parent: h.id });
+    h.received = (h.received || 0) + delta;
+    save();
+    return 'done';
+  }
+  if (q.expiry && Date.now() / 1000 > q.expiry) { h.live = false; if (h.status === 'pending') h.status = 'expired'; save(); }
+  return h.status === 'pending' ? 'pending' : 'waiting';
+}
+const newKey = () => { const priv = bytesToHex(randomBytes(32)); return { priv, pub: bytesToHex(getPubKeyFromPrivKey(hexToBytes(priv))) }; };
+export async function createOffer(amount, url = S.active, unit = S.unit, description) {
+  const w = await walletFor(url, unit), k = newKey();
+  const q = await w.createMintQuoteBolt12(k.pub, { ...(amount ? { amount } : {}), ...(description ? { description } : {}) });
+  return H({ kind: 'ln-in', method: 'bolt12', amount: amount || 0, mint: url, unit, status: 'pending', live: true, quote: q.quote, request: q.request, expiry: q.expiry, privkey: k.priv, memo: description, received: 0 });
+}
+export async function createDepositAddress(url = S.active, unit = S.unit, requested) {
+  const w = await walletFor(url, unit), k = newKey();
+  const q = await w.createMintQuoteOnchain(k.pub);
+  return H({ kind: 'chain-in', method: 'onchain', amount: 0, requested: requested || 0, mint: url, unit, status: 'pending', live: true, quote: q.quote, request: q.request, expiry: q.expiry, privkey: k.priv, received: 0 });
+}
 export async function checkInvoice(h) {
-  if (h.status !== 'pending' || busy.has(h.id)) return h.status;
+  if (busy.has(h.id)) return h.status;
+  if (h.live && (h.method === 'bolt12' || h.method === 'onchain')) {
+    busy.add(h.id);
+    try { return await checkReusable(h); } finally { busy.delete(h.id); }
+  }
+  if (h.status !== 'pending') return h.status;
   busy.add(h.id);
   try {
     const w = await walletFor(h.mint, h.unit);
@@ -132,7 +172,23 @@ export async function waitInvoiceWs(h, signal) {
 }
 
 /* ---------------- ecash ---------------- */
+// ecash hidden in an emoji with Unicode variation selectors (compatible with cashu.me)
+export function encodeEmoji(token) {
+  return '🥜' + Array.from(token).map((ch) => { const b = ch.charCodeAt(0); return b < 16 ? String.fromCodePoint(0xfe00 + b) : b < 256 ? String.fromCodePoint(0xe0100 + b - 16) : ''; }).join('');
+}
+export function decodeEmoji(text) {
+  let out = '';
+  for (const ch of Array.from(text)) {
+    const c = ch.codePointAt(0);
+    const b = c >= 0xfe00 && c <= 0xfe0f ? c - 0xfe00 : c >= 0xe0100 && c <= 0xe01ef ? c - 0xe0100 + 16 : null;
+    if (b === null) { if (out) break; continue; }
+    out += String.fromCharCode(b);
+  }
+  return out;
+}
+export const hasEmojiToken = (t) => /[\uFE00-\uFE0F]|\uDB40[\uDD00-\uDDEF]/.test(t);
 export function parseToken(str) {
+  if (hasEmojiToken(str)) str = decodeEmoji(str) || str;
   str = str.trim().replace(/^web\+cashu:\/\//i, '').replace(/^cashu:\/\//i, '').replace(/^cashu:/i, '');
   const meta = getTokenMetadata(str);
   return { str, mint: normUrl(meta.mint), unit: meta.unit || 'sat', amount: meta.amount.toNumber(), memo: meta.memo };
@@ -149,13 +205,16 @@ export async function tokenLockInfo(t) {
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
 
-export async function sendEcash(amount, { memo, lockTo } = {}) {
+export async function sendEcash(amount, { memo, lockTo, offline } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
   if (amount > before) throw new Error('insufficient balance at this mint');
   let res;
-  if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo }).includeFees(true).run();
+  if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
+  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo }).includeFees(true).run();
   else res = await w.send(amount, getProofs(url, unit), { includeFees: true });
+  // never record a send unless the token really carries the amount
+  if (!res.send.length || sum(res.send) < amount) throw new Error(offline ? 'no exact match for offline sending' : 'could not prepare the token');
   setProofs(url, res.keep, unit);
   const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: true });
   return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo });
@@ -188,6 +247,28 @@ export async function checkClaimed(h) {
   if (st.length && st.every((s) => s.state === 'SPENT')) { h.status = 'claimed'; save(); }
   return h.status;
 }
+// live updates for unclaimed tokens over the mint's WebSocket (NUT-17)
+const watching = new Map();
+export function watchSent(onChange) {
+  if (!S.settings.websockets) return;
+  for (const h of S.history) {
+    if (h.kind !== 'ecash-out' || h.status !== 'pending' || watching.has(h.id) || !mintOf(h.mint)?.info?.nut17) continue;
+    const ac = new AbortController(); watching.set(h.id, ac);
+    (async () => {
+      try {
+        const w = await walletFor(h.mint, h.unit);
+        const { proofs } = w.decodeToken(h.token);
+        const spent = new Set();
+        for await (const u of w.on.proofStatesStream(proofs, { signal: ac.signal })) {
+          if (u.state === 'SPENT') spent.add(u.proof.secret);
+          if (spent.size === proofs.length) { h.status = 'claimed'; save(); onChange && onChange(h); break; }
+          if (h.status !== 'pending') break;
+        }
+      } catch {} finally { watching.delete(h.id); }
+    })();
+  }
+}
+export function unwatchAll() { for (const ac of watching.values()) ac.abort(); watching.clear(); }
 export async function reclaim(h) {
   const w = await walletFor(h.mint, h.unit);
   const pks = privkeys();
@@ -197,8 +278,8 @@ export async function reclaim(h) {
 }
 
 // Swap a token from another mint into the active mint over Lightning.
-export async function swapIncoming(t) {
-  const dst = S.active, unit = t.unit;
+export async function swapIncoming(t, dst = S.active) {
+  const unit = t.unit;
   if (t.mint === dst) throw new Error('token is already from the active mint');
   const ws = await walletFor(t.mint, unit);
   const proofs = await ws.receive(t.str, privkeys().length ? { privkey: privkeys() } : undefined);
@@ -256,19 +337,44 @@ export async function quoteInvoice(inv, url = S.active, unit = S.unit, mppMsat) 
   const w = await walletFor(url, unit);
   return mppMsat ? w.createMultiPathMeltQuote(inv, mppMsat) : w.createMeltQuoteBolt11(inv);
 }
-export async function payInvoice(q, memo, url = S.active, unit = S.unit) {
+export const isOffer = (s) => /^lno1[02-9ac-hj-np-z]+$/i.test(s.trim());
+export function parseBitcoin(s) {
+  s = s.trim();
+  const m = s.match(/^bitcoin:([^?]+)(?:\?(.*))?$/i);
+  const addr = m ? m[1] : s;
+  if (!/^(bc1|tb1|bcrt1)[02-9ac-hj-np-z]{8,87}$/i.test(addr) && !/^[13mn2][1-9A-HJ-NP-Za-km-z]{25,34}$/.test(addr)) return null;
+  let sats = 0;
+  if (m && m[2]) { const p = new URLSearchParams(m[2]); if (p.get('amount')) sats = Math.round(parseFloat(p.get('amount')) * 1e8); if (p.get('lightning')) return { address: addr, sats, lightning: p.get('lightning'), lno: p.get('lno') }; if (p.get('lno')) return { address: addr, sats, lno: p.get('lno') }; }
+  return { address: /^(bc1|tb1|bcrt1)/i.test(addr) ? addr.toLowerCase() : addr, sats };
+}
+export async function quoteOffer(offer, sats, url = S.active, unit = S.unit) {
   const w = await walletFor(url, unit);
-  const amount = q.amount.toNumber(), reserve = q.fee_reserve.toNumber();
+  return w.createMeltQuoteBolt12(offer.trim().toLowerCase(), sats ? sats * 1000 : undefined);
+}
+export async function quoteOnchain(address, amount, url = S.active, unit = S.unit) {
+  const w = await walletFor(url, unit);
+  return w.createMeltQuoteOnchain(address, amount);
+}
+export async function payInvoice(q, memo, url = S.active, unit = S.unit, method = 'bolt11', feeIndex) {
+  const w = await walletFor(url, unit);
+  const amount = q.amount.toNumber();
+  const reserve = method === 'onchain' ? (q.fee_options.find((f) => f.fee_index === feeIndex) || q.fee_options[0]).fee_reserve.toNumber() : q.fee_reserve.toNumber();
   const before = bal(url, unit);
   if (amount + reserve > before) throw new Error(`need ${fmt(amount + reserve, unit)} incl. fee reserve // have ${fmt(before, unit)} at ${host(url)}`);
   const { keep, send } = await w.send(amount + reserve, getProofs(url, unit), { includeFees: true });
   setProofs(url, keep, unit);
-  const h = H({ kind: 'ln-out', amount, unit, mint: url, status: 'pending', quote: q.quote, request: q.request, memo, inflight: serializeProofs(send) });
+  const h = H({ kind: method === 'onchain' ? 'chain-out' : 'ln-out', method, amount, unit, mint: url, status: 'pending', quote: q.quote, request: q.request, memo, inflight: serializeProofs(send), reserve: sum(send) - amount });
   try {
-    const res = await w.meltProofsBolt11(q, send);
-    if (res.quote.state === 'PAID') {
+    // prepare first so the blank change outputs are stored before the mint sees the melt:
+    // async and on-chain melts only hand out change once the quote is paid
+    const preview = await w.prepareMelt(method, q, send);
+    h.changeOut = preview.outputData.map((o) => OutputData.serialize(o)); save();
+    const res = await w.completeMelt(preview, undefined, method === 'onchain' ? { extraPayload: { fee_index: feeIndex ?? q.fee_options[0].fee_index } } : undefined);
+    if (res.quote.state === 'PAID' || (method === 'onchain' && res.quote.outpoint)) {
       addProofs(url, res.change || [], unit);
-      h.status = 'done'; h.fee = Math.max(0, before - bal(url, unit) - amount); h.preimage = res.quote.payment_preimage || ''; delete h.inflight;
+      h.status = res.quote.state === 'PAID' ? 'done' : 'pending'; h.fee = Math.max(0, before - bal(url, unit) - amount);
+      h.preimage = res.quote.payment_preimage || ''; h.outpoint = res.quote.outpoint || '';
+      if (h.status === 'done') { delete h.inflight; delete h.changeOut; }
     }
     save();
   } catch (e) {
@@ -278,12 +384,25 @@ export async function payInvoice(q, memo, url = S.active, unit = S.unit) {
   return h;
 }
 export async function settleMelt(h) {
-  if (h.kind !== 'ln-out' || h.status !== 'pending' || busy.has(h.id)) return;
+  if (!(h.kind === 'ln-out' || h.kind === 'chain-out') || h.status !== 'pending' || busy.has(h.id)) return;
   busy.add(h.id);
   try {
     const w = await walletFor(h.mint, h.unit);
-    const q = await w.checkMeltQuoteBolt11(h.quote);
-    if (q.state === 'PAID') { h.status = 'done'; h.preimage = q.payment_preimage || ''; delete h.inflight; }
+    const q = h.method === 'onchain' ? await w.checkMeltQuoteOnchain(h.quote) : h.method === 'bolt12' ? await w.checkMeltQuoteBolt12(h.quote) : await w.checkMeltQuoteBolt11(h.quote);
+    if (q.outpoint) h.outpoint = q.outpoint;
+    if (q.state === 'PAID') {
+      const sigs = (q.change || []).filter((x) => !Amount.from(x.amount).isZero());
+      if (sigs.length && h.changeOut) {
+        try {
+          await w.ensureOperableKeysets(sigs.map((x) => x.id));
+          const before = bal(h.mint, h.unit);
+          addProofs(h.mint, w.createMeltChangeProofs(h.changeOut.map((o) => OutputData.deserialize(o)), sigs), h.unit);
+          h.change = bal(h.mint, h.unit) - before;
+        } catch (e) { console.warn('melt change', e); }
+      }
+      if (h.reserve != null) h.fee = Math.max(0, h.reserve - (h.change || 0));
+      h.status = 'done'; h.preimage = q.payment_preimage || ''; delete h.inflight; delete h.changeOut;
+    }
     else if (q.state === 'UNPAID' && h.inflight) {
       const g = await w.groupProofsByState(deserializeProofs(h.inflight));
       addProofs(h.mint, [...g.unspent], h.unit);
@@ -392,7 +511,7 @@ export async function rekeyAll(log = () => {}) {
 }
 export function releasePending() {
   let n = 0;
-  for (const h of S.history) if (h.kind === 'ln-out' && h.status === 'pending' && h.inflight) {
+  for (const h of S.history) if ((h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' && h.inflight) {
     addProofs(h.mint, deserializeProofs(h.inflight), h.unit); delete h.inflight; h.status = 'failed'; n++;
   }
   save();
@@ -400,11 +519,11 @@ export function releasePending() {
 }
 export async function settleAll({ invoices = true, sent = true, all = false } = {}) {
   const twoWeeks = Date.now() - 14 * 864e5;
-  const list = S.history.filter((x) => x.status === 'pending' && (all ? x.ts > twoWeeks : true)).slice(0, all ? 60 : 25);
+  const list = S.history.filter((x) => (x.status === 'pending' || x.live) && (all ? x.ts > twoWeeks : true)).slice(0, all ? 60 : 25);
   for (const h of list) {
     try {
-      if (h.kind === 'ln-in' && invoices) await checkInvoice(h);
-      else if (h.kind === 'ln-out') await settleMelt(h);
+      if ((h.kind === 'ln-in' || h.kind === 'chain-in') && invoices) await checkInvoice(h);
+      else if (h.kind === 'ln-out' || h.kind === 'chain-out') await settleMelt(h);
       else if (h.kind === 'ecash-out' && sent) await checkClaimed(h);
     } catch {}
   }

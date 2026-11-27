@@ -257,6 +257,60 @@ export async function npcSync() {
   return added;
 }
 
+// live updates from npub.cash (same challenge/response protocol as cashu.me)
+let npcWs = null, npcRetry = 0, npcRetryT = null, stopped = false;
+export function npcConnect() {
+  if (!S.npc.enabled || npcWs || stopped || typeof WebSocket === 'undefined') return;
+  const wsUrl = `wss://${S.npc.host}/api/v2/ws/quote`;
+  let ws;
+  try { ws = new WebSocket(wsUrl); } catch { return; }
+  npcWs = ws;
+  ws.onmessage = async (e) => {
+    let m; try { m = JSON.parse(e.data); } catch { return; }
+    try {
+      if (m.type === 'challenge') {
+        const p = m.payload, rich = p && typeof p === 'object';
+        const authUrl = rich ? p.url : wsUrl, method = rich ? p.method || 'GET' : 'GET';
+        const u = new URL(authUrl), exp = new URL(wsUrl);
+        if (!['https:', 'wss:'].includes(u.protocol) || u.hostname !== exp.hostname || u.port !== exp.port || u.pathname !== exp.pathname) { ws.close(); return; }
+        const sg = await signer();
+        const token = await nip98.getToken(authUrl, method, (t) => sg.sign(t), false);
+        if (ws.readyState === 1) ws.send(JSON.stringify(rich ? { type: 'challenge-response', payload: `Nostr ${token}` } : { type: 'auth', token: `Nostr ${token}` }));
+      } else if (m.type === 'ok' || m.type === 'challenge-success') { npcRetry = 0; npcSync().catch(() => {}); }
+      else if (m.type === 'update') npcSync().catch(() => {});
+      else if (m.type === 'error') ws.close();
+    } catch { ws.close(); }
+  };
+  ws.onclose = () => {
+    npcWs = null;
+    if (S.npc.enabled && !stopped) { clearTimeout(npcRetryT); npcRetryT = setTimeout(npcConnect, Math.min(30000, 1000 * 2 ** npcRetry++)); }
+  };
+}
+function npcDisconnect() { clearTimeout(npcRetryT); try { npcWs?.close(); } catch {} npcWs = null; }
+// claim a username: npub.cash answers 402 with a cashu payment request in X-Cashu
+async function npcUsernameCall(name, token) {
+  const sg = await signer();
+  const url = npcUrl('/api/v2/user/username');
+  const auth = await nip98.getToken(url, 'POST', (t) => sg.sign(t), false);
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', authorization: `Nostr ${auth}`, ...(token ? { 'X-Cashu': token } : {}) }, body: JSON.stringify({ username: name }) });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 402 && !token) { const creq = r.headers.get('X-Cashu'); if (!creq) throw new Error('npub.cash did not return a payment request'); return { creq }; }
+  if (!r.ok || j.error) throw new Error(j.message || `npub.cash error ${r.status}`);
+  S.npc.address = `${j.data.user.name}@${S.npc.host}`; save();
+  return { done: true };
+}
+export const npcUsernameQuote = (name) => npcUsernameCall(name);
+export async function npcBuyUsername(name, creq) {
+  const r = decodeRequest(creq);
+  if (r.unit !== S.unit) throw new Error(`the request is in ${r.unit}; switch unit first`);
+  if (r.mints.length && !r.mints.includes(S.active)) throw new Error('select one of the mints the request accepts');
+  const h = await C.sendEcash(r.amount, { memo: 'npub.cash username' });
+  await npcUsernameCall(name, h.token);
+  h.status = 'claimed'; save();
+  return h;
+}
+export const ODELL = '04c915daefee38317fa734444acee390a8269fe5810b2241e5e6dd343dfbecc9';
+
 /* ---------------- Nostr Wallet Connect (NIP-47) ---------------- */
 const NWC_METHODS = ['pay_invoice', 'make_invoice', 'get_balance', 'get_info', 'list_transactions', 'lookup_invoice'];
 let nwcSub = null;
@@ -456,12 +510,17 @@ export async function findBackedUpMints(mnemonic = S.mnemonic) {
 
 /* ---------------- lifecycle ---------------- */
 let npcTimer = null;
+export function stopAll() {
+  stopped = true; stopInbox(); stopNwc(); clearInterval(npcTimer); npcDisconnect();
+}
 export function startAll() {
   if (!S.mnemonic) return;
+  stopped = false;
   if (S.pr.enabled) startInbox(); else stopInbox();
   if (S.nwc.enabled) startNwc(); else stopNwc();
   clearInterval(npcTimer);
-  if (S.npc.enabled) { npcSync().catch(() => {}); npcTimer = setInterval(() => { if (!document.hidden) npcSync().catch(() => {}); }, 45000); }
+  if (S.npc.enabled) { npcSync().catch(() => {}); npcConnect(); npcTimer = setInterval(() => { if (!document.hidden) npcSync().catch(() => {}); }, 120000); }
+  else npcDisconnect();
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.npc.enabled) npcSync().catch(() => {}); });
 export { fmt, host, getTokenMetadata };
