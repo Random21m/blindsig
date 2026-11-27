@@ -266,6 +266,7 @@ export function success(kind, anchor) {
   // in the background, sound and confetti would only fire late when you come back: skip them
   if (document.hidden) return;
   play(kind);
-  if (kind === 'received' || kind === 'sent') confetti(anchor);
+  // no confetti over the PIN screen: it would draw over the lock and hint at what happened
+  if ((kind === 'received' || kind === 'sent') && !document.querySelector('#pinLock:not([hidden])')) confetti(anchor);
 }
 export function fail(el) { play('error'); buzz('error'); shake(el); }

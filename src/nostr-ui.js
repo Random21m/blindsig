@@ -13,7 +13,7 @@ export function nostrUI(x) {
   function lnaddr() {
     const n = S.npc;
     sheet('Lightning address', `<p class="dim">Get a Lightning address from npub.cash. Payments to it become ecash at your chosen mint. It uses your nostr key (see Nostr settings).</p>
-      ${toggle('t_npc', 'Enable', 'Lightning address with ' + esc(n.host), n.enabled)}
+      ${toggle('t_npc', 'Lightning address', 'Lightning address with ' + esc(n.host), n.enabled)}
       ${n.enabled ? `
         <div class="addrcard"><b id="addr">${esc(n.address || 'Loading…')}</b><div class="btnrow"><button class="btn" id="cpa">Copy</button><button class="btn" id="sha">QR code</button></div></div>
         <div id="aq"></div>
@@ -136,7 +136,7 @@ export function nostrUI(x) {
   /* ---------- settings: payment requests ---------- */
   function prSettings() {
     sheet('Payment requests', `<p class="dim">Payment requests (NUT-18) let people pay you ecash over nostr. When enabled, the wallet listens on your relays while it’s open.</p>
-      ${toggle('t_pr', 'Enable payment requests', 'Also receives ecash sent to you in nostr direct messages.', S.pr.enabled)}
+      ${toggle('t_pr', 'Payment requests', 'Also receives ecash sent to you in nostr direct messages.', S.pr.enabled)}
       ${toggle('t_pra', 'Claim automatically', 'Receive matching payments from known mints right away.', S.pr.auto)}
       <button class="btn primary wide" id="nr">New payment request</button>
       <h3>Your requests</h3>
@@ -187,7 +187,7 @@ export function nostrUI(x) {
   function nwc() {
     const c = S.nwc.conn;
     sheet('Nostr Wallet Connect', `<p class="dim">Let other apps pay invoices from your wallet. Payments come from your active mint, in sats, up to the allowance. Works while this app is open.</p>
-      ${toggle('t_nwc', 'Enable NWC', '', S.nwc.enabled)}
+      ${toggle('t_nwc', 'Nostr Wallet Connect', '', S.nwc.enabled)}
       ${S.nwc.enabled && c ? `<div id="nq"></div>
         <pre class="armor sm">${esc(N.nwcString())}</pre>
         <div class="btnrow"><button class="btn primary" id="cp">Copy connection</button><button class="btn" id="sq">QR code</button></div>

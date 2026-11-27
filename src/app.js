@@ -272,6 +272,14 @@ const bigAmt = (n, unit, sign = '') => { const p = fmtParts(n, unit); return `${
 const kv = (rows) => `<dl class="kv">${rows.filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
 const armor = (t) => `<pre class="armor"><span>-----BEGIN CASHU TOKEN-----</span>\n${esc(t)}\n<span>-----END CASHU TOKEN-----</span></pre>`;
 const toggle = (id, label, desc, on) => `<label class="tg"><span class="tgt"><b>${label}</b>${desc ? `<small>${desc}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i aria-hidden="true"></i></label>`;
+// every switch says what it just did ("Sounds: on"); runs before the switch's own handler, so a
+// handler with its own message (an error, "Mint list backed up") still has the last word
+document.addEventListener('change', (e) => {
+  const el = e.target;
+  if (!el.matches?.('.tg input[type=checkbox]') || !el.closest('#sheet')) return;
+  const name = el.closest('.tg').querySelector('b')?.textContent || '';
+  if (name) toast(`${name}: ${el.checked ? 'on' : 'off'}`);
+}, true);
 const needMint = () => { if (!S.active) { mintsSheet(true); return true; } return false; };
 
 /* ================= onboarding ================= */
@@ -825,7 +833,7 @@ const MENU = [
   ['security', 'PIN lock', 'Lock and encrypt the app with a PIN'],
   ['p2pk', 'P2PK', 'Receive ecash locked to your keys'],
   ['privacy', 'Privacy', 'Network checks and Bitcoin price'],
-  ['appearance', 'Appearance', 'Theme, keypad and Bitcoin symbol'],
+  ['appearance', 'Appearance', 'Theme, sound, vibration and keypad'],
   ['hardware', 'Hardware', 'NFC cards'],
   ['experimental', 'Experimental', 'Swaps, auditor, Multinut'],
   ['advanced', 'Advanced', 'Developer tools and wallet reset'],
@@ -843,9 +851,6 @@ function bindToggles(b, keys, after) {
     const el = $('#t_' + k, b); if (!el) return;
     el.onchange = () => {
       st[k] = el.checked; save(); render(); after && after(k);
-      // say what just changed, so every switch answers back
-      const name = el.closest('.tg')?.querySelector('b')?.textContent || '';
-      if (name) toast(`${name}: ${el.checked ? 'on' : 'off'}`);
     };
   });
 }

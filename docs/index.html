@@ -215,6 +215,8 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .mt{display:flex;flex-direction:column;line-height:1.35;text-align:left}
 .mt b{font-weight:500;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .mt small{color:var(--dim);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* settings and choices: let descriptions wrap instead of cutting them off (long languages) */
+.menu .mt small,.radio .mt small{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35}
 .mb{font:500 14px var(--mono);color:var(--ac);white-space:nowrap}
 .mt .mb{margin-top:2px;font-size:13px}
 #moreHist{margin-top:14px}

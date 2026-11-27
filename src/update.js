@@ -23,13 +23,14 @@ async function clearShell() {
 }
 // is the live site on a newer version than the one running here?
 async function behind() {
-  try { const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return false; return (await r.json()).version !== VERSION; } catch { return false; }
+  // true / false, or null when the site couldn't be reached
+  try { const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) return null; return (await r.json()).version !== VERSION; } catch { return null; }
 }
 // a normal update shows the bar through controllerchange; if the site is newer but nothing is
 // installing after a while, the copy here is stuck, so offer the hard reload instead
 async function stuckCheck() {
-  if (!(await behind())) return;
-  setTimeout(async () => { if (!reg?.installing && !reg?.waiting && (await behind())) showBar(true); }, 12000);
+  if ((await behind()) !== true) return;
+  setTimeout(async () => { if (!reg?.installing && !reg?.waiting && (await behind()) === true) showBar(true); }, 12000);
 }
 const check = () => reg?.update().catch(() => {});
 
@@ -50,6 +51,6 @@ export async function checkNow() {
   if (reg) { try { await reg.update(); } catch {} }
   const w = reg && (reg.installing || reg.waiting);
   if (w) { if (w.state === 'activated') showBar(); return 'found'; }
-  if (newer) { showBar(true); return 'found'; }
-  return navigator.onLine === false ? 'offline' : 'latest';
+  if (newer === true) { showBar(true); return 'found'; }
+  return newer === null ? 'offline' : 'latest';
 }

@@ -44,7 +44,8 @@ export function pinPad(root, { len = 6, title, sub = '', onPin, extra = '', lenS
   };
   async function submit() {
     busy = true; msg('Checking…');
-    const r = await onPin(pin);
+    let r;
+    try { r = await onPin(pin); } catch { r = 'Something went wrong. Try again.'; }
     busy = false;
     if (r === true) return;
     pin = ''; draw();

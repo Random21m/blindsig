@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.8.8';
+export const VERSION = '1.8.9';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -86,7 +86,8 @@ function openDb() {
 }
 const idbGet = (k) => new Promise((res) => { try { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => res(undefined); } catch { res(undefined); } });
 
-const b64 = (u8) => btoa(String.fromCharCode(...new Uint8Array(u8)));
+// in chunks: spreading a large wallet's bytes into one call overflows the stack
+const b64 = (buf) => { const u8 = new Uint8Array(buf); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
 const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 const enc = new TextEncoder(), dec = new TextDecoder();
 const CHECK = 'blindsig-pin-check';
@@ -170,14 +171,20 @@ async function flush() {
   try {
     while (queued) {
       queued = false;
-      const json = JSON.stringify(S);
-      let out = json;
-      if (env && key) {
-        env.pub.theme = S.settings.theme; env.pub.lang = S.settings.lang || '';
-        env.pub.fx = { sounds: S.settings.sounds !== false, haptics: S.settings.haptics !== false, soundsOnSilent: !!S.settings.soundsOnSilent, motion: S.settings.motion !== false };
-        out = JSON.stringify({ ...env, ...(await seal(key, json)) });
-      } else if (env) continue; // still locked: never overwrite the encrypted state
-      await writeRaw(out, !!env);
+      try {
+        const json = JSON.stringify(S);
+        let out = json;
+        if (env && key) {
+          env.pub.theme = S.settings.theme; env.pub.lang = S.settings.lang || '';
+          env.pub.fx = { sounds: S.settings.sounds !== false, haptics: S.settings.haptics !== false, soundsOnSilent: !!S.settings.soundsOnSilent, motion: S.settings.motion !== false };
+          out = JSON.stringify({ ...env, ...(await seal(key, json)) });
+        } else if (env) continue; // still locked: never overwrite the encrypted state
+        await writeRaw(out, !!env);
+      } catch (e) {
+        // never fall back to writing plaintext; try again shortly
+        console.error('save failed', e);
+        setTimeout(save, 1500);
+      }
     }
   } finally { writing = null; }
 }
@@ -232,7 +239,7 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 export const normUrl = (u) => { u = u.trim().replace(/\/+$/, ''); if (!/^https?:\/\//i.test(u)) u = 'https://' + u; return u; };
 export const num = (n) => Number(n || 0).toLocaleString('en-US');
 const FIAT = { usd: '$', eur: '€', gbp: '£', jpy: '¥' };
-export const isFiatUnit = (u) => u in FIAT;
+export const isFiatUnit = (u) => Object.prototype.hasOwnProperty.call(FIAT, u);
 export const decimals = (u) => (u === 'jpy' ? 0 : isFiatUnit(u) ? 2 : 0);
 
 // full amount string with unit, e.g. "1,234 sat", "₿1,234", "$12.50"
