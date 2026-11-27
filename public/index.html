@@ -79,7 +79,7 @@ a{color:var(--ac)}
 /* readout */
 .hero{padding:26px 2px 22px}
 .lab{color:var(--dim);font:500 13px var(--mono)}
-.balrow{display:flex;align-items:baseline;gap:6px;margin:12px 0 4px;color:var(--ac);white-space:nowrap}
+.balrow{display:flex;align-items:baseline;gap:6px;margin:12px 0 4px;color:var(--ac);white-space:nowrap;cursor:pointer;-webkit-user-select:none;user-select:none}
 .bal{font-family:var(--d);font-weight:300;letter-spacing:-.04em;font-size:clamp(52px,16vw,80px);line-height:1;text-shadow:0 0 22px var(--glow);font-variant-numeric:tabular-nums}
 #balPre{font-family:var(--d);font-weight:300;font-size:clamp(30px,9vw,46px);line-height:1;opacity:.85}
 #balPost{font:500 18px var(--mono);color:var(--dim);margin-left:6px}
@@ -337,7 +337,7 @@ details.more[open]{padding-bottom:14px}
 
   <section class="hero" aria-live="polite">
     <div class="lab">Balance</div>
-    <div class="balrow"><span id="balPre"></span><span class="bal" id="bal">0</span><span id="balPost">sat</span></div>
+    <div class="balrow" role="button" tabindex="0" aria-label="Show or hide amounts" aria-pressed="false"><span id="balPre"></span><span class="bal" id="bal">0</span><span id="balPost">sat</span></div>
     <div class="sub"><span id="fiat"></span><span id="mintBal"></span></div>
   </section>
 

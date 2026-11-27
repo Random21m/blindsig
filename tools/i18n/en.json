@@ -749,5 +749,10 @@
 "Face ID or Touch ID is on",
 "Fingerprint or face unlock is on",
 "This phone can’t unlock blindsig this way yet. Your PIN still works.",
-"Cancelled."
+"Cancelled.",
+"Hide amounts",
+"Show •••• instead of your balance and payment amounts on the main screen. Tap the balance to switch.",
+"Amounts hidden. Tap the balance to show them.",
+"Amounts shown",
+"Show or hide amounts"
 ]

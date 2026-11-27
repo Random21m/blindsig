@@ -188,13 +188,14 @@ function render() {
   $('#mintHost').textContent = m && m.nick ? host(m.url) : '';
   const units = m ? m.units || ['sat'] : ['sat'];
   const uc = $('#unitChip'); uc.textContent = unitLabel(S.unit); uc.hidden = units.length < 2; uc.disabled = units.length < 2;
-  const p = fmtParts(total(), S.unit);
+  const p = st.hideAmounts ? { pre: '', value: HIDDEN, post: '' } : fmtParts(total(), S.unit);
   $('#balPre').textContent = p.pre; $('#balPost').textContent = p.post;
   scramble($('#bal'), p.value);
   fitBal();
-  $('#fiat').textContent = S.unit === 'sat' && st.fiat ? fiatOf(total('sat')) : '';
+  $('.balrow').setAttribute('aria-pressed', String(!!st.hideAmounts));
+  $('#fiat').textContent = S.unit === 'sat' && st.fiat && !st.hideAmounts ? fiatOf(total('sat')) : '';
   btcPrice();
-  $('#mintBal').textContent = S.mints.length > 1 && m ? `${fmt(bal(m.url))} at this mint` : '';
+  $('#mintBal').textContent = S.mints.length > 1 && m && !st.hideAmounts ? `${fmt(bal(m.url))} at this mint` : '';
   // motd
   const motd = m?.info?.motd;
   $('#motd').hidden = !(motd && motd !== m.motdSeen);
@@ -217,20 +218,22 @@ function render() {
       return `<li><button class="row s-live" data-id="${esc(h.id)}">
       <span class="ri in" aria-hidden="true">↓</span>
       <span class="rt"><b>${title}</b><small><span>${stamp(h.ts)}</span>${h.note ? ' · <span dir="auto">✎ ' + esc(h.note) + '</span>' : h.memo ? ' · <span dir="auto">' + esc(h.memo) + '</span>' : ''}</small></span>
-      <span class="ra"><span class="amtv in">+${esc(fmt(h.received || 0, h.unit || 'sat'))}</span><em class="pill p-live">Reusable</em></span></button></li>`;
+      <span class="ra"><span class="amtv in">${st.hideAmounts ? HIDDEN : '+' + esc(fmt(h.received || 0, h.unit || 'sat'))}</span><em class="pill p-live">Reusable</em></span></button></li>`;
     }
     const stx = open ? 'Unclaimed' : claim ? 'Tap to claim' : STATUS[h.status] ?? '';
     const sub = h.note ? '✎ ' + h.note : h.kind === 'chain-out' && h.memo === h.request ? '' : h.memo;
     return `<li><button class="row s-${esc(h.status)}" data-id="${esc(h.id)}">
       <span class="ri ${out ? 'out' : 'in'}" aria-hidden="true">${out ? '↑' : '↓'}</span>
       <span class="rt"><b>${verb} · ${via}</b><small><span>${stamp(h.ts)}</span>${sub ? ' · <span dir="auto">' + esc(sub) + '</span>' : ''}</small></span>
-      <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${out ? '−' : '+'}${esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
+      <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${st.hideAmounts ? HIDDEN : (out ? '−' : '+') + esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
   }).join('');
   $('#empty').hidden = list.length > 0;
   $('#chkAll').hidden = !(logFilter === 'pending' && list.length);
   $('#empty').textContent = q ? 'No matches.' : S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
 }
 
+// hidden amounts (like cashu.me): tap the balance to switch
+const HIDDEN = '••••';
 // history search: notes, memos, amounts (as shown and as plain digits), kind, status and mint
 let histQ = '';
 function searchText(h) {
@@ -763,7 +766,7 @@ function detail(h) {
 function mintsSheet(first = false) {
   const rows = S.mints.map((m) => `<li class="mint ${m.url === S.active ? 'act' : ''}">
       <button class="pick" data-u="${esc(m.url)}"><span class="mk" aria-hidden="true">${m.url === S.active ? '●' : '○'}</span>
-      ${(() => { const u = (m.units || ['sat']).includes(S.unit) ? S.unit : 'sat', amt = fmt(bal(m.url, u), u), long = amt.length > 12;
+      ${(() => { const u = (m.units || ['sat']).includes(S.unit) ? S.unit : 'sat', amt = st.hideAmounts ? HIDDEN : fmt(bal(m.url, u), u), long = amt.length > 12;
         return `<span class="mt"><b>${esc(mintLabel(m))}</b><small>${esc(host(m.url))}${(m.units || []).length > 1 ? ' · ' + m.units.map(unitLabel).join(' ') : ''}</small>${long ? `<span class="mb">${esc(amt)}</span>` : ''}</span>
       ${long ? '<span></span>' : `<span class="mb">${esc(amt)}</span>`}`; })()}</button>
       <button class="info" data-u="${esc(m.url)}" aria-label="Details for ${esc(mintLabel(m))}">i</button></li>`).join('');
@@ -984,11 +987,12 @@ const SECTIONS = {
       ${toggle('t_checkStartup', 'Check pending on startup', 'Check pending invoices and payments when the app opens.', st.checkStartup)}
       ${toggle('t_checkAll', 'Check all invoices', 'Re-check unpaid invoices in the background for up to two weeks.', st.checkAll)}
       ${toggle('t_checkSent', 'Check sent ecash', 'Periodically check whether tokens you sent were claimed.', st.checkSent)}
+      ${toggle('t_hideAmounts', 'Hide amounts', 'Show •••• instead of your balance and payment amounts on the main screen. Tap the balance to switch.', st.hideAmounts)}
       ${toggle('t_websockets', 'Use WebSockets', 'Instant updates from mints that support it (NUT-17).', st.websockets)}
       ${toggle('t_fiat', 'Get exchange rate from Coinbase', 'Show your balance in fiat.', st.fiat)}
       <label class="lbl" for="cur">Fiat currency</label>
       <select id="cur" class="field">${FIAT_CURRENCIES.map((c) => `<option ${c === st.fiatCur ? 'selected' : ''}>${c}</option>`).join('')}</select>`, (b) => {
-      bindToggles(b, ['checkIncoming', 'checkStartup', 'checkAll', 'checkSent', 'websockets', 'fiat'], (k) => { if (k === 'fiat' && st.fiat) C.loadPrice().then(render); schedule(); });
+      bindToggles(b, ['hideAmounts', 'checkIncoming', 'checkStartup', 'checkAll', 'checkSent', 'websockets', 'fiat'], (k) => { if (k === 'fiat' && st.fiat) C.loadPrice().then(render); schedule(); });
       $('#cur', b).onchange = (e) => { st.fiatCur = e.target.value; save(); C.loadPrice().then(render); };
     }, { back });
   },
@@ -1372,6 +1376,11 @@ $('#motdX').onclick = () => { const m = mintOf(S.active); if (m) { m.motdSeen = 
 $('#sheet .backdrop').onclick = () => closeSheet();
 $('#logTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { logFilter = b.dataset.f; logLimit = 100; render(); } };
 $('#moreHist').onclick = () => { logLimit += 100; render(); };
+{
+  const flip = () => { st.hideAmounts = !st.hideAmounts; save(); shownBal = null; render(); toast(st.hideAmounts ? 'Amounts hidden. Tap the balance to show them.' : 'Amounts shown'); };
+  const br = $('.balrow'); br.onclick = flip;
+  br.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
+}
 { let t = null; $('#histQ').oninput = (e) => { clearTimeout(t); t = setTimeout(() => { histQ = e.target.value; logLimit = 100; render(); }, 120); }; }
 $('#chkAll').onclick = withBusy($('#chkAll'), async () => { await C.settleAll({ invoices: true, sent: true, all: true }); render(); toast('Checked all pending'); });
 $('#hist').onclick = (e) => { const r = e.target.closest('.row'); if (r) { const h = S.history.find((x) => x.id === r.dataset.id); if (h) detail(h); } };
