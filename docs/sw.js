@@ -1,10 +1,12 @@
 // blindsig service worker: caches the app shell so it opens offline.
 // Mint API calls are never cached. Fonts are served from this site, so no third party sees app loads.
-const VERSION = 'mwzeyn0q';
+const VERSION = 'mwzfb9ex';
 const SHELL = ['./', './index.html', './app.js', './manifest.webmanifest', './fonts/fonts.css', './icons/icon.svg', './icons/icon-192.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open('shell-' + VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips the browser's HTTP cache, so a new version never stores an older app.js
+  // (GitHub Pages lets browsers keep files for 10 minutes, and updates can come faster than that)
+  e.waitUntil(caches.open('shell-' + VERSION).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {

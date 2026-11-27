@@ -32,6 +32,9 @@ await build({
 
 const id = Date.now().toString(36);
 writeFileSync('docs/sw.js', readFileSync('docs/sw.js', 'utf8').replace('__BUILD__', id));
+// what the live site is running, so the app can tell when it's behind (Settings → About)
+const ver = readFileSync('src/store.js', 'utf8').match(/VERSION = '([^']+)'/)[1];
+writeFileSync('docs/version.json', JSON.stringify({ version: ver, build: id }));
 
 const svg = 'public/icons/icon.svg';
 const r = (size, out, src = svg) => execSync(`rsvg-convert -w ${size} -h ${size} ${src} -o docs/icons/${out}`);
