@@ -8,7 +8,6 @@ updates:
     directory: /
     schedule:
       interval: monthly
-      day: monday
       time: "09:00"
       timezone: America/Chicago
     open-pull-requests-limit: 5
