@@ -18,6 +18,8 @@ import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
 import * as I18N from './i18n.js';
 
+// the developer's Lightning address, for tips (Settings → About)
+const TIP_ADDR = 'npub1t5nvfnlmegsqkqegcpnyek4qf4fc2f2gx2t4lm88h2kq22plpmxqdhgpa9@npub.cash';
 const SUGGESTED = [
   { url: 'https://testnut.cashu.space', note: 'Test mint. Fake sats, invoices pay themselves.' },
   { url: 'https://mint.minibits.cash/Bitcoin', note: 'Minibits. Real sats.' },
@@ -1012,8 +1014,17 @@ const SECTIONS = {
       <p class="dim">A Cashu ecash wallet built on cashu-ts. Ecash and your seed are stored only in this browser. Mints are custodians: use ones you trust and keep amounts small.</p>
       ${kv([['Library', 'cashu-ts 4.14'], ['Proofs held', String(Object.values(S.proofs).reduce((t, a) => t + (a?.length || 0), 0))], ['Mints', String(S.mints.length)], ['Storage', storageKind()], ['Encryption', pinOn() ? 'PIN (AES-256)' : 'Off']])}
       <button class="btn wide" id="upd">Check for updates</button>
+      <h3>Support blindsig</h3>
+      <p class="dim">blindsig is free and open source. If it’s useful to you, a tip helps keep it going.</p>
+      <div class="addrcard"><small class="dim">Lightning address</small><b>${esc(TIP_ADDR)}</b>
+        <div class="btnrow"><button class="btn" id="tcp">Copy</button><button class="btn" id="tqr">QR code</button></div><div id="tq"></div>
+        ${S.npc?.address === TIP_ADDR ? '' : '<button class="btn primary wide" id="tip">Send a tip</button>'}</div>
+      <h3>Links</h3>
       <a class="btn wide" href="https://cashu.space" target="_blank" rel="noopener">cashu.space</a>
       <a class="btn wide" href="https://github.com/Random21m/blindsig" target="_blank" rel="noopener">Source code</a>`, (b) => {
+      $('#tcp', b).onclick = () => copy(TIP_ADDR, 'Address copied');
+      $('#tqr', b).onclick = () => { const q = $('#tq', b); if (q.innerHTML) { q.innerHTML = ''; return; } qrSvg('lightning:' + TIP_ADDR).then((s) => { q.innerHTML = `<div class="qr">${s}</div>`; }); };
+      const tip = $('#tip', b); if (tip) tip.onclick = () => sendSheet('ln', TIP_ADDR);
       const u = $('#upd', b);
       u.onclick = withBusy(u, async () => {
         const r = await checkNow();

@@ -17,10 +17,12 @@
   <a href="#screenshots">Screenshots</a>
   &nbsp;·&nbsp;
   <a href="#run-it-yourself">Run it yourself</a>
+  &nbsp;·&nbsp;
+  <a href="#support">Support</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.8.5-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.5">
+  <img src="https://img.shields.io/badge/version-1.8.6-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.6">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -157,6 +159,18 @@ The translations were machine-assisted and haven't been reviewed by native speak
 - **Mints are custodians.** Use small amounts and mints you trust.
 
 Found a security problem? Please [report it privately](https://github.com/Random21m/blindsig/security/advisories/new) instead of opening an issue.
+
+## Support
+
+blindsig is free and open source. If it's useful to you, a tip over Lightning helps keep it going. Scan the code with any Lightning wallet, or use **Send a tip** in the app (Settings → About).
+
+<p align="center"><img src="assets/support.png" width="560" alt="Lightning tip QR code for blindsig"></p>
+
+```
+npub1t5nvfnlmegsqkqegcpnyek4qf4fc2f2gx2t4lm88h2kq22plpmxqdhgpa9@npub.cash
+```
+
+Starring the repo, reporting bugs and fixing translations help too.
 
 ## Built with
 
