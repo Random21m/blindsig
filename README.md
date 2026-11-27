@@ -1,55 +1,147 @@
-# blindsig
+<p align="center">
+  <img src="assets/logo.svg" width="112" alt="blindsig logo">
+</p>
 
-A cypherpunk Cashu ecash wallet. Installs as a PWA.
+<h1 align="center">blindsig</h1>
 
-- Soft charcoal look with three themes: green, white, amber
-- 12-word seed (NUT-13) with full restore (NUT-09), including restore from another seed
-- Multiple mints and units (sat, usd, eur…), mint details, MOTD, auditor data, move funds between mints
-- Receive: ecash (paste, scan, NFC, auto-paste), Lightning invoices, P2PK-locked ecash, swap-in from other mints
-- Send: ecash (static or animated BC-UR QR, link, NFC), Lightning invoices, Lightning addresses, LNURL, Multinut (NUT-15)
-- P2PK keys (generate or import nsec), lock tokens to a pubkey or npub
-- Privacy controls: invoice/sent-token checks, WebSockets (NUT-17), Coinbase price in 20 currencies
-- On-screen keypad, ₿ symbol, unclaimed-token tracking, spent-proof cleanup, keyset counters, export, new seed, reset
-- BOLT12 offers (NUT-25): reusable receive offers and paying offers
-- On-chain bitcoin: reusable deposit addresses and on-chain sends with fee choice (BIP21 aware)
-- Offline sending (exact-match proofs, no mint contact), ecash hidden in an emoji, receive-later, check all pending
-- Live updates for sent tokens over WebSockets (NUT-17) and for npub.cash payments
-- npub.cash usernames (paid with ecash), ODELL web of trust, auditor chart and donations
-- IndexedDB storage, single-tab lock (so two tabs never spend the same proofs), optional debug console
-- Built on @cashu/cashu-ts 4.14 (latest stable)
+<p align="center">
+  <b>A cypherpunk Cashu ecash wallet.</b><br>
+  Private bitcoin payments in your browser. Installs as an app. No account, no sign-up.
+</p>
 
-- Nostr: identity from your seed (same key as cashu.me), nsec, NIP-07 extension or NIP-46 bunker; custom relays
-- Lightning address via npub.cash (NIP-98 auth), with automatic claiming
-- Payment requests (NUT-18): create and pay, delivered over nostr (NIP-17) or HTTP POST; ecash in nostr DMs is picked up too
-- Nostr Wallet Connect (NIP-47, nip04 and nip44): pay_invoice, make_invoice, get_balance, get_info, list_transactions, lookup_invoice, with an allowance
-- Mint discovery and reviews (NIP-87), web of trust, and encrypted mint list backup on nostr (cashu.me compatible)
+<p align="center">
+  <a href="https://random21m.github.io/blindsig/"><b>Open the wallet →</b></a>
+  &nbsp;·&nbsp;
+  <a href="#features">Features</a>
+  &nbsp;·&nbsp;
+  <a href="#screenshots">Screenshots</a>
+  &nbsp;·&nbsp;
+  <a href="#run-it-yourself">Run it yourself</a>
+</p>
 
-- 14 languages, like cashu.me: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right-to-left), ไทย, 日本語, 中文. Follows the device language; change it in Settings → Language.
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.4.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.4.0">
+  <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
+  <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
+  <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
+</p>
+
+<p align="center">
+  <a href="https://random21m.github.io/blindsig/"><img src="assets/hero.png" alt="blindsig in its three themes: white, green and amber" width="100%"></a>
+</p>
+
+## What is it?
+
+[Cashu](https://cashu.space) is ecash for bitcoin. A mint issues tokens that work like digital banknotes: you hold them on your own device, and thanks to blind signatures the mint can't see who pays whom. blindsig is a wallet for those tokens. It does everything [cashu.me](https://cashu.me) does, with a calmer terminal-style look that's easy on the eyes.
+
+## Get started
+
+1. Open **<https://random21m.github.io/blindsig/>** on your phone.
+2. Add it to your home screen (Share → Add to Home Screen on iPhone, ⋮ → Install app on Android).
+3. Write down your 12-word seed phrase, pick a mint, and receive some sats over Lightning.
+
+> [!WARNING]
+> Mints hold the bitcoin behind your ecash, so they are custodians. Use small amounts and mints you trust, and keep your seed phrase offline.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/screens/home-green.png" width="250" alt="Home screen"><br><sub><b>Home</b>: balance, fiat value and history</sub></td>
+    <td align="center"><img src="assets/screens/invoice.png" width="250" alt="Lightning invoice"><br><sub><b>Receive</b>: Lightning invoice</sub></td>
+    <td align="center"><img src="assets/screens/token.png" width="250" alt="Ecash token"><br><sub><b>Send</b>: ecash token as QR, text or link</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/offer.png" width="250" alt="BOLT12 offer"><br><sub><b>BOLT12</b>: a reusable offer you can be paid to again and again</sub></td>
+    <td align="center"><img src="assets/screens/onchain.png" width="250" alt="On-chain send"><br><sub><b>On-chain</b>: send to a bitcoin address with a fee choice</sub></td>
+    <td align="center"><img src="assets/screens/received.png" width="250" alt="Payment received"><br><sub><b>Done</b>: payment received</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/mints.png" width="250" alt="Mints"><br><sub><b>Mints</b>: add, switch and discover mints</sub></td>
+    <td align="center"><img src="assets/screens/auditor.png" width="250" alt="Mint details with auditor"><br><sub><b>Mint details</b>: features, keysets and auditor results</sub></td>
+    <td align="center"><img src="assets/screens/settings.png" width="250" alt="Settings"><br><sub><b>Settings</b>: backup, Nostr, NWC, privacy and more</sub></td>
+  </tr>
+</table>
+
+### Three themes
+
+Green, white and amber, all on the same soft charcoal background. Change it under Settings → Appearance.
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/screens/home-green.png" width="250" alt="Green theme"><br><sub>Green</sub></td>
+    <td align="center"><img src="assets/screens/home-white.png" width="250" alt="White theme"><br><sub>White</sub></td>
+    <td align="center"><img src="assets/screens/home-amber.png" width="250" alt="Amber theme"><br><sub>Amber</sub></td>
+  </tr>
+</table>
+
+<sub>Screenshots were taken against a local test mint with fake Lightning, so the amounts aren't real.</sub>
+
+## Features
+
+**Wallet**
+
+- 12-word seed (NUT-13) with full restore (NUT-09), including restoring from another seed
+- Multiple mints and units (sat, usd, eur…), mint messages, nicknames, and moving funds between mints
+- Mint discovery and reviews over Nostr (NIP-87), auditor results, and mint-list backup (compatible with cashu.me)
+
+**Receive**
+
+- Ecash: paste, scan (including animated QR), NFC, or auto-paste from the clipboard
+- Lightning invoices, BOLT12 offers you can reuse, and on-chain deposit addresses
+- Tokens from other mints, either kept there or swapped into your mint
+- "Receive later" to park a token in your history and claim it when you're ready
+
+**Send**
+
+- Ecash as a static or animated QR (BC-UR), a link, NFC, or hidden inside an emoji
+- Offline sending: exact-amount tokens made without contacting the mint
+- Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, and bitcoin addresses (BIP21 aware)
+- Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey or npub
+
+**Nostr**
+
+- A Nostr identity from your seed (the same key as cashu.me), or an nsec, browser extension (NIP-07) or remote signer (NIP-46)
+- Lightning address via npub.cash, with automatic claiming, live updates and optional short usernames
+- Payment requests (NUT-18) delivered over Nostr or HTTP, and ecash in Nostr DMs picked up automatically
+- Nostr Wallet Connect (NIP-47) with a spending allowance, so other apps can use your wallet
+
+**Privacy and safety**
+
+- You choose which background checks run: invoices, sent tokens, WebSockets (NUT-17) and price lookups
+- Sent tokens update live when someone claims them
+- Data stays in this browser's IndexedDB, and only one tab can run the wallet at a time, so two tabs can't spend the same ecash
+- Spent-proof cleanup, keyset counters, export and new-seed tools for when something looks off
+
+**Everywhere**
+
+- 14 languages: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right to left), ไทย, 日本語 and 中文
+- On-screen keypad, optional ₿ symbol, prices in 20 currencies
+- Works offline once installed
+
+## Run it yourself
+
+blindsig is a static site, so any HTTPS host works. Service workers and the camera need HTTPS.
+
+```sh
+npm install
+npm run build      # bundles src/main.js and public/ into docs/
+```
+
+- **GitHub Pages:** Settings → Pages → Deploy from branch → `main`, `/docs`.
+- **Netlify Drop:** drag the `docs` folder onto <https://app.netlify.com/drop>.
 
 ## Translations
 
-UI text is English in the source and swapped at runtime from `public/i18n/<code>.json`.
-Source strings live in `tools/i18n/en.json`; translations in `tools/i18n/tr/<code>.tsv`
-(`index<TAB>text`). New strings are appended to the end of `en.json` so existing indices stay put. Run `python3 tools/i18n/build.py` to regenerate the JSON files.
-Translations were machine-assisted and have not been reviewed by native speakers; corrections are welcome.
+UI text is English in the source and swapped at runtime from `public/i18n/<code>.json`. Source strings live in `tools/i18n/en.json` and translations in `tools/i18n/tr/<code>.tsv` (`index<TAB>text`). New strings go at the end of `en.json` so existing indices stay put. Run `python3 tools/i18n/build.py` to regenerate the JSON files.
 
-## Deploy
-
-The built site lives in `docs/` and is served by GitHub Pages (Settings → Pages → Deploy from branch → main, /docs).
-(service workers and the camera require HTTPS):
-
-- Netlify Drop: drag the `docs` folder onto https://app.netlify.com/drop
-- or any HTTPS static host with `docs` as the site root
-
-Open the URL on your phone, then "Add to Home Screen".
-
-## Develop
-
-    npm install
-    npm run build      # bundles src/main.js + public/ into docs/
+The translations were machine-assisted and haven't been reviewed by native speakers. Corrections are welcome.
 
 ## Security notes
 
-- The seed phrase and ecash live in this browser's IndexedDB, unencrypted.
-  Anyone with access to the unlocked device can spend. Write the seed down offline.
+- Your seed phrase and ecash are stored unencrypted in this browser. Anyone with your unlocked device can spend them, so write the seed down and keep it offline.
 - Mints are custodians. Use small amounts and mints you trust.
+
+## Built with
+
+[cashu-ts](https://github.com/cashubtc/cashu-ts) · [nostr-tools](https://github.com/nbd-wtf/nostr-tools) · [esbuild](https://esbuild.github.io) · inspired by [cashu.me](https://github.com/cashubtc/cashu.me)
