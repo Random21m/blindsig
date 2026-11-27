@@ -600,3 +600,6 @@
 599	Tryck igen för att radera
 600	Begäran raderad
 601	När den raderas känns begäran inte längre igen. Betalningar som redan tagits emot finns kvar i historiken.
+602	Vibration
+603	En kort vibration vid betalningar, fel och knapptryck.
+604	Ett myntljud när pengar kommer in och ett sus när de går ut. På iPhone är ljuden av så länge ljudlöst läge är på.

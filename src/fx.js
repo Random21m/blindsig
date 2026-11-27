@@ -20,10 +20,16 @@ function audio() {
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   return ctx;
 }
-// browsers only allow audio after the first tap: unlock it then, silently
-const unlock = () => { if (st().sounds !== false) audio(); };
-addEventListener('pointerdown', unlock, { passive: true });
-addEventListener('keydown', unlock);
+// browsers only allow audio after a tap. iPhone only counts touchend/click (not pointerdown) and
+// needs a sound actually started inside that tap, so play one silent sample to unlock it.
+// It can lock again after the app was in the background, so this runs on every tap until it's running.
+const unlock = () => {
+  if (st().sounds === false) return;
+  const a = audio(); if (!a || a.state === 'running' && unlocked) return;
+  try { const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050); src.connect(a.destination); src.start(0); unlocked = true; } catch {}
+};
+let unlocked = false;
+for (const ev of ['touchend', 'click', 'keydown']) addEventListener(ev, unlock, { capture: true, passive: true });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && ctx) ctx.resume().catch(() => {}); });
 
 // one soft note: frequency glide, quick attack, smooth decay
@@ -73,7 +79,24 @@ export function play(kind) {
 
 /* ---------------- haptics ---------------- */
 const BUZZ = { received: [18, 40, 28], sent: [22], claimed: [12, 30, 12], error: [30, 50, 30], tap: [6] };
-export function buzz(kind) { try { navigator.vibrate?.(BUZZ[kind] || [15]); } catch {} }
+// iPhone has no vibration API. Safari (iOS 18+) gives a real haptic tick when a switch control is
+// toggled, so toggle an invisible one. Several ticks a short moment apart make a pattern.
+export const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const TICKS = { received: 2, sent: 1, claimed: 2, error: 3, tap: 1 };
+function iosTick() {
+  try {
+    const l = document.createElement('label'), i = document.createElement('input');
+    i.type = 'checkbox'; i.setAttribute('switch', ''); l.setAttribute('aria-hidden', 'true'); l.style.display = 'none';
+    l.appendChild(i); document.head.appendChild(l); l.click(); l.remove();
+  } catch {}
+}
+export function buzz(kind) {
+  if (st().haptics === false) return;
+  if (navigator.vibrate) { try { navigator.vibrate(BUZZ[kind] || [15]); } catch {} return; }
+  if (!isIOS) return;
+  const n = TICKS[kind] || 1;
+  for (let k = 0; k < n; k++) k ? setTimeout(iosTick, k * 110) : iosTick();
+}
 
 /* ---------------- motion ---------------- */
 // shake an element sideways, like a head saying "no"

@@ -600,3 +600,6 @@
 599	Touchez à nouveau pour supprimer
 600	Demande supprimée
 601	Une fois supprimée, cette demande n’est plus reconnue. Les paiements déjà reçus restent dans l’historique.
+602	Vibration
+603	Une courte vibration pour les paiements, les erreurs et les touches.
+604	Un bruit de pièce quand l’argent arrive, un souffle quand il part. Sur iPhone, les sons restent coupés tant que le mode silencieux est activé.

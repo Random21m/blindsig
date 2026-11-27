@@ -600,5 +600,8 @@
 "Delete request",
 "Tap again to delete",
 "Request deleted",
-"Deleting stops this request from being recognised. Payments already received stay in your history."
+"Deleting stops this request from being recognised. Payments already received stay in your history.",
+"Vibration",
+"A short buzz for payments, errors and key presses.",
+"A coin sound when money arrives, a whoosh when it leaves. On iPhone, sounds stay off while the silent switch is on."
 ]

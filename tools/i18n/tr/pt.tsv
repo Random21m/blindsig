@@ -600,3 +600,6 @@
 599	Toque de novo para excluir
 600	Solicitação excluída
 601	Depois de excluída, esta solicitação deixa de ser reconhecida. Pagamentos já recebidos continuam no histórico.
+602	Vibração
+603	Uma vibração curta em pagamentos, erros e teclas.
+604	Um som de moeda quando o dinheiro chega e um sopro quando sai. No iPhone, os sons ficam desligados enquanto o modo silencioso estiver ativo.

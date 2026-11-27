@@ -108,7 +108,7 @@ function bindKeypads(b) {
       else if (k === '.') { if (!v.includes('.')) v = (v || '0') + '.'; }
       else if (v.replace('.', '').length < 12) { if (v.includes('.') && v.split('.')[1].length >= 2) return FX.shake(inp.closest('.amt')); v = v === '0' ? k : v + k; }
       else return FX.shake(inp.closest('.amt'));
-      inp.value = v; inp.dispatchEvent(new Event('input')); FX.play('tap'); navigator.vibrate?.(8);
+      inp.value = v; inp.dispatchEvent(new Event('input')); FX.play('tap'); FX.buzz('tap');
     };
   });
   $$('.amt input', b).forEach((i) => i.addEventListener('input', () => {
@@ -885,12 +885,14 @@ const SECTIONS = {
       ${toggle('t_keypad', 'On-screen keypad', 'Use the built-in number pad for amounts.', st.keypad)}
       ${toggle('t_btcSymbol', 'Use ₿ symbol', 'Show ₿1,000 instead of 1,000 sat.', st.btcSymbol)}
       <h3>Sound and motion</h3>
-      ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
+      ${toggle('t_sounds', 'Sounds', FX.isIOS ? 'A coin sound when money arrives, a whoosh when it leaves. On iPhone, sounds stay off while the silent switch is on.' : 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
+      ${toggle('t_haptics', 'Vibration', 'A short buzz for payments, errors and key presses.', st.haptics !== false)}
       ${toggle('t_keyClicks', 'Keypad clicks', 'A faint click on each key press.', st.keyClicks)}
       ${toggle('t_motion', 'Animations', 'Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.', st.motion)}`, (b) => {
       $$('.th', b).forEach((x) => (x.onclick = () => { st.theme = x.dataset.th; save(); render(); SECTIONS.appearance(); }));
-      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'keyClicks', 'motion'], (k) => {
+      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'haptics', 'keyClicks', 'motion'], (k) => {
         if (k === 'sounds' && st.sounds) FX.play('received');
+        if (k === 'haptics' && st.haptics) FX.buzz('received');
         if (k === 'keyClicks' && st.keyClicks) FX.play('tap');
         if (k === 'motion' && st.motion) FX.confetti($('#t_motion', b));
       });
@@ -1084,7 +1086,7 @@ async function startScan(cb) {
       if (urDec.isComplete() && urDec.isSuccess()) { const out = new TextDecoder().decode(urDec.resultUR().decodeCBOR()); const f = onScan; stopScan(); f && f(out); }
       return;
     }
-    const f = onScan; stopScan(); navigator.vibrate?.(30); f && f(txt.trim());
+    const f = onScan; stopScan(); FX.buzz('tap'); f && f(txt.trim());
   };
   raf = requestAnimationFrame(loop);
 }

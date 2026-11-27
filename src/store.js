@@ -2,13 +2,14 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.6.0';
+export const VERSION = '1.6.1';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber
   lang: '', // '' = follow the device language
   keypad: true,
   sounds: true,
+  haptics: true,
   motion: true,
   keyClicks: false,
   btcSymbol: false,

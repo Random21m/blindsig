@@ -600,3 +600,6 @@
 599	Zum Löschen nochmal tippen
 600	Anfrage gelöscht
 601	Nach dem Löschen wird diese Anfrage nicht mehr erkannt. Bereits erhaltene Zahlungen bleiben im Verlauf.
+602	Vibration
+603	Ein kurzes Vibrieren bei Zahlungen, Fehlern und Tastendrücken.
+604	Ein Münzklang, wenn Geld ankommt, ein Rauschen, wenn es geht. Auf dem iPhone bleiben Töne aus, solange der Stummschalter an ist.
