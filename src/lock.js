@@ -56,7 +56,7 @@ export function pinPad(root, { len = 6, title, sub = '', onPin, extra = '', lenS
     const k = e.target.closest('button')?.dataset.k;
     if (!k || busy) return;
     if (k !== '⌫' && wait()) return FX.fail(D);
-    FX.play('tap'); FX.buzz('tap');
+    FX.play('pin'); FX.buzz('pin');
     if (k === '⌫') pin = pin.slice(0, -1);
     else if (pin.length < len) pin += k;
     draw();

@@ -95,6 +95,8 @@ const SOUNDS = {
   error: (a) => { note(a, { f: 196, dur: 0.09, vol: 0.12, type: 'square', lp: 700 }); note(a, { f: 174.6, at: 0.11, dur: 0.14, vol: 0.12, type: 'square', lp: 700 }); },
   // the faintest tick for the keypad
   tap: (a) => note(a, { f: 1900, dur: 0.025, vol: 0.025, type: 'triangle' }),
+  // PIN keys: a slightly fuller click, like a phone's passcode screen
+  pin: (a) => { note(a, { f: 1500, dur: 0.035, vol: 0.05, type: 'triangle' }); note(a, { f: 3000, dur: 0.02, vol: 0.012 }); },
 };
 export function play(kind) {
   if (st().sounds === false) return;
@@ -103,11 +105,11 @@ export function play(kind) {
 }
 
 /* ---------------- haptics ---------------- */
-const BUZZ = { received: [18, 40, 28], sent: [22], claimed: [12, 30, 12], error: [30, 50, 30], tap: [6], test: [40, 60, 40, 60, 80] };
+const BUZZ = { received: [18, 40, 28], sent: [22], claimed: [12, 30, 12], error: [30, 50, 30], tap: [6], pin: [10], test: [40, 60, 40, 60, 80] };
 // iPhone has no vibration API. Safari (iOS 18+) gives a real haptic tick when a switch control is
 // toggled, so toggle an invisible one. Several ticks a short moment apart make a pattern.
 export const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const TICKS = { received: 2, sent: 1, claimed: 2, error: 3, tap: 1, test: 4 };
+const TICKS = { received: 2, sent: 1, claimed: 2, error: 3, tap: 1, pin: 1, test: 4 };
 function iosTick() {
   try {
     const l = document.createElement('label'), i = document.createElement('input');
@@ -133,6 +135,18 @@ addEventListener('click', (e) => {
   const el = t.closest?.(TAPPABLE);
   if (!el || el.disabled || el.closest('.kp')) return;
   buzz('tap'); play('tap');
+}, { capture: true, passive: true });
+
+// iPhone only shows :active (pressed) styles when the page listens for touches, and even then a
+// quick tap can miss it, so keypad keys also get a "down" class for the length of the press
+addEventListener('touchstart', () => {}, { passive: true });
+addEventListener('pointerdown', (e) => {
+  const k = e.target.closest?.('.kp button');
+  if (!k) return;
+  k.classList.add('down');
+  const t0 = performance.now();
+  const up = () => { setTimeout(() => k.classList.remove('down'), Math.max(0, 110 - (performance.now() - t0))); removeEventListener('pointerup', up, true); removeEventListener('pointercancel', up, true); };
+  addEventListener('pointerup', up, true); addEventListener('pointercancel', up, true);
 }, { capture: true, passive: true });
 
 /* ---------------- motion ---------------- */

@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.8.3';
+export const VERSION = '1.8.4';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -120,6 +120,7 @@ export async function initStore() {
     Object.assign(S, blank());
     if (parsed.pub?.theme) S.settings.theme = parsed.pub.theme;
     if (parsed.pub?.lang) S.settings.lang = parsed.pub.lang;
+    if (parsed.pub?.fx) Object.assign(S.settings, parsed.pub.fx);
     return { locked: true, pub: parsed.pub || {} };
   }
   try { const st = normalize(parsed); for (const k of Object.keys(S)) delete S[k]; Object.assign(S, st); } catch {}
@@ -173,6 +174,7 @@ async function flush() {
       let out = json;
       if (env && key) {
         env.pub.theme = S.settings.theme; env.pub.lang = S.settings.lang || '';
+        env.pub.fx = { sounds: S.settings.sounds !== false, haptics: S.settings.haptics !== false, soundsOnSilent: !!S.settings.soundsOnSilent, motion: S.settings.motion !== false };
         out = JSON.stringify({ ...env, ...(await seal(key, json)) });
       } else if (env) continue; // still locked: never overwrite the encrypted state
       await writeRaw(out, !!env);

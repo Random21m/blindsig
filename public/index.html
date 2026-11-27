@@ -198,7 +198,8 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 @keyframes shake{15%,55%{transform:translateX(-7px)}35%,75%{transform:translateX(7px)}90%{transform:translateX(-2px)}}
 .updbar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 16px);transform:translateX(-50%);z-index:70;padding:12px 18px;border-radius:999px;background:var(--ac);color:var(--ac-ink);font:600 14px var(--mono);box-shadow:0 10px 30px rgba(0,0,0,.5);white-space:nowrap}
 .confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:80}
-.kp button{transition:transform .08s}.kp button:active{transform:scale(.94)}
+.kp button{transition:transform .08s,background .08s}.kp button:active,.kp button.down{transform:scale(.94);background:var(--card2)}
+.pinpad .pkp button{transition:transform .08s,background .12s,color .12s}.pinpad .pkp button:active,.pinpad .pkp button.down{transform:scale(.9);background:var(--ac-soft);color:var(--ac)}
 .seed{list-style:none;margin:6px 0 16px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .seed li{border-radius:12px;background:var(--card);padding:10px 12px;font:500 16px var(--mono)}
 .seed span{color:var(--faint);margin-right:10px;font-size:13px}
