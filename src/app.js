@@ -12,6 +12,7 @@ import {
   toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind, pinOn, pinInfo, setPin, clearPin, setLockAfter, flushSave,
 } from './store.js';
 import * as L from './lock.js';
+import { checkNow } from './update.js';
 import * as C from './core.js';
 import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
@@ -1010,8 +1011,15 @@ const SECTIONS = {
     sheet('About', `<p><b>blindsig ${VERSION}</b></p>
       <p class="dim">A Cashu ecash wallet built on cashu-ts. Ecash and your seed are stored only in this browser. Mints are custodians: use ones you trust and keep amounts small.</p>
       ${kv([['Library', 'cashu-ts 4.14'], ['Proofs held', String(Object.values(S.proofs).reduce((t, a) => t + (a?.length || 0), 0))], ['Mints', String(S.mints.length)], ['Storage', storageKind()], ['Encryption', pinOn() ? 'PIN (AES-256)' : 'Off']])}
+      <button class="btn wide" id="upd">Check for updates</button>
       <a class="btn wide" href="https://cashu.space" target="_blank" rel="noopener">cashu.space</a>
-      <a class="btn wide" href="https://github.com/Random21m/blindsig" target="_blank" rel="noopener">Source code</a>`, null, { back });
+      <a class="btn wide" href="https://github.com/Random21m/blindsig" target="_blank" rel="noopener">Source code</a>`, (b) => {
+      const u = $('#upd', b);
+      u.onclick = withBusy(u, async () => {
+        const r = await checkNow();
+        toast(r === 'found' ? 'Downloading the new version. It’s ready in a moment.' : r === 'latest' ? 'You have the latest version.' : 'Couldn’t check for updates. Are you online?', r === 'offline' ? 'warn' : 'ok');
+      });
+    }, { back });
   },
 };
 // common PINs a thief would try first
@@ -1289,18 +1297,3 @@ if (action && S.mnemonic) {
   setTimeout(() => { if (needMint()) return; if (action === 'receive') receiveSheet(); else if (action === 'send') sendSheet(); else if (action === 'scan') startScan(route); }, 500);
 }
 
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  // a new version takes over in the background; offer a one-tap reload instead of waiting for the next launch
-  const hadController = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.register('./sw.js').then((reg) => {
-    const check = () => reg.update().catch(() => {});
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
-  }).catch(() => {});
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController || $('#updBar')) return;
-    const bar = document.createElement('button');
-    bar.id = 'updBar'; bar.className = 'updbar'; bar.textContent = 'New version ready. Tap to update.';
-    bar.onclick = async () => { await flushSave(); location.reload(); };
-    document.body.appendChild(bar);
-  });
-}

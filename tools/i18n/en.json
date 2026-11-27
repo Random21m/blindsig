@@ -688,5 +688,9 @@
 "A light tap for buttons, payments and errors. Needs iOS 18 or later, with System Haptics on in iPhone Settings → Sounds & Haptics.",
 "A light tap for buttons, payments and errors.",
 "{0}: on",
-"{0}: off"
+"{0}: off",
+"Check for updates",
+"Downloading the new version. It’s ready in a moment.",
+"You have the latest version.",
+"Couldn’t check for updates. Are you online?"
 ]
