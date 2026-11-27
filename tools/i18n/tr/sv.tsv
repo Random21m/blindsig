@@ -603,3 +603,11 @@
 602	Vibration
 603	En kort vibration vid betalningar, fel och knapptryck.
 604	Ett myntljud när pengar kommer in och ett sus när de går ut. På iPhone är ljuden av så länge ljudlöst läge är på.
+605	Betalas med ecash från
+606	npub.cash tar bara ecash från {0}. Byt dit och betala sedan.
+607	npub.cash tar bara ecash från {0}. Lägg till den minten och flytta dit några sats först.
+608	Lägg till {0}
+609	npub.cash nekade betalningen ({0}). Dina sats är tillbaka i plånboken.
+610	npub.cash nekade betalningen ({0}). Ecash finns i historiken; du kan ta tillbaka den där.
+611	npub.cash tar bara ecash från {0}. Byt till den minten först.
+612	npub.cash vill ha {0}; byt enhet först

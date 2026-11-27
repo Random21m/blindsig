@@ -46,11 +46,16 @@ export function nostrUI(x) {
         if (!/^[a-z0-9._-]{1,40}$/.test(name)) return toast('Use letters, numbers, dots, dashes or underscores.', 'warn');
         const r = await N.npcUsernameQuote(name);
         if (r.done) { toast('Username set'); return lnaddr(); }
-        const q = N.decodeRequest(r.creq);
+        const q = N.decodeRequest(r.creq), need = q.mints[0];
+        const onMint = !need || need === S.active, have = need && mintOf(need);
         const ux = $('#ux', b);
-        ux.innerHTML = kv([['Username', esc(name + '@' + n.host)], ['Price', `<b>${esc(fmt(q.amount, q.unit))}</b>`], ['Pay from', esc(host(S.active))]]) + '<button class="btn primary wide" id="buy">Pay and claim</button>';
+        ux.innerHTML = kv([['Username', esc(name + '@' + n.host)], ['Price', `<b>${esc(fmt(q.amount, q.unit))}</b>`], need && ['Paid with ecash from', esc(host(need))], ['Pay from', esc(host(S.active))]])
+          + (onMint ? '<button class="btn primary wide" id="buy">Pay and claim</button>'
+            : `<p class="warn">npub.cash only takes ecash from ${esc(host(need))}. ${have ? 'Switch to it, then pay.' : 'Add that mint and move some sats to it first.'}</p><button class="btn wide" id="swn">${have ? `Switch to ${esc(host(need))}` : `Add ${esc(host(need))}`}</button>`);
         const buy = $('#buy', ux);
-        buy.onclick = withBusy(buy, async () => { await N.npcBuyUsername(name, r.creq); render(); toast('Username claimed'); lnaddr(); });
+        if (buy) buy.onclick = withBusy(buy, async () => { await N.npcBuyUsername(name, r.creq); render(); toast('Username claimed'); lnaddr(); });
+        const swn = $('#swn', ux);
+        if (swn) swn.onclick = withBusy(swn, async () => { if (!have) await C.addMint(need); C.selectMint(need); render(); $('#un button', b)?.click(); });
       });
     }, { back: x.settingsSheet });
   }

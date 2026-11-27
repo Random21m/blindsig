@@ -603,3 +603,11 @@
 602	Vibration
 603	Ein kurzes Vibrieren bei Zahlungen, Fehlern und Tastendrücken.
 604	Ein Münzklang, wenn Geld ankommt, ein Rauschen, wenn es geht. Auf dem iPhone bleiben Töne aus, solange der Stummschalter an ist.
+605	Bezahlt mit Ecash von
+606	npub.cash nimmt nur Ecash von {0}. Wechsle dorthin und bezahle dann.
+607	npub.cash nimmt nur Ecash von {0}. Füge diese Mint hinzu und verschiebe zuerst etwas Guthaben dorthin.
+608	{0} hinzufügen
+609	npub.cash hat die Zahlung abgelehnt ({0}). Deine Sats sind wieder in deinem Wallet.
+610	npub.cash hat die Zahlung abgelehnt ({0}). Das Ecash ist in deinem Verlauf; du kannst es dort zurückholen.
+611	npub.cash nimmt nur Ecash von {0}. Wechsle zuerst zu dieser Mint.
+612	npub.cash möchte {0}; wechsle zuerst die Einheit

@@ -603,3 +603,11 @@
 602	Vibrace
 603	Krátké zavibrování při platbách, chybách a stisku kláves.
 604	Zvuk mince, když peníze přijdou, a šum, když odejdou. Na iPhonu zvuky mlčí, dokud je zapnutý tichý režim.
+605	Placeno ecash z
+606	npub.cash přijímá jen ecash z {0}. Přepni na ni a pak zaplať.
+607	npub.cash přijímá jen ecash z {0}. Přidej tu mincovnu a nejdřív na ni přesuň pár satů.
+608	Přidat {0}
+609	npub.cash platbu odmítl ({0}). Saty jsou zpět ve tvé peněžence.
+610	npub.cash platbu odmítl ({0}). Ecash je v historii; můžeš si ho tam vzít zpět.
+611	npub.cash přijímá jen ecash z {0}. Nejdřív přepni na tu mincovnu.
+612	npub.cash chce {0}; nejdřív změň jednotku

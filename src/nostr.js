@@ -328,12 +328,32 @@ async function npcUsernameCall(name, token) {
   return { done: true };
 }
 export const npcUsernameQuote = (name) => npcUsernameCall(name);
+// npub.cash checks the token's mint letter for letter and reads tokens with an older cashu-ts, so pay
+// with a classic (cashuA, full keyset ids) token carrying the mint address exactly as it was asked for
+const b64url = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const plainAmount = (a) => (a && typeof a === 'object' && a.toNumber ? a.toNumber() : Number(a));
+function classicToken(mint, proofs, unit, memo) {
+  const ps = proofs.map((p) => ({ id: p.id, amount: plainAmount(p.amount), secret: p.secret, C: p.C, ...(p.witness ? { witness: typeof p.witness === 'string' ? p.witness : JSON.stringify(p.witness) } : {}) }));
+  return 'cashuA' + b64url(JSON.stringify({ token: [{ mint, proofs: ps }], unit, ...(memo ? { memo } : {}) }));
+}
+export const npcRequiredMint = (creq) => { const r = decodeRequest(creq); return { raw: (r.pr.mints || [])[0] || '', url: r.mints[0] || '' }; };
 export async function npcBuyUsername(name, creq) {
   const r = decodeRequest(creq);
-  if (r.unit !== S.unit) throw new Error(`the request is in ${r.unit}; switch unit first`);
-  if (r.mints.length && !r.mints.includes(S.active)) throw new Error('select one of the mints the request accepts');
+  if (r.unit !== S.unit) throw new Error(`npub.cash wants ${r.unit}; switch unit first`);
+  if (r.mints.length && !r.mints.includes(S.active)) throw new Error(`npub.cash only takes ecash from ${host(r.mints[0])}. Switch to that mint first.`);
+  const raw = (r.pr.mints || []).find((m) => normUrl(m) === S.active) || S.active;
   const h = await C.sendEcash(r.amount, { memo: 'npub.cash username' });
-  await npcUsernameCall(name, h.token);
+  const w = await C.walletFor(h.mint, h.unit);
+  const { proofs } = w.decodeToken(h.token); // full keyset ids
+  try {
+    await npcUsernameCall(name, classicToken(raw, proofs, h.unit, 'npub.cash username'));
+  } catch (e) {
+    // npub.cash didn't take it: the ecash is still ours, so take it straight back
+    let back = false;
+    try { await C.reclaim(h); back = true; } catch {}
+    const why = String(e.message || e).replace(/^Invalid payment:\s*/i, '');
+    throw new Error(`npub.cash refused the payment (${why}). ${back ? 'Your sats are back in your wallet.' : 'The ecash is in your history; you can reclaim it there.'}`);
+  }
   h.status = 'claimed'; save();
   return h;
 }

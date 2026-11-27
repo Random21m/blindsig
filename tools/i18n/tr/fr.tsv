@@ -603,3 +603,11 @@
 602	Vibration
 603	Une courte vibration pour les paiements, les erreurs et les touches.
 604	Un bruit de pièce quand l’argent arrive, un souffle quand il part. Sur iPhone, les sons restent coupés tant que le mode silencieux est activé.
+605	Payé en ecash de
+606	npub.cash n’accepte que l’ecash de {0}. Passez-y, puis payez.
+607	npub.cash n’accepte que l’ecash de {0}. Ajoutez cette mint et transférez-y d’abord quelques sats.
+608	Ajouter {0}
+609	npub.cash a refusé le paiement ({0}). Vos sats sont revenus dans votre portefeuille.
+610	npub.cash a refusé le paiement ({0}). L’ecash est dans votre historique ; vous pouvez le récupérer là.
+611	npub.cash n’accepte que l’ecash de {0}. Passez d’abord à cette mint.
+612	npub.cash veut des {0} ; changez d’abord d’unité

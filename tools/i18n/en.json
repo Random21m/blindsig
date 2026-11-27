@@ -603,5 +603,13 @@
 "Deleting stops this request from being recognised. Payments already received stay in your history.",
 "Vibration",
 "A short buzz for payments, errors and key presses.",
-"A coin sound when money arrives, a whoosh when it leaves. On iPhone, sounds stay off while the silent switch is on."
+"A coin sound when money arrives, a whoosh when it leaves. On iPhone, sounds stay off while the silent switch is on.",
+"Paid with ecash from",
+"npub.cash only takes ecash from {0}. Switch to it, then pay.",
+"npub.cash only takes ecash from {0}. Add that mint and move some sats to it first.",
+"Add {0}",
+"npub.cash refused the payment ({0}). Your sats are back in your wallet.",
+"npub.cash refused the payment ({0}). The ecash is in your history; you can reclaim it there.",
+"npub.cash only takes ecash from {0}. Switch to that mint first.",
+"npub.cash wants {0}; switch unit first"
 ]

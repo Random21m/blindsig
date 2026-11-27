@@ -603,3 +603,11 @@
 602	Titreşim
 603	Ödemelerde, hatalarda ve tuş basışlarında kısa bir titreşim.
 604	Para gelince bozuk para sesi, giderken bir hışırtı. iPhone’da sessiz mod açıkken sesler çalmaz.
+605	Şu mintten ecash ile ödenir
+606	npub.cash yalnızca {0} ecash’i kabul ediyor. Ona geç, sonra öde.
+607	npub.cash yalnızca {0} ecash’i kabul ediyor. Önce o minti ekle ve biraz sat aktar.
+608	{0} ekle
+609	npub.cash ödemeyi reddetti ({0}). Satların cüzdanına geri döndü.
+610	npub.cash ödemeyi reddetti ({0}). Ecash geçmişinde; oradan geri alabilirsin.
+611	npub.cash yalnızca {0} ecash’i kabul ediyor. Önce o minte geç.
+612	npub.cash {0} istiyor; önce birimi değiştir
