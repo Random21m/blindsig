@@ -8,7 +8,7 @@ const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const motionOn = () => st().motion !== false && !reduced();
 
 /* ---------------- sound ---------------- */
-let ctx = null, out = null;
+let ctx = null, out = null, born = 0;
 // iPhone: "ambient" mixes with music but stays quiet while the ring switch is on silent;
 // "playback" (the Play on silent setting) is heard even on silent, like a video would be.
 const sessionType = () => (st().soundsOnSilent ? 'playback' : 'ambient');
@@ -18,7 +18,7 @@ function fresh() {
   if (!AC) return null;
   try { ctx?.close(); } catch {}
   setSession();
-  ctx = new AC();
+  ctx = new AC(); born = Date.now();
   // everything goes through one master volume and a limiter, so phone speakers get a full,
   // clear sound without clipping when notes overlap
   const lim = ctx.createDynamicsCompressor();
@@ -38,11 +38,15 @@ function audio() {
 // leaves the context "interrupted" and a plain resume often never comes back, so on the next tap
 // a stuck context is replaced with a new one, created inside the tap.
 let unlocked = false, everUnlocked = false;
-const unlock = () => {
-  if (st().sounds === false) return;
+const unlock = (e) => {
+  // only real taps count: the haptic trick clicks a hidden switch, and that synthetic click must
+  // never replace the audio context (a context made outside a tap stays silent on iPhone)
+  if (!e.isTrusted || st().sounds === false) return;
   if (ctx && ctx.state === 'running' && unlocked) return;
-  // first tap ever: wake the context we have; later taps: a context that isn't running is stuck
-  const a = !ctx ? fresh() : ctx.state === 'running' || !everUnlocked ? audio() : fresh();
+  // a context made in this tap or just before is still starting up (iPhone switches it to running
+  // a moment later), so wake it rather than replacing it. Only one that stays stuck is replaced.
+  const starting = ctx && Date.now() - born < 2000;
+  const a = !ctx || ctx.state === 'closed' ? fresh() : ctx.state === 'running' || !everUnlocked || starting ? audio() : fresh();
   if (!a) return;
   try { a.resume().catch(() => {}); const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050); src.connect(a.destination); src.start(0); unlocked = everUnlocked = true; } catch {}
 };
@@ -99,11 +103,11 @@ export function play(kind) {
 }
 
 /* ---------------- haptics ---------------- */
-const BUZZ = { received: [18, 40, 28], sent: [22], claimed: [12, 30, 12], error: [30, 50, 30], tap: [6] };
+const BUZZ = { received: [18, 40, 28], sent: [22], claimed: [12, 30, 12], error: [30, 50, 30], tap: [6], test: [40, 60, 40, 60, 80] };
 // iPhone has no vibration API. Safari (iOS 18+) gives a real haptic tick when a switch control is
 // toggled, so toggle an invisible one. Several ticks a short moment apart make a pattern.
 export const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const TICKS = { received: 2, sent: 1, claimed: 2, error: 3, tap: 1 };
+const TICKS = { received: 2, sent: 1, claimed: 2, error: 3, tap: 1, test: 4 };
 function iosTick() {
   try {
     const l = document.createElement('label'), i = document.createElement('input');
@@ -118,6 +122,18 @@ export function buzz(kind) {
   const n = TICKS[kind] || 1;
   for (let k = 0; k < n; k++) k ? setTimeout(iosTick, k * 110) : iosTick();
 }
+
+// a light tick (and the optional click sound) on every button, switch and list row.
+// Keypads handle their own feedback, so they're skipped here.
+const TAPPABLE = 'button, a.btn, .tg, .radio, .chk, .row, [role=tab]';
+addEventListener('click', (e) => {
+  if (!e.isTrusted) return;
+  const t = e.target;
+  if (t.tagName === 'INPUT' && t.closest('label')) return; // the second click a label passes to its switch
+  const el = t.closest?.(TAPPABLE);
+  if (!el || el.disabled || el.closest('.kp')) return;
+  buzz('tap'); play('tap');
+}, { capture: true, passive: true });
 
 /* ---------------- motion ---------------- */
 // shake an element sideways, like a head saying "no"
@@ -138,7 +154,8 @@ export function countUp(el, to, format, ms = 650) {
   requestAnimationFrame(step);
 }
 // confetti in the theme's colours: pixels, dashes and the odd ₿, bursting from a point
-export function confetti(from) {
+// big: a full-screen spray from both bottom corners and the middle (used to show the setting works)
+export function confetti(from, big = false) {
   if (!motionOn()) return;
   const cv = document.createElement('canvas');
   cv.className = 'confetti'; cv.setAttribute('aria-hidden', 'true');
@@ -150,13 +167,16 @@ export function confetti(from) {
   const cols = [css.getPropertyValue('--ac').trim(), css.getPropertyValue('--ink').trim(), css.getPropertyValue('--warn').trim(), css.getPropertyValue('--ac').trim()];
   const r = from?.getBoundingClientRect?.();
   const ox = r ? r.left + r.width / 2 : W / 2, oy = r ? r.top + r.height / 2 : H / 3;
-  const N = Math.min(110, Math.round(W / 4));
+  const N = big ? Math.min(260, Math.round(W / 1.6)) : Math.min(110, Math.round(W / 4));
+  // big: three fountains (bottom left, bottom right, middle), aimed to cover the whole screen
+  const src = (i) => (!big ? [ox, oy, -Math.PI / 2, Math.PI * 1.25, 5, 8] : i % 3 === 0 ? [0, H, -Math.PI / 3, 0.7, 14, 12] : i % 3 === 1 ? [W, H, -Math.PI * 2 / 3, 0.7, 14, 12] : [W / 2, H / 2, -Math.PI / 2, Math.PI * 2, 4, 10]);
   const ps = Array.from({ length: N }, (_, i) => {
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.25, v = 5 + Math.random() * 8;
-    return { x: ox, y: oy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, s: 3 + Math.random() * 4, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
+    const [x0, y0, dir, spread, v0, vr] = src(i);
+    const a = dir + (Math.random() - 0.5) * spread, v = v0 + Math.random() * vr * (big ? Math.sqrt(H / 800) : 1);
+    return { x: x0, y: y0, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, s: 3 + Math.random() * 4, rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
       c: cols[i % cols.length], k: i % 17 === 0 ? 'b' : i % 3 === 0 ? 'dash' : 'px', life: 0 };
   });
-  const t0 = performance.now(), DUR = 1900;
+  const t0 = performance.now(), DUR = big ? 2800 : 1900;
   const frame = (t) => {
     const el = t - t0; g.clearRect(0, 0, W, H);
     for (const p of ps) {

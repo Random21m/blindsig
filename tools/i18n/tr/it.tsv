@@ -682,3 +682,9 @@
 681	Inserisce un token dagli appunti quando apri Ricevi.
 682	Suona in modalità silenziosa
 683	Senti i suoni anche quando l’iPhone è in modalità silenziosa. La musica di altre app può andare in pausa mentre blindsig è aperto.
+684	Clic dei pulsanti
+685	Un leggero clic quando tocchi un tasto o un pulsante.
+686	Un leggero tocco per pulsanti, pagamenti ed errori. Richiede iOS 18 o successivo, con il feedback aptico di sistema attivo in Impostazioni iPhone → Suoni e feedback aptico.
+687	Un leggero tocco per pulsanti, pagamenti ed errori.
+688	{0}: attivo
+689	{0}: disattivo

@@ -682,3 +682,9 @@
 681	Fyller i en token från urklippet när du öppnar Ta emot.
 682	Spela i ljudlöst läge
 683	Hör ljuden även när din iPhone är i ljudlöst läge. Musik från andra appar kan pausas medan blindsig är öppen.
+684	Knappklick
+685	Ett svagt klick när du trycker på en tangent eller knapp.
+686	Ett lätt tryck för knappar, betalningar och fel. Kräver iOS 18 eller senare, med Systemhaptik på i iPhone-inställningar → Ljud och haptik.
+687	Ett lätt tryck för knappar, betalningar och fel.
+688	{0}: på
+689	{0}: av

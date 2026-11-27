@@ -682,5 +682,11 @@
 "Burnt orange",
 "Fill in a token from your clipboard when you open Receive.",
 "Play on silent",
-"Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open."
+"Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open.",
+"Button clicks",
+"A faint click when you tap a key or button.",
+"A light tap for buttons, payments and errors. Needs iOS 18 or later, with System Haptics on in iPhone Settings → Sounds & Haptics.",
+"A light tap for buttons, payments and errors.",
+"{0}: on",
+"{0}: off"
 ]

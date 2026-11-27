@@ -682,3 +682,9 @@
 681	Při otevření Přijmout vloží token ze schránky.
 682	Hrát i v tichém režimu
 683	Zvuky uslyšíte, i když je iPhone v tichém režimu. Hudba z jiných aplikací se může pozastavit, dokud je blindsig otevřený.
+684	Cvaknutí tlačítek
+685	Jemné cvaknutí při klepnutí na klávesu nebo tlačítko.
+686	Lehké ťuknutí u tlačítek, plateb a chyb. Vyžaduje iOS 18 nebo novější se zapnutou systémovou haptikou v Nastavení iPhonu → Zvuky a haptika.
+687	Lehké ťuknutí u tlačítek, plateb a chyb.
+688	{0}: zapnuto
+689	{0}: vypnuto

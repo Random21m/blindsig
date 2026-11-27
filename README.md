@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.8.2-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.2">
+  <img src="https://img.shields.io/badge/version-1.8.3-72d99b?style=flat-square&labelColor=161512" alt="version 1.8.3">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -127,7 +127,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - 14 languages: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right to left), ไทย, 日本語 and 中文
 - On-screen keypad, optional ₿ symbol, prices in 20 currencies
 - Four themes: green, white, amber and burnt orange
-- Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off). On iPhone, sounds can play even with the phone on silent, and haptics work too
+- Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off). A light haptic tap on every button and an optional click sound. On iPhone, sounds can play even with the phone on silent
 - Works offline once installed
 
 ## Run it yourself

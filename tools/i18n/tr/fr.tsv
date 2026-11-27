@@ -682,3 +682,9 @@
 681	Remplit un token depuis le presse-papiers à l’ouverture de Recevoir.
 682	Jouer en mode silencieux
 683	Entendez les sons même quand votre iPhone est en mode silencieux. La musique des autres apps peut se mettre en pause pendant que blindsig est ouvert.
+684	Clics des boutons
+685	Un léger clic quand vous touchez une touche ou un bouton.
+686	Une légère vibration pour les boutons, les paiements et les erreurs. Nécessite iOS 18 ou plus récent, avec les retours haptiques système activés dans Réglages de l’iPhone → Sons et vibrations.
+687	Une légère vibration pour les boutons, les paiements et les erreurs.
+688	{0} : activé
+689	{0} : désactivé

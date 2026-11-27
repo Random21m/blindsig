@@ -682,3 +682,9 @@
 681	Rellena un token de tu portapapeles al abrir Recibir.
 682	Sonar en silencio
 683	Escucha los sonidos aunque tu iPhone esté en silencio. La música de otras apps puede pausarse mientras blindsig está abierto.
+684	Clics en botones
+685	Un clic suave al tocar una tecla o un botón.
+686	Un toque ligero en botones, pagos y errores. Necesita iOS 18 o posterior, con Hápticos del sistema activados en Ajustes del iPhone → Sonidos y vibraciones.
+687	Un toque ligero en botones, pagos y errores.
+688	{0}: activado
+689	{0}: desactivado
