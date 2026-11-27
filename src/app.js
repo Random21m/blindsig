@@ -864,7 +864,7 @@ const SECTIONS = {
       $('#dbg', b).onclick = () => {
         const el = document.querySelector('#eruda');
         if (el) { try { window.eruda?.destroy(); } catch {} el.remove(); return; }
-        const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/eruda@3';
+        const sc = document.createElement('script'); sc.src = 'vendor/eruda.js';
         sc.onload = () => { try { window.eruda.init(); } catch {} };
         sc.onerror = () => toast('Could not load the debug console.', 'err');
         document.body.appendChild(sc);

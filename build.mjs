@@ -6,6 +6,20 @@ rmSync('docs', { recursive: true, force: true });
 mkdirSync('docs/icons', { recursive: true });
 cpSync('public', 'docs', { recursive: true });
 
+// self-hosted fonts: no request to Google on page load
+mkdirSync('docs/fonts/files', { recursive: true });
+const faces = [['inter', [400, 500, 600]], ['jetbrains-mono', [300, 400, 500, 600]]];
+let css = '';
+for (const [pkg, weights] of faces) for (const w of weights) {
+  const src = readFileSync(`node_modules/@fontsource/${pkg}/${w}.css`, 'utf8').replace(/, url\(\.\/files\/[^)]+\.woff\) format\('woff'\)/g, '');
+  for (const f of src.matchAll(/url\(\.\/files\/([^)]+\.woff2)\)/g)) cpSync(`node_modules/@fontsource/${pkg}/files/${f[1]}`, `docs/fonts/files/${f[1]}`);
+  css += src.replace(/url\(\.\/files\//g, 'url(files/');
+}
+writeFileSync('docs/fonts/fonts.css', css);
+// debug console, served from this site instead of a CDN, loaded only when switched on
+mkdirSync('docs/vendor', { recursive: true });
+cpSync('node_modules/eruda/eruda.js', 'docs/vendor/eruda.js');
+
 await build({
   entryPoints: ['src/main.js'],
   bundle: true,

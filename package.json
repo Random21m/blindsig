@@ -1,6 +1,6 @@
 {
   "name": "blindsig",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Cypherpunk Cashu ecash wallet PWA",
   "scripts": {
     "build": "node build.mjs",
@@ -19,6 +19,9 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "eruda": "^3.4.3",
     "esbuild": "^0.28.2"
   }
 }

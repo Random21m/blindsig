@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.4.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.4.0">
+  <img src="https://img.shields.io/badge/version-1.4.1-72d99b?style=flat-square&labelColor=161512" alt="version 1.4.1">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -137,10 +137,15 @@ UI text is English in the source and swapped at runtime from `public/i18n/<code>
 
 The translations were machine-assisted and haven't been reviewed by native speakers. Corrections are welcome.
 
-## Security notes
+## Security and privacy
 
-- Your seed phrase and ecash are stored unencrypted in this browser. Anyone with your unlocked device can spend them, so write the seed down and keep it offline.
-- Mints are custodians. Use small amounts and mints you trust.
+- **No server of its own, no account.** Your seed phrase, ecash and history stay in your browser.
+- **Strict Content Security Policy.** Only the site's own code can run, and fonts are self-hosted, so opening the wallet doesn't ping Google or a CDN.
+- **You control the extras.** Price lookups, the mint auditor, Nostr and npub.cash can all be turned off. [SECURITY.md](SECURITY.md) lists every service the app talks to.
+- **Your seed phrase and ecash are stored unencrypted in this browser.** Anyone with your unlocked device can spend them, so write the seed down and keep it offline.
+- **Mints are custodians.** Use small amounts and mints you trust.
+
+Found a security problem? Please [report it privately](https://github.com/Random21m/blindsig/security/advisories/new) instead of opening an issue.
 
 ## Built with
 
