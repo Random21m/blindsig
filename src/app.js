@@ -1027,9 +1027,13 @@ function schedule() {
   bg.forEach(clearInterval); bg = [];
   if (st.checkSent) bg.push(setInterval(() => { if (!document.hidden) C.settleAll({ invoices: false, sent: true }).then(render); }, 45000));
   if (st.checkAll) bg.push(setInterval(() => { if (!document.hidden) C.settleAll({ invoices: true, sent: false, all: true }).then(render); }, 60000));
-  if (st.fiat) bg.push(setInterval(() => { if (!document.hidden) C.loadPrice().then(render); }, 120000));
+  if (st.fiat) bg.push(setInterval(() => { if (!document.hidden) C.loadPrice().then((ch) => ch && render()); }, 30000));
   bg.push(setInterval(render, 60000));
 }
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && st.fiat && C.priceAge() > 15000) C.loadPrice().then((ch) => ch && render());
+});
 
 /* ================= install prompt ================= */
 let installEvt = null;

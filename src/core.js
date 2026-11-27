@@ -528,13 +528,17 @@ export async function settleAll({ invoices = true, sent = true, all = false } = 
     } catch {}
   }
 }
+// fiat price: refreshed every 30 s while the app is on screen and again when you come back to it
+let priceAt = 0;
+export const priceAge = () => Date.now() - priceAt;
 export async function loadPrice() {
   if (!S.settings.fiat) return false;
   const cur = S.settings.fiatCur;
   try {
     const r = await (await fetch(`https://api.coinbase.com/v2/prices/BTC-${cur}/spot`)).json();
     const p = parseFloat(r?.data?.amount);
-    if (p > 0) { S.price[cur] = p; save(); return true; }
+    priceAt = Date.now();
+    if (p > 0 && p !== S.price[cur]) { S.price[cur] = p; save(); return true; }
   } catch {}
   return false;
 }
