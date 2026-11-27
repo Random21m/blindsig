@@ -131,7 +131,10 @@ export function confetti(from) {
 
 /* ---------------- moments ---------------- */
 export function success(kind, anchor) {
-  play(kind); buzz(kind);
+  buzz(kind);
+  // in the background, sound and confetti would only fire late when you come back: skip them
+  if (document.hidden) return;
+  play(kind);
   if (kind === 'received' || kind === 'sent') confetti(anchor);
 }
 export function fail(el) { play('error'); buzz('error'); shake(el); }

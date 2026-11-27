@@ -41,6 +41,7 @@ async function pasteInto(el) {
 function nope(msg) { toast(msg, 'warn'); FX.fail($('#sheet .amt:not([hidden])') || $('#sheet .sb')); }
 function niceErr(e) {
   const m = String(e?.message || e);
+  if (/time(d)? ?out|aborted/i.test(m)) return 'The mint is taking too long to answer. Try again in a moment.';
   if (/failed to fetch|networkerror|load failed/i.test(m)) return 'Mint unreachable. Check your connection.';
   if (/not enough|insufficient/i.test(m)) return 'Not enough balance, including fees.';
   if (/already spent|token already/i.test(m)) return 'That ecash was already claimed.';
@@ -110,7 +111,15 @@ function bindKeypads(b) {
       inp.value = v; inp.dispatchEvent(new Event('input')); FX.play('tap'); navigator.vibrate?.(8);
     };
   });
-  $$('.amt input', b).forEach((i) => i.addEventListener('input', () => { if (!st.keypad) i.value = i.value.replace(isFiatUnit(i.dataset.unit) ? /[^0-9.]/g : /\D/g, ''); }));
+  $$('.amt input', b).forEach((i) => i.addEventListener('input', () => {
+    if (!st.keypad) i.value = i.value.replace(isFiatUnit(i.dataset.unit) ? /[^0-9.]/g : /\D/g, '');
+    // long amounts: widen the box to fit every digit and shrink the digits to fit the screen
+    const n = i.value.length;
+    if (n <= 7) { i.style.fontSize = ''; i.style.maxWidth = ''; return; }
+    const room = i.closest('.amtwrap').clientWidth - 70; // leave space for the unit
+    i.style.maxWidth = (n + 0.6) + 'ch';
+    i.style.fontSize = Math.max(20, Math.min(56, room / ((n + 0.6) * 0.62))) + 'px';
+  }));
 }
 const readAmt = (b, id = 'amt') => { const i = $('#' + id, b); return toBase(i.value, i.dataset.unit); };
 
@@ -129,7 +138,7 @@ const KIND = {
   'chain-in': ['Received', 'On-chain'], 'chain-out': ['Sent', 'On-chain'],
 };
 const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed' };
-let logFilter = 'all';
+let logFilter = 'all', logLimit = 100;
 function stamp(ts) {
   const d = new Date(ts), s = (Date.now() - ts) / 1000;
   if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + ' min ago';
@@ -151,6 +160,19 @@ function btcPrice() {
   }
   shownPrice = price;
 }
+// shrink the balance digits until the whole line fits the screen
+function fitBal() {
+  const row = $('.balrow'), el = $('#bal');
+  el.style.fontSize = '';
+  // every item uses min-width:0, so add up the parts' natural widths instead of trusting the row
+  const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+  const need = [...row.children].reduce((t, c) => t + c.scrollWidth, 0) + gap * (row.children.length - 1), have = row.clientWidth;
+  if (need > have) {
+    const fixed = need - el.scrollWidth;
+    el.style.fontSize = Math.max(22, parseFloat(getComputedStyle(el).fontSize) * ((have - fixed) / el.scrollWidth) * 0.96) + 'px';
+  }
+}
+addEventListener('resize', () => fitBal());
 function render() {
   document.documentElement.dataset.accent = st.theme;
   document.documentElement.dataset.motion = st.motion === false ? 'off' : 'on';
@@ -162,6 +184,7 @@ function render() {
   const p = fmtParts(total(), S.unit);
   $('#balPre').textContent = p.pre; $('#balPost').textContent = p.post;
   scramble($('#bal'), p.value);
+  fitBal();
   $('#fiat').textContent = S.unit === 'sat' && st.fiat ? fiatOf(total('sat')) : '';
   btcPrice();
   $('#mintBal').textContent = S.mints.length > 1 && m ? `${fmt(bal(m.url))} at this mint` : '';
@@ -170,9 +193,11 @@ function render() {
   $('#motd').hidden = !(motd && motd !== m.motdSeen);
   if (motd) $('#motdText').textContent = motd;
   // log
-  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash'))).slice(0, 100);
+  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash')));
+  const shown = list.slice(0, logLimit);
+  $('#moreHist').hidden = list.length <= logLimit;
   $$('#logTabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.f === logFilter));
-  $('#hist').innerHTML = list.map((h) => {
+  $('#hist').innerHTML = shown.map((h) => {
     const out = h.kind.endsWith('out');
     const [verb, via] = KIND[h.kind];
     const open = h.kind === 'ecash-out' && h.status === 'pending';
@@ -197,24 +222,31 @@ function render() {
 }
 
 /* ================= sheet system ================= */
-let open = false, locked = false, onClose = null;
+let open = false, locked = false, onClose = null, lastFocus = null;
 function sheet(title, html, mount, opts = {}) {
   locked = !!opts.locked;
   if (onClose) { const f = onClose; onClose = null; f(); }
   const body = $('#sheetBody');
-  body.innerHTML = `<div class="bar">${opts.back ? '<button class="back" aria-label="Back">‹</button>' : ''}<h2>${esc(title)}</h2>${locked ? '' : '<button class="x" aria-label="Close">✕</button>'}</div><div class="sb">${html}</div>`;
+  body.innerHTML = `<div class="bar">${opts.back ? '<button class="back" aria-label="Back">‹</button>' : ''}<h2 id="sheetTitle" tabindex="-1">${esc(title)}</h2>${locked ? '' : '<button class="x" aria-label="Close">✕</button>'}</div><div class="sb">${html}</div>`;
   const x = $('.x', body); if (x) x.onclick = () => closeSheet();
   const bk = $('.back', body); if (bk) bk.onclick = opts.back;
-  if (!open) { history.pushState({ sheet: 1 }, ''); open = true; $('#sheet').hidden = false; requestAnimationFrame(() => $('#sheet').classList.add('on')); }
+  if (!open) {
+    history.pushState({ sheet: 1 }, ''); open = true; $('#sheet').hidden = false; requestAnimationFrame(() => $('#sheet').classList.add('on'));
+    // keyboard and screen readers stay inside the panel; the page behind is out of reach until it closes
+    lastFocus = document.activeElement; $('.app').inert = true;
+  }
   body.scrollTop = 0;
   bindKeypads(body);
   mount && mount(body);
+  $('#sheetTitle', body).focus({ preventScroll: true });
 }
 function closeSheet(fromPop) {
   if (!open) return;
   if (locked) { if (fromPop) history.pushState({ sheet: 1 }, ''); return; }
   open = false;
   if (onClose) { const f = onClose; onClose = null; f(); }
+  $('.app').inert = false;
+  if (lastFocus?.isConnected) lastFocus.focus({ preventScroll: true }); lastFocus = null;
   $('#sheet').classList.remove('on');
   setTimeout(() => { if (!open) { $('#sheet').hidden = true; $('#sheetBody').innerHTML = ''; } }, 220);
   if (!fromPop) history.back();
@@ -668,8 +700,9 @@ function detail(h) {
 function mintsSheet(first = false) {
   const rows = S.mints.map((m) => `<li class="mint ${m.url === S.active ? 'act' : ''}">
       <button class="pick" data-u="${esc(m.url)}"><span class="mk" aria-hidden="true">${m.url === S.active ? '●' : '○'}</span>
-      <span class="mt"><b>${esc(mintLabel(m))}</b><small>${esc(host(m.url))}${(m.units || []).length > 1 ? ' · ' + m.units.map(unitLabel).join(' ') : ''}</small></span>
-      <span class="mb">${esc(fmt(bal(m.url, (m.units || ['sat']).includes(S.unit) ? S.unit : 'sat'), (m.units || ['sat']).includes(S.unit) ? S.unit : 'sat'))}</span></button>
+      ${(() => { const u = (m.units || ['sat']).includes(S.unit) ? S.unit : 'sat', amt = fmt(bal(m.url, u), u), long = amt.length > 12;
+        return `<span class="mt"><b>${esc(mintLabel(m))}</b><small>${esc(host(m.url))}${(m.units || []).length > 1 ? ' · ' + m.units.map(unitLabel).join(' ') : ''}</small>${long ? `<span class="mb">${esc(amt)}</span>` : ''}</span>
+      ${long ? '<span></span>' : `<span class="mb">${esc(amt)}</span>`}`; })()}</button>
       <button class="info" data-u="${esc(m.url)}" aria-label="Details for ${esc(mintLabel(m))}">i</button></li>`).join('');
   const sugg = SUGGESTED.filter((s) => !mintOf(s.url)).map((s) => `<li><button class="sug" data-u="${esc(s.url)}"><b>+ ${esc(host(s.url))}</b><small>${esc(s.note)}</small></button></li>`).join('');
   sheet(first ? 'Choose a mint' : 'Mints', `
@@ -1103,7 +1136,8 @@ $('#instBtn').onclick = installHelp;
 $('#scanClose').onclick = stopScan;
 $('#motdX').onclick = () => { const m = mintOf(S.active); if (m) { m.motdSeen = m.info.motd; save(); render(); } };
 $('#sheet .backdrop').onclick = () => closeSheet();
-$('#logTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { logFilter = b.dataset.f; render(); } };
+$('#logTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { logFilter = b.dataset.f; logLimit = 100; render(); } };
+$('#moreHist').onclick = () => { logLimit += 100; render(); };
 $('#chkAll').onclick = withBusy($('#chkAll'), async () => { await C.settleAll({ invoices: true, sent: true, all: true }); render(); toast('Checked all pending'); });
 $('#hist').onclick = (e) => { const r = e.target.closest('.row'); if (r) { const h = S.history.find((x) => x.id === r.dataset.id); if (h) detail(h); } };
 if (!navigator.standalone && !matchMedia('(display-mode: standalone)').matches && /iphone|ipad/i.test(navigator.userAgent)) $('#instBtn').hidden = false;
@@ -1149,5 +1183,11 @@ document.addEventListener('visibilitychange', () => { if (!blocked && !document.
 
 const incoming = (location.hash.match(/token=([^&]+)/) || [])[1] || new URLSearchParams(location.search).get('token');
 if (incoming && S.mnemonic) { history.replaceState(null, '', location.pathname); setTimeout(() => route(decodeURIComponent(incoming)), 500); }
+// home-screen shortcuts (long-press the app icon on Android): Receive, Send, Scan
+const action = new URLSearchParams(location.search).get('action');
+if (action && S.mnemonic) {
+  history.replaceState(null, '', location.pathname);
+  setTimeout(() => { if (needMint()) return; if (action === 'receive') receiveSheet(); else if (action === 'send') sendSheet(); else if (action === 'scan') startScan(route); }, 500);
+}
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});

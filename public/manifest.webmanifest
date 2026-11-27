@@ -1,7 +1,7 @@
 {
   "name": "blindsig",
   "short_name": "blindsig",
-  "description": "Chaumian ecash wallet for Cashu.",
+  "description": "A cypherpunk Cashu ecash wallet: private bitcoin payments over Lightning, BOLT12 and on-chain.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -9,9 +9,87 @@
   "background_color": "#11100e",
   "theme_color": "#11100e",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
-  "protocol_handlers": [{ "protocol": "web+cashu", "url": "./?token=%s" }]
+  "protocol_handlers": [
+    {
+      "protocol": "web+cashu",
+      "url": "./?token=%s"
+    }
+  ],
+  "id": "./",
+  "categories": [
+    "finance",
+    "utilities"
+  ],
+  "shortcuts": [
+    {
+      "name": "Receive",
+      "url": "./?action=receive",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Send",
+      "url": "./?action=send",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Scan",
+      "url": "./?action=scan",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screens/home-green.png",
+      "sizes": "540x1169",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Balance and history"
+    },
+    {
+      "src": "screens/invoice.png",
+      "sizes": "540x1169",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Receive over Lightning"
+    },
+    {
+      "src": "screens/token.png",
+      "sizes": "540x1169",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Send ecash"
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 // Wallet logic: mints, units, Lightning, ecash, P2PK, swaps, multinut, restore.
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
-  getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount,
+  getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount, setGlobalRequestOptions,
 } from '@cashu/cashu-ts';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
@@ -9,6 +9,10 @@ import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils.js';
 import {
   S, save, getProofs, setProofs, addProofs, sum, bal, mintOf, host, uid, normUrl, fmt,
 } from './store.js';
+
+// a mint that stops answering gets 45 s, not the library's 5 minutes. A Lightning payment that is
+// still running after that is not lost: it is recorded as in flight and settles later.
+setGlobalRequestOptions({ requestTimeout: 45000 });
 
 /* ---------------- seed + counters ---------------- */
 let SEED = S.mnemonic ? mnemonicToSeedSync(S.mnemonic) : null;

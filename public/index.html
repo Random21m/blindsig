@@ -43,6 +43,7 @@ button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 a{color:var(--ac)}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:6px}
+#sheetTitle:focus{outline:none}
 .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .app{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 8px) 18px calc(env(safe-area-inset-bottom) + 32px)}
 .cur{animation:blink 1.1s steps(1) infinite;color:var(--ac)}
@@ -203,12 +204,14 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .mints,.sugs,.menu,.keys,.mn,.ks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .mint{display:flex;align-items:center;border-radius:var(--r);background:var(--card);border:1px solid var(--line2)}
 .mint.act{border-color:var(--ac)}
-.pick{flex:1;display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;text-align:left;min-height:62px}
+.pick{flex:1;display:grid;grid-template-columns:16px minmax(96px,1fr) auto;gap:12px;align-items:center;padding:12px 14px;text-align:left;min-height:62px}
 .mk{color:var(--ac)}
 .mt{display:flex;flex-direction:column;line-height:1.35;text-align:left}
 .mt b{font-weight:500;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .mt small{color:var(--dim);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mb{font:500 14px var(--mono);color:var(--ac);white-space:nowrap}
+.mt .mb{margin-top:2px;font-size:13px}
+#moreHist{margin-top:14px}
 .info{width:44px;height:44px;margin-right:6px;border-radius:50%;font:italic 600 16px var(--mono);color:var(--dim);border:1px solid var(--line)}
 .addm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin-top:12px}
 .addm .btn{margin-top:0!important}
@@ -290,7 +293,7 @@ details.more[open]{padding-bottom:14px}
 </style>
 </head>
 <body>
-<div class="app">
+<main class="app">
   <header class="top">
     <div class="brand"><b>$</b> blindsig<span class="cur">_</span></div>
     <button class="btcp" id="btcPrice" hidden aria-label="Bitcoin price"><i class="live"></i><span id="btcVal"></span><b id="btcDir"></b></button>
@@ -317,14 +320,15 @@ details.more[open]{padding-bottom:14px}
 
   <section class="log">
     <div class="loghead"><div class="lab">History</div>
-      <div class="tabs" id="logTabs"><button data-f="all" aria-selected="true">All</button><button data-f="ecash">Ecash</button><button data-f="ln">Lightning</button><button data-f="pending">Pending</button></div></div>
+      <div class="tabs" id="logTabs" role="tablist" aria-label="Filter history"><button role="tab" data-f="all" aria-selected="true">All</button><button role="tab" data-f="ecash" aria-selected="false">Ecash</button><button role="tab" data-f="ln" aria-selected="false">Lightning</button><button role="tab" data-f="pending" aria-selected="false">Pending</button></div></div>
     <button class="btn wide" id="chkAll" hidden>Check all pending</button>
     <ul id="hist"></ul>
+    <button class="btn wide" id="moreHist" hidden>Show older</button>
     <p class="empty" id="empty">No transactions yet.</p>
   </section>
-</div>
+</main>
 
-<div class="sheetw" id="sheet" hidden><div class="backdrop"></div><div class="sheet" role="dialog" aria-modal="true"><div id="sheetBody"></div></div></div>
+<div class="sheetw" id="sheet" hidden><div class="backdrop"></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><div id="sheetBody"></div></div></div>
 <div id="scanner" hidden><video playsinline muted></video><div class="frame"></div><p class="scanlab">Point at a QR code<span id="scanProg"></span></p><button class="btn" id="scanClose">Close</button></div>
 <div id="toast" role="status"></div>
 <div id="tabLock" hidden><div><h2>Already open</h2><p>blindsig is open in another tab or window. To keep your ecash safe, only one can run at a time.</p><button class="btn primary wide" id="tlUse">Use it here instead</button></div></div>
