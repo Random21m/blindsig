@@ -133,17 +133,17 @@ textarea:focus,.field:focus{border-color:var(--ac)}
 select.field{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat}
 .field + .field,.field + .btn,.amtwrap + .field{margin-top:10px}
 .lbl{display:block;color:var(--dim);font:500 13px var(--mono);margin:16px 0 6px}
-.amt{display:flex;align-items:baseline;justify-content:center;gap:6px;padding:6px 0 2px;color:var(--ac)}
+.amt{direction:ltr;display:flex;align-items:baseline;justify-content:center;gap:6px;padding:6px 0 2px;color:var(--ac)}
 .amt input{border:0;background:none;outline:none;text-align:center;font-family:var(--d);font-size:clamp(64px,19vw,84px);line-height:1;color:var(--ac);padding:0;width:100%;max-width:8ch;text-shadow:0 0 16px var(--glow);caret-color:var(--ac)}
 .amt input::placeholder{color:var(--ac);opacity:.3}
 .amt-pre{font-family:var(--d);font-size:44px}
 .amt-post{font:500 16px var(--mono);color:var(--dim)}
 .hint{text-align:center;color:var(--dim);font-size:14px;margin:4px 0 14px!important}
-.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 14px}
+.kp{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 14px}
 .kp button{min-height:54px;border-radius:12px;font:500 22px var(--mono);background:var(--card)}
 .kp button:active{background:var(--card2)}
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;margin:14px 0;padding:14px 16px;border-radius:var(--r);background:var(--card);font-size:15px}
-.kv dt{color:var(--dim)}.kv dd{margin:0;text-align:right;overflow-wrap:anywhere}
+.kv dt{color:var(--dim)}.kv dd{margin:0;text-align:end;overflow-wrap:anywhere}
 .kv b{color:var(--ac);font-weight:600}
 .kv code{font-size:12px}
 .warn{color:var(--warn);font-size:15px}
@@ -227,6 +227,8 @@ details.more[open]{padding-bottom:14px}
 .stars{color:var(--ac);letter-spacing:2px}
 .rate{display:flex;gap:6px;justify-content:center;margin:8px 0 14px}
 .rate button{width:52px;height:52px;font-size:32px;color:var(--ac);border-radius:12px;background:var(--card)}
+[dir=rtl] .menu button>span:last-child,[dir=rtl] .back{transform:scaleX(-1)}
+.langs{list-style:none;margin:0;padding:0}
 .spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:r .7s linear infinite;display:inline-block}
 @keyframes r{to{transform:rotate(1turn)}}
 

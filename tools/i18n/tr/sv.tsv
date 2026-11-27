@@ -1,0 +1,510 @@
+1	En fras på 12 ord kan återställa din ecash om du tappar bort enheten. Skriv ner den och förvara den offline.
+2	En Cashu-plånbok för ecash byggd på cashu-ts. Ecash och din seed lagras bara i den här webbläsaren. Mints är förvaltare: använd sådana du litar på och håll beloppen små.
+3	En mint ger ut ecash mot bitcoin som den förvarar. Du anförtror den dina pengar, så börja smått.
+4	En mint ger ut ecash mot bitcoin som den håller. Du anförtror mintet dina pengar, så välj noga och börja smått.
+5	En betalningsbegäran (NUT-18) låter någon betala dig ecash via nostr, även när ni inte är online samtidigt.
+6	Om
+7	Lägg till
+8	Lägg till en mint först.
+9	Lägg till valda
+10	Lägg till de mints du använde. Varje mint genomsöks efter din ecash.
+11	Lägg till denna mint
+12	Adress kopierad
+13	Avancerat
+14	Alla
+15	Alla proofs är giltiga
+16	Gräns
+17	Kvar av gränsen
+18	Tar också emot ecash som skickas i nostr-direktmeddelanden.
+19	Bärnsten
+20	Belopp
+21	Animerad
+22	Animerad kod · {0}%
+23	Valfri
+24	Valfritt belopp
+25	Den som har dessa ord kan ta din ecash. Dela dem aldrig.
+26	Utseende
+27	Frågar dina mints vilken ecash som redan spenderats och tar bort den. Använd om saldot ser fel ut.
+28	Granskare
+29	Granskarens API-URL
+30	Granskarens URL
+31	Granskaren är inte tillgänglig: {0}
+32	Tillgängligt: {0}
+33	Tillbaka
+34	Säkerhetskopiera mint-listan på nostr
+35	Säkerhetskopiera nu
+36	Säkerhetskopiering och återställning
+37	Saldo
+38	Binärt
+39	Bygg förtroendenätverk
+40	Kameran är inte tillgänglig. Klistra in istället.
+41	Kontrollera igen
+42	Kontrollera alla fakturor
+43	Leta efter betalningar
+44	Kontrollera inkommande faktura
+45	Kontrollera nu
+46	Kontrollera betalning
+47	Kontrollerar väntande fakturor och betalningar när appen öppnas.
+48	Kontrollera väntande vid start
+49	Kontrollera skickad ecash
+50	Kontrollera status
+51	Kontrollerar…
+52	Välj en mint
+53	Välj mint
+54	Välj vilka som ska läggas till.
+55	Välj ditt språk
+56	Lös in automatiskt
+57	Inlöst
+58	Stäng
+59	Coinos. Riktiga sats.
+60	Samlar dem du följer och dem de följer, för att lyfta fram deras recensioner av mints.
+61	Kommentar (valfritt)
+62	Slutförd
+63	Anslut en NIP-46-bunker-URI
+64	Anslutning kopierad. Behandla den som ett lösenord.
+65	Fortsätt
+66	Kopierat
+67	Kopiera
+68	Kopiera URL
+69	Kopiera allt
+70	Kopiering blockerad. Tryck länge för att markera.
+71	Kopiera anslutning
+72	Kopiera faktura
+73	Kopiera nyckel
+74	Kopiera länk
+75	Kopiera npub
+76	Kopiera nsec
+77	Kopiera begäran
+78	Kopiera seed-fras
+79	Kopierar hela saldot för aktiv mint och enhet som en enda token.
+80	Räknarkonflikt. Öka keyset-räknarna under Avancerat.
+81	Skapa en ny plånbok eller återställ en med din seed-fras.
+82	Skapa faktura
+83	Skapa ny plånbok
+84	Skapa betalningsbegäran
+85	Skapa begäran
+86	Skapa token
+87	För närvarande {0} nycklar.
+88	Raderar allt på enheten. Säkerhetskopiera din seed först.
+89	Raderar din seed, dina mints och all ecash på enheten. Utan seed-frasen är pengarna borta.
+90	Leverans
+91	Härled en nyckel från din seed (rekommenderas)
+92	Beskrivning (valfritt)
+93	Detaljer för {0}
+94	Utvecklarverktyg och återställning av plånbok
+95	Koden kändes inte igen.
+96	Upptäck mints
+97	Stäng
+98	Klar
+99	Ecash
+100	Ecash är digitala kontanter
+101	Ecash-token
+102	Aktivera
+103	Aktivera NWC
+104	Aktivera betalningsbegäranden
+105	Krypterad med en nyckel från din seed, så att en återställning hittar dina mints.
+106	Ange ett belopp.
+107	Ange din seed-fras på 12 eller 24 ord.
+108	Fel
+109	Experimentellt
+110	Utgången
+111	Exportera
+112	Exportera aktiva proofs
+113	Exportera all ecash som tokens
+114	Misslyckad
+115	Misslyckad, ecash återlämnad
+116	Avgift
+117	Avgift {0}
+118	Fiatvaluta
+119	Fyller i en token från urklippet när du öppnar Ta emot. Kan ge uppmaningar på iOS.
+120	Hitta mina mints
+121	Hitta mina mints på nostr
+122	För
+123	För felsökning. Läs varje beskrivning innan du använder den.
+124	Från {0}. Betalar en Lightning-faktura mellan mints, så avgifter tillkommer.
+125	Fullständig rapport på {0}
+126	Skapar en ny seed och flyttar hela saldot dit. Din gamla seed återställer inte längre denna ecash.
+127	Skapa nyckel
+128	Skapa nycklar för att ta emot ecash låst till dig. Experimentellt: om du förlorar nycklarna kan ecash låst till dem inte låsas upp. Nycklarna lagras med plånboken men härleds inte från din seed.
+129	Skapa ny seed
+130	Skapa ny seed-fras
+131	Skaffa en Lightning-adress från npub.cash. Betalningar dit blir ecash hos den mint du väljer. Den använder din nostr-nyckel (se Nostr-inställningar).
+132	Hämta växelkurs från Coinbase
+133	Hämta offert
+134	Grön
+135	HTTP POST
+136	Hårdvara
+137	Historik
+138	Håll ett NFC-kort mot telefonen…
+139	Håll kortet mot telefonen…
+140	Hur tokens skrivs till NFC-kort.
+141	Jag förstår att min gamla seed-fras slutar fungera
+142	Jag förstår att ecash här går förlorad
+143	Jag har skrivit ner de nya orden
+144	Jag har skrivit ner den
+145	Importera
+146	Importera nsec
+147	Inklusive {0} i mint-avgift
+148	Inkommande ecash: {0}. Tryck på den i historiken för att lösa in.
+149	Installera
+150	Direkta uppdateringar från mints som stöder det (NUT-17).
+151	Till {0}
+152	Faktura
+153	Faktura kopierad
+154	Fakturan har gått ut.
+155	Faktura, Lightning-adress, LNURL eller betalningsbegäran
+156	Nyckel kopierad
+157	Nyckel skapad
+158	Nyckel importerad
+159	Nycklar skapas på enheten och lämnar den aldrig.
+160	Nycklar, reläer, säkerhetskopia och förtroendenätverk
+161	Nycklar: {0}
+162	Keyset-räknare
+163	Keysets
+164	Språk
+165	Senaste säkerhetskopia {0}
+166	Lämna tomt så väljer betalaren
+167	Lämna tomt för att använda plånbokens seed
+168	Låt andra appar betala fakturor från din plånbok. Betalningar dras från aktiv mint, i sats, upp till gränsen. Fungerar medan appen är öppen.
+169	Bibliotek
+170	Lightning
+171	Lightning-adress
+172	Lightning-adress med {0}
+173	Lightning-avgift
+174	Länk kopierad
+175	Lyssnar efter betalningar medan appen är öppen.
+176	Laddar granskningsdata…
+177	Laddar recensioner
+178	Laddar…
+179	Lås
+180	Låsnyckel
+181	Lås betalningar till min P2PK-nyckel
+182	Lås till en publik nyckel (P2PK)
+183	Låst
+184	Låst till någon annan
+185	Låst till {0}
+186	Låst till {0}…
+187	Tryck länge på fältet för att klistra in.
+188	Letar efter din mint-lista på nostr
+189	Anteckning
+190	Anteckning (valfritt)
+191	Meddelande från mintet: {0}
+192	Minibits. Riktiga sats.
+193	Mint
+194	Mint-URL kopierad
+195	Mint tillagd
+196	Mint-granskare
+197	Mint-detaljer
+198	Mint för inkommande betalningar
+199	Mint-listan säkerhetskopierad
+200	Säkerhetskopia av mint-lista
+201	Meddelande från mintet:
+202	Recensioner av mint
+203	Mintet nås inte. Kontrollera anslutningen.
+204	Mint uppdaterad
+205	Mints
+206	Utgivningar / inlösningar
+207	Mints som annonserats och recenserats på nostr (NIP-87). Recensionerna är inte verifierade: läs dem kritiskt.{0}
+208	Hittade mints: {0}
+209	Mints förvarar bitcoinen
+210	Mer om denna mint
+211	Flytta
+212	Flytta pengar
+213	Flytta pengar mellan mints
+214	Flyttade {0}
+215	Multinut
+216	NFC
+217	NFC-kort
+218	NFC-kodning
+219	NFC: {0}
+220	Nätverkskontroller och bitcoinpris
+221	Ny gräns i sats
+222	Ny anslutning skapad. Den gamla slutar fungera.
+223	Ny betalningsbegäran
+224	Nya betalningar: {0}
+225	Den nya seeden är aktiv
+226	Ny seed-fras
+227	Nästa
+228	Smeknamn
+229	Nej
+230	Inget NIP-07-tillägg hittades
+231	Inga räknare än.
+232	Ingen mint vald
+233	Inga mints hittades på dina reläer.
+234	Inga nya mints hittades i en nostr-säkerhetskopia.
+235	Inga nya betalningar
+236	Ingen annan mint stöder {0}.
+237	Inga recensioner än.
+238	Ingen signerare tillgänglig.
+239	Ingen token på kortet.
+240	Inga transaktioner än.
+241	Inga transaktioner än. Ta emot ecash eller fyll på via Lightning.
+242	Inga än.
+243	Nostr
+244	Nostr Wallet Connect
+245	Inte säkerhetskopierad än.
+246	Inte inlöst än.
+247	Inte tillräckligt hos denna mint.
+248	Otillräckligt saldo inklusive avgifter.
+249	Inte betald än.
+250	Inte upplåst
+251	Inget i den här vyn.
+252	Inget väntande
+253	Inget att exportera.
+254	Erbjuder att växla ecash från en annan mint till din aktiva mint när du tar emot.
+255	På Android: öppna webbläsarmenyn och välj Installera app.
+256	På iPhone: tryck på Dela och sedan Lägg till på hemskärmen.
+257	Knappsats på skärmen
+258	Introduktion
+259	Ta bara emot ecash från {0}
+260	Bara den som har motsvarande privata nyckel kan lösa in den.
+261	Eller skapa en engångsfaktura:
+262	P2PK
+263	Betald
+264	Betald. Mottagande mint bokför fortfarande.
+265	Delarna blir {0} av {1}
+266	Klistra in
+267	Klistra in en cashu-token
+268	Klistra in en privat nyckel. Rekommenderas inte.
+269	Klistra in ecash automatiskt
+270	Betala
+271	Betala från flera mints (Multinut)
+272	Betala en faktura från flera mints samtidigt (NUT-15).
+273	Betala {0}
+274	Betala {0} med ecash
+275	Betalaren väljer
+276	Betalningen pågår. Den kommer att slutföras.
+277	Betalningsbegäran
+278	Betalningsbegäranden
+279	Betalningsbegäranden (NUT-18) låter andra betala dig ecash via nostr. När de är aktiva lyssnar plånboken på dina reläer medan den är öppen.
+280	Betalningsbegäranden är avstängda; slå på dem för att ta emot.
+281	Betalningsbegäranden aktiverade
+282	Betalningar
+283	Betalningar: {0}
+284	Väntande
+285	Väntande betalningar frigjorda: {0}
+286	Kontrollerar regelbundet om tokens du skickat har lösts in.
+287	Rikta mot en QR-kod
+288	Frågar efter fakturan du tittar på tills den är betald.
+289	Preimage
+290	Integritet
+291	Proofs i plånboken
+292	Publik nyckel kopierad
+293	Publik nyckel eller npub
+294	Publicera recension
+295	Publiceras offentligt på nostr med din nostr-identitet.
+296	QR-kod
+297	Snabbåtkomst
+298	Snabbåtkomst till NFC
+299	Kontrollerar obetalda fakturor i bakgrunden i upp till två veckor.
+300	Ta emot
+301	Ta emot ecash låst till dina nycklar
+302	Ta emot ecash-betalningar via nostr
+303	Ta emot matchande betalningar från kända mints direkt.
+304	Växling vid mottagning
+305	Ta emot till en adress via npub.cash
+306	Mottaget
+307	Mottog {0}
+308	Senaste växlingar
+309	Hämta tillbaka
+310	Hämtad tillbaka
+311	Tillbaka i din plånbok
+312	Uppdatera
+313	Reläer
+314	Frigör väntande betalningar
+315	Fjärrsignerare (bunker)
+316	Ta bort mint
+317	Ta bort spenderade proofs
+318	Ta bort denna mint från plånboken?
+319	Ta bort {0}
+320	Tog bort {0} spenderade proofs
+321	Att ta bort den raderar dessa proofs från enheten. Flytta eller spendera dem först.
+322	Begäran
+323	Begäran kopierad
+324	Återställ
+325	Återställ allt
+326	Återställ plånbok
+327	Återställ plånboksdata
+328	Återställ
+329	Återställ ecash
+330	Återställ från seed-fras
+331	Återställer
+332	Återför ecash som hålls för pågående Lightning-betalningar till saldot. Om en betalning faktiskt gick igenom, kör ”Ta bort spenderade proofs” efteråt.
+333	Recension publicerad
+334	Recensioner
+335	Recensioner från ditt förtroendenätverk räknas separat.
+336	Recensioner: {0}
+337	Återkalla och skapa ny anslutning
+338	Du kan stänga. Väntande fakturor kontrolleras igen senare.
+339	Spara
+340	Sparat
+341	Skanna
+342	Skanna QR-kod
+343	Genomsök dessa mints
+344	Söker igenom dina mints efter ecash skapad med en seed-fras: denna plånboks eller en annan. Ecash som hittas med en annan seed flyttas till denna plånbok.
+345	Skanna {0}
+346	Söker på reläer
+347	Seed kopierad. Töm urklippet efteråt.
+348	Seed-fras
+349	Seed-fras och återställning av ecash
+350	Skicka
+351	Skickat
+352	Server
+353	Ange
+354	Kom igång
+355	Inställningar
+356	Dela
+357	Dela den här nyckeln. Ecash låst till den kan bara lösas in av denna plånbok.
+358	Visar en NFC-knapp när du tar emot ecash.
+359	Visa senaste begäran
+360	Visa introduktionen igen
+361	Visar tillförlitlighetsdata från en oberoende granskare i mint-detaljerna.
+362	Visa seed-fras
+363	Visa vid mottagning
+364	Visar din adress under Ta emot → Lightning.
+365	Visar ditt saldo i fiat.
+366	Visar din låsnyckel under Ta emot.
+367	Visar ₿1,000 i stället för 1,000 sat.
+368	Signerare uppdaterad
+369	Signeringstillägg
+370	Storlek: {0}
+371	Källkod
+372	Hastighet: {0}
+373	Dela upp {0} på flera mints. Varje mint behöver extra saldo för sin Lightning-avgiftsreserv.
+374	Börja från npub (tomt för din egen)
+375	Tillstånd
+376	Statisk
+377	Status
+378	Fortfarande obetald.
+379	Sparar en länk till plånboken med token
+380	Sparar token som kompakt binärt
+381	Sparar token som vanlig text
+382	Föreslagna mints
+383	Funktioner som stöds
+384	Växla till aktiv mint
+385	Växla till {0}
+386	Växlat
+387	Växling, granskare, Multinut
+388	Byt till ny seed
+389	Byt till {0}
+390	Byt enhet
+391	Tryck på ett keyset för att öka räknaren med 10. Löser felet ”outputs have already been signed”.
+392	Tryck för att lösa in
+393	Testmint. Falska sats, fakturor betalar sig själva.
+394	Text
+395	Den ecashen är redan inlöst.
+396	Det är inte en giltig cashu-token.
+397	Seed-frasen är inte giltig.
+398	Begäran accepterar bara {0}.
+399	Token har lösts in.
+400	Tema
+401	Tema, knappsats och bitcoinsymbol
+402	Dessa funktioner är nya. Använd små belopp.
+403	Dessa inställningar ändrar hur ofta plånboken pratar med mints och andra tjänster.
+404	Dessa tokens är dina pengar. Den som ser dem kan spendera dem.
+405	Webbläsaren stöder inte Web NFC. Det fungerar i Chrome på Android.
+406	Denna mint granskas inte än.
+407	Denna mint håller fortfarande ecash åt dig.
+408	Begäran är i {0}. Byt enhet först.
+409	Tid
+410	Till
+411	Till mint
+412	Token kopierad
+413	Tokens kopierade
+414	Tokens du håller på enheten, som sedlar i en plånbok. Betalningar är privata: mintet ser inte vem som betalar vem.
+415	För stor för en QR-kod. Använd den animerade koden eller kopiera.
+416	Totalt
+417	Lita på mintet och ta emot
+418	Betrodda: {0}
+419	Gör inkommande betalningar till ecash direkt.
+420	Skriv ”reset” för att bekräfta.
+421	Ej inlöst
+422	Enheter
+423	Okänd
+424	Okänd mint. Mottagningen lägger till den i plånboken. Ta bara emot ecash från mints du litar på.
+425	Oanvänd avgiftsreserv kommer tillbaka som växel.
+426	Uppdaterad
+427	Använd
+428	Använd WebSockets
+429	Använd ett NIP-07-webbläsartillägg
+430	Använd en privat nostr-nyckel som P2PK-nyckel, så att ecash låst till din npub kan lösas in här.
+431	Använd den inbyggda sifferknappsatsen för belopp.
+432	Använd denna mint
+433	Använd plånboken från andra appar
+434	Använd ₿-symbolen
+435	Används för din Lightning-adress och recensioner av mints. Betalningsbegäranden och meddelanden använder alltid nyckeln från plånbokens seed.
+436	Version
+437	Version och länkar
+438	Väntar på betalning
+439	Plånbokens seed-fras
+440	Förtroendenätverk
+441	Förtroendenätverk: {0} nycklar
+442	Hur var din upplevelse av denna mint?
+443	Vit
+444	Den som har denna token kan spendera den. Tills den lösts in kan du hämta tillbaka den från historiken.
+445	Skriv en recension
+446	Skriv ner de 12 orden i ordning och förvara dem offline. De återställer din ecash om du tappar bort enheten.
+447	Skriv till NFC-kort
+448	Skrivet till NFC-kortet
+449	Ja, P2PK
+450	Din Lightning-adress
+451	Ditt saldo flyttas till den nya seeden. Skriv ner de nya orden innan du fortsätter.
+452	Din nostr-identitet
+453	Din nsec
+454	Dina begäranden
+455	Din seed är din säkerhetskopia
+456	Din seed-fras återställer plånboken. Håll den privat.
+457	aktiv
+458	kvar av gränsen: {0} sat
+459	beloppet måste vara {0}–{1} sat
+460	belopp krävs
+461	beloppet är för litet för växlingsavgifterna
+462	valfritt belopp
+463	växlingsavgifterna fick inte plats
+464	räknare {0}
+465	snabb
+466	inaktiv
+467	otillräckligt saldo hos denna mint
+468	ogiltig bunker-URI
+469	fakturan hittades inte
+470	nyss
+471	medel
+472	metoden stöds inte
+473	behöver {0} inkl. avgiftsreserv // har {1} hos {2}
+474	inget NIP-07-signeringstillägg hittades
+475	ingen aktiv mint
+476	ingen avgift
+477	ingen faktura returnerades
+478	inget relä accepterade händelsen
+479	nostr-meddelande
+480	inte en Lightning-betalningsslutpunkt
+481	inte en giltig publik nyckel eller npub
+482	inte en nsec
+483	ej inlöst
+484	otillräckligt saldo hos aktiv mint
+485	npub kopierad
+486	nsec kopierad. Håll den hemlig.
+487	betalning väntar
+488	betalningsbegäran
+489	ta bort
+490	återställd från seed
+491	välj en av de mints som begäran accepterar
+492	långsam
+493	växlingsbetalning väntar
+494	aktiv mint
+495	begäran är i {0}; byt enhet först
+496	begäran saknar sätt att leverera betalningen
+497	token kommer redan från aktiv mint
+498	upp till {0}
+499	använd
+500	plånboken har ingen seed än
+501	förtroendenätverk
+502	{0} hos denna mint
+503	{0} tillgängligt
+504	{0} min sedan
+505	{0} stjärnor
+506	{0} ord
+507	· kontrollsumman stämmer inte
+508	✓ Beloppen stämmer
+509	✓ Låst till din nyckel
+510	✓ Giltig fras

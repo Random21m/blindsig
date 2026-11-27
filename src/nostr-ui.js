@@ -35,7 +35,7 @@ export function nostrUI(x) {
       $('#sha', b).onclick = () => qrInto($('#aq', b), 'lightning:' + n.address);
       ['show', 'auto'].forEach((k) => { $('#t_' + k, b).onchange = (e) => { n[k === 'show' ? 'showOnReceive' : 'auto'] = e.target.checked; save(); }; });
       $('#nm', b).onchange = withBusy($('#nm', b), async () => { await N.npcSetMint($('#nm', b).value); toast('Mint updated'); });
-      const ck = $('#ck', b); ck.onclick = withBusy(ck, async () => { const a = await N.npcSync(); render(); toast(a ? `${a} new payment${a > 1 ? 's' : ''}` : 'No new payments'); });
+      const ck = $('#ck', b); ck.onclick = withBusy(ck, async () => { const a = await N.npcSync(); render(); toast(a ? `New payments: ${a}` : 'No new payments'); });
     }, { back: x.settingsSheet });
   }
 
@@ -60,7 +60,7 @@ export function nostrUI(x) {
       ${toggle('t_bk', 'Back up mint list on nostr', 'Encrypted with a key from your seed, so a restore can find your mints.', nn.backup)}
       ${nn.backup ? `<p class="dim small">${nn.backupTs ? 'Last backup ' + new Date(nn.backupTs * 1000).toLocaleString() : 'Not backed up yet.'}</p><button class="btn wide" id="bkn">Back up now</button>` : ''}
       <h3>Web of trust</h3>
-      <p class="dim small">Collects the people you follow and the people they follow, to highlight mint reviews from them. ${nn.wot ? `Currently ${nn.wot.pubkeys.length.toLocaleString()} keys.` : ''}</p>
+      <p class="dim small"><span>Collects the people you follow and the people they follow, to highlight mint reviews from them.</span> ${nn.wot ? `<span>Currently ${nn.wot.pubkeys.length.toLocaleString()} keys.</span>` : ''}</p>
       <input id="wr" class="field" placeholder="Start from npub (leave empty for yours)" autocapitalize="off">
       <button class="btn wide" id="wb">Build web of trust</button><p class="dim small" id="wp"></p>`, (b) => {
       const cnp = $('#cnp', b); if (cnp) cnp.onclick = () => copy(N.npubOf(pk), 'npub copied');
@@ -95,7 +95,7 @@ export function nostrUI(x) {
       ${toggle('t_pra', 'Claim automatically', 'Receive matching payments from known mints right away.', S.pr.auto)}
       <button class="btn primary wide" id="nr">New payment request</button>
       <h3>Your requests</h3>
-      <ul class="keys">${S.pr.requests.map((r) => `<li><button data-id="${esc(r.id)}"><span class="mt"><b>${r.amount ? esc(fmt(r.amount, r.unit)) : 'Any amount'}${r.memo ? ' · ' + esc(r.memo) : ''}</b><small>${new Date(r.ts).toLocaleDateString()} · ${(r.payments || []).length} payment${(r.payments || []).length === 1 ? '' : 's'}</small></span><span aria-hidden="true">›</span></button></li>`).join('') || '<li class="dim">None yet.</li>'}</ul>`, (b) => {
+      <ul class="keys">${S.pr.requests.map((r) => `<li><button data-id="${esc(r.id)}"><span class="mt"><b>${r.amount ? esc(fmt(r.amount, r.unit)) : 'Any amount'}${r.memo ? ' · ' + esc(r.memo) : ''}</b><small>${new Date(r.ts).toLocaleDateString()} · ${`Payments: ${(r.payments || []).length}`}</small></span><span aria-hidden="true">›</span></button></li>`).join('') || '<li class="dim">None yet.</li>'}</ul>`, (b) => {
       $('#t_pr', b).onchange = (e) => { S.pr.enabled = e.target.checked; save(); N.startAll(); };
       $('#t_pra', b).onchange = (e) => { S.pr.auto = e.target.checked; save(); };
       $('#nr', b).onclick = () => newRequest(prSettings);
@@ -160,7 +160,7 @@ export function nostrUI(x) {
         const el = $('#dl', b); if (!el) return;
         if (!list.length) { el.innerHTML = '<p class="dim">No mints found on your relays.</p>'; return; }
         el.innerHTML = `<ul class="mints">${list.map((m) => `<li class="mint"><button class="pick dsc" data-u="${esc(m.url)}"><span class="mk">${mintOf(m.url) ? '✓' : '+'}</span>
-          <span class="mt"><b>${esc(m.info?.name || host(m.url))}</b><small>${m.avg ? `${stars(Math.round(m.avg))} ${m.avg.toFixed(1)} · ` : ''}${m.count} review${m.count === 1 ? '' : 's'}${m.wotCount ? ` · ${m.wotCount} trusted` : ''}</small></span></button></li>`).join('')}</ul>`;
+          <span class="mt"><b>${esc(m.info?.name || host(m.url))}</b><small>${m.avg ? `${stars(Math.round(m.avg))} ${m.avg.toFixed(1)} · ` : ''}${`Reviews: ${m.count}`}${m.wotCount ? ` · ${`Trusted: ${m.wotCount}`}` : ''}</small></span></button></li>`).join('')}</ul>`;
         $$('.dsc', el).forEach((x2) => (x2.onclick = () => reviews(x2.dataset.u, () => discover(back), true)));
       } catch (e) { const el = $('#dl', b); if (el) el.innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`; }
     }, { back });
@@ -201,7 +201,7 @@ export function nostrUI(x) {
         const urls = (await N.findBackedUpMints(mnemonic)).filter((u) => !mintOf(u));
         const el = $('#fm', b); if (!el) return;
         if (!urls.length) { el.innerHTML = '<p class="dim">No new mints found in a nostr backup.</p><button class="btn wide" id="bk">Back</button>'; $('#bk', b).onclick = back; return; }
-        el.innerHTML = `<p>Found ${urls.length} mint${urls.length > 1 ? 's' : ''}. Choose which to add.</p>
+        el.innerHTML = `<p>${`Mints found: ${urls.length}`}</p><p>Choose which to add.</p>
           ${urls.map((u) => `<label class="chk"><input type="checkbox" value="${esc(u)}" checked> ${esc(host(u))}</label>`).join('')}
           <button class="btn primary wide" id="add">Add selected</button>`;
         const add = $('#add', b);

@@ -38,5 +38,8 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(req).catch(() => caches.match('./index.html')));
     return;
   }
-  e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req)));
+  e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req).then((r) => {
+    if (r.ok && url.pathname.includes('/i18n/')) { const copy = r.clone(); caches.open('shell-' + VERSION).then((c) => c.put(req, copy)); }
+    return r;
+  })));
 });

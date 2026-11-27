@@ -1,0 +1,510 @@
+1	Una frase di 12 parole può ripristinare i tuoi ecash se perdi questo dispositivo. Scrivila e conservala offline.
+2	Un wallet ecash Cashu basato su cashu-ts. Gli ecash e il tuo seed sono salvati solo in questo browser. I mint sono custodi: usa quelli di cui ti fidi e tieni importi piccoli.
+3	Un mint emette ecash coperti dai bitcoin che custodisce. Gli affidi i tuoi fondi, quindi inizia con poco.
+4	Un mint emette ecash coperti dai bitcoin che detiene. Affidi i tuoi fondi al mint, quindi scegli con cura e inizia con poco.
+5	Una richiesta di pagamento (NUT-18) permette a qualcuno di pagarti in ecash via nostr, anche se non siete online nello stesso momento.
+6	Info
+7	Aggiungi
+8	Aggiungi prima un mint.
+9	Aggiungi selezionati
+10	Aggiungi i mint che usavi. Ognuno verrà scansionato per cercare i tuoi ecash.
+11	Aggiungi questo mint
+12	Indirizzo copiato
+13	Avanzate
+14	Tutto
+15	Tutte le prove sono valide
+16	Limite
+17	Limite residuo
+18	Riceve anche ecash inviati nei messaggi diretti nostr.
+19	Ambra
+20	Importo
+21	Animato
+22	Codice animato · {0}%
+23	Qualsiasi
+24	Importo libero
+25	Chiunque abbia queste parole può prendere i tuoi ecash. Non condividerle mai.
+26	Aspetto
+27	Chiede ai tuoi mint quali ecash sono già spesi e li rimuove. Usalo se il saldo sembra sbagliato.
+28	Auditor
+29	URL API dell’auditor
+30	URL dell’auditor
+31	Auditor non disponibile: {0}
+32	Disponibile: {0}
+33	Indietro
+34	Backup della lista mint su nostr
+35	Esegui backup ora
+36	Backup e ripristino
+37	Saldo
+38	Binario
+39	Crea la rete di fiducia
+40	Fotocamera non disponibile. Incolla invece.
+41	Ricontrolla
+42	Controlla tutte le fatture
+43	Cerca pagamenti
+44	Controlla fattura in arrivo
+45	Controlla ora
+46	Controlla pagamento
+47	Controlla fatture e pagamenti in sospeso all’apertura dell’app.
+48	Controlla in sospeso all’avvio
+49	Controlla ecash inviati
+50	Controlla stato
+51	Controllo…
+52	Scegli un mint
+53	Scegli mint
+54	Scegli quali aggiungere.
+55	Scegli la tua lingua
+56	Riscatta automaticamente
+57	Riscattato
+58	Chiudi
+59	Coinos. Sats reali.
+60	Raccoglie le persone che segui e quelle che seguono loro, per evidenziare le loro recensioni dei mint.
+61	Commento (facoltativo)
+62	Completato
+63	Collega un URI bunker NIP-46
+64	Connessione copiata. Trattala come una password.
+65	Continua
+66	Copiato
+67	Copia
+68	Copia URL
+69	Copia tutto
+70	Copia bloccata. Tieni premuto per selezionare.
+71	Copia connessione
+72	Copia fattura
+73	Copia chiave
+74	Copia link
+75	Copia npub
+76	Copia nsec
+77	Copia richiesta
+78	Copia frase seed
+79	Copia l’intero saldo del mint e dell’unità attivi come un unico token.
+80	Conflitto di contatore. Aumenta i contatori dei keyset in Avanzate.
+81	Crea un nuovo wallet o ripristinane uno con la tua frase seed.
+82	Crea fattura
+83	Crea nuovo wallet
+84	Crea richiesta di pagamento
+85	Crea richiesta
+86	Crea token
+87	Attualmente {0} chiavi.
+88	Cancella tutto su questo dispositivo. Fai prima il backup del seed.
+89	Cancella seed, mint e tutti gli ecash su questo dispositivo. Senza la frase seed i fondi sono persi.
+90	Consegna
+91	Deriva una chiave dal seed (consigliato)
+92	Descrizione (facoltativa)
+93	Dettagli di {0}
+94	Strumenti per sviluppatori e reset del wallet
+95	Codice non riconosciuto.
+96	Scopri mint
+97	Chiudi avviso
+98	Fatto
+99	Ecash
+100	Gli ecash sono contanti digitali
+101	Token ecash
+102	Attiva
+103	Attiva NWC
+104	Attiva richieste di pagamento
+105	Cifrato con una chiave dal tuo seed, così un ripristino trova i tuoi mint.
+106	Inserisci un importo.
+107	Inserisci la tua frase seed di 12 o 24 parole.
+108	Errori
+109	Sperimentale
+110	Scaduta
+111	Esporta
+112	Esporta prove attive
+113	Esporta tutti gli ecash come token
+114	Fallito
+115	Fallito, ecash restituiti
+116	Commissione
+117	Commissione {0}
+118	Valuta fiat
+119	Inserisce un token dagli appunti quando apri Ricevi. Può mostrare avvisi su iOS.
+120	Trova i miei mint
+121	Trova i miei mint su nostr
+122	Per
+123	Per la risoluzione dei problemi. Leggi ogni descrizione prima dell’uso.
+124	Da {0}. Paga una fattura Lightning tra mint, quindi ci sono commissioni.
+125	Report completo su {0}
+126	Genera un nuovo seed e ci sposta tutto il saldo. Il vecchio seed non ripristinerà più questi ecash.
+127	Genera chiave
+128	Genera chiavi per ricevere ecash bloccati per te. Sperimentale: se perdi queste chiavi, gli ecash bloccati non potranno essere sbloccati. Le chiavi sono salvate col wallet ma non derivano dal seed.
+129	Genera nuovo seed
+130	Genera nuova frase seed
+131	Ottieni un indirizzo Lightning da npub.cash. I pagamenti diventano ecash sul mint che scegli. Usa la tua chiave nostr (vedi impostazioni Nostr).
+132	Cambio da Coinbase
+133	Ottieni preventivo
+134	Verde
+135	HTTP POST
+136	Hardware
+137	Cronologia
+138	Avvicina una carta NFC al telefono…
+139	Avvicina la carta al telefono…
+140	Come vengono scritti i token sulle carte NFC.
+141	Capisco che la vecchia frase seed smetterà di funzionare
+142	Capisco che gli ecash qui andranno persi
+143	Ho scritto le nuove parole
+144	L’ho scritta
+145	Importa
+146	Importa nsec
+147	Include {0} di commissione del mint
+148	Ecash in arrivo: {0}. Toccalo nella cronologia per riscattarlo.
+149	Installa
+150	Aggiornamenti istantanei dai mint che lo supportano (NUT-17).
+151	Su {0}
+152	Fattura
+153	Fattura copiata
+154	Fattura scaduta.
+155	Fattura, indirizzo Lightning, LNURL o richiesta di pagamento
+156	Chiave copiata
+157	Chiave generata
+158	Chiave importata
+159	Le chiavi sono generate su questo dispositivo e non lo lasciano mai.
+160	Chiavi, relay, backup e rete di fiducia
+161	Chiavi: {0}
+162	Contatori dei keyset
+163	Keyset
+164	Lingua
+165	Ultimo backup {0}
+166	Lascia vuoto per far scegliere a chi paga
+167	Lascia vuoto per usare il seed di questo wallet
+168	Permetti ad altre app di pagare fatture dal tuo wallet. I pagamenti partono dal mint attivo, in sats, fino al limite. Funziona mentre l’app è aperta.
+169	Libreria
+170	Lightning
+171	Indirizzo Lightning
+172	Indirizzo Lightning con {0}
+173	Commissione Lightning
+174	Link copiato
+175	In ascolto dei pagamenti mentre l’app è aperta.
+176	Caricamento dati di audit…
+177	Caricamento recensioni
+178	Caricamento…
+179	Blocco
+180	Chiave di blocco
+181	Blocca i pagamenti sulla mia chiave P2PK
+182	Blocca su una chiave pubblica (P2PK)
+183	Bloccato
+184	Bloccato per qualcun altro
+185	Bloccato per {0}
+186	Bloccato per {0}…
+187	Tieni premuto il campo per incollare.
+188	Cerco la tua lista di mint su nostr
+189	Nota
+190	Nota (facoltativa)
+191	Messaggio del mint: {0}
+192	Minibits. Sats reali.
+193	Mint
+194	URL del mint copiato
+195	Mint aggiunto
+196	Auditor dei mint
+197	Dettagli del mint
+198	Mint per i pagamenti in arrivo
+199	Lista mint salvata
+200	Backup lista mint
+201	Messaggio del mint:
+202	Recensioni del mint
+203	Mint irraggiungibile. Controlla la connessione.
+204	Mint aggiornato
+205	Mint
+206	Emissioni / riscatti
+207	Mint annunciati e recensiti su nostr (NIP-87). Le recensioni non sono verificate: leggile con spirito critico.{0}
+208	Mint trovati: {0}
+209	I mint custodiscono i bitcoin
+210	Altro su questo mint
+211	Sposta
+212	Sposta fondi
+213	Sposta fondi tra mint
+214	Spostati {0}
+215	Multinut
+216	NFC
+217	Carte NFC
+218	Codifica NFC
+219	NFC: {0}
+220	Controlli di rete e prezzo del Bitcoin
+221	Nuovo limite in sats
+222	Nuova connessione creata. Quella vecchia non funziona più.
+223	Nuova richiesta di pagamento
+224	Nuovi pagamenti: {0}
+225	Il nuovo seed è attivo
+226	Nuova frase seed
+227	Avanti
+228	Soprannome
+229	No
+230	Nessuna estensione NIP-07 trovata
+231	Ancora nessun contatore.
+232	Nessun mint selezionato
+233	Nessun mint trovato sui tuoi relay.
+234	Nessun nuovo mint trovato in un backup nostr.
+235	Nessun nuovo pagamento
+236	Nessun altro mint supporta {0}.
+237	Ancora nessuna recensione.
+238	Nessun firmatario disponibile.
+239	Nessun token su questa carta.
+240	Ancora nessuna transazione.
+241	Ancora nessuna transazione. Ricevi ecash o ricarica via Lightning.
+242	Ancora nessuna.
+243	Nostr
+244	Nostr Wallet Connect
+245	Nessun backup ancora.
+246	Non ancora riscattato.
+247	Saldo insufficiente su questo mint.
+248	Saldo insufficiente, commissioni incluse.
+249	Non ancora pagata.
+250	Non sbloccato
+251	Niente in questa vista.
+252	Niente in sospeso
+253	Niente da esportare.
+254	Propone di cambiare nel mint attivo gli ecash di un altro mint quando ricevi.
+255	Su Android: apri il menu del browser, poi Installa app.
+256	Su iPhone: tocca Condividi, poi Aggiungi alla schermata Home.
+257	Tastierino a schermo
+258	Introduzione
+259	Accetta solo ecash da {0}
+260	Solo chi ha la chiave privata corrispondente può riscattarlo.
+261	Oppure crea una fattura monouso:
+262	P2PK
+263	Pagato
+264	Pagato. Il mint di destinazione sta ancora regolando.
+265	Le parti sommano {0} su {1}
+266	Incolla
+267	Incolla un token cashu
+268	Incolla una chiave privata. Sconsigliato.
+269	Incolla ecash automaticamente
+270	Paga
+271	Paga da più mint (Multinut)
+272	Paga una fattura da più mint insieme (NUT-15).
+273	Paga {0}
+274	Paga {0} in ecash
+275	Sceglie chi paga
+276	Pagamento in corso. Verrà completato.
+277	Richiesta di pagamento
+278	Richieste di pagamento
+279	Le richieste di pagamento (NUT-18) permettono di pagarti in ecash via nostr. Se attive, il wallet ascolta i tuoi relay mentre è aperto.
+280	Le richieste di pagamento sono disattivate; attivale per ricevere.
+281	Richieste di pagamento attivate
+282	Pagamenti
+283	Pagamenti: {0}
+284	In sospeso
+285	Pagamenti in sospeso sbloccati: {0}
+286	Controlla periodicamente se i token inviati sono stati riscattati.
+287	Inquadra un codice QR
+288	Interroga la fattura che stai guardando finché non è pagata.
+289	Preimage
+290	Privacy
+291	Prove detenute
+292	Chiave pubblica copiata
+293	Chiave pubblica o npub
+294	Pubblica recensione
+295	Pubblicata su nostr con la tua identità nostr.
+296	Codice QR
+297	Accesso rapido
+298	Accesso rapido a NFC
+299	Ricontrolla le fatture non pagate in background fino a due settimane.
+300	Ricevi
+301	Ricevi ecash bloccati per le tue chiavi
+302	Ricevi pagamenti in ecash via nostr
+303	Ricevi subito i pagamenti corrispondenti da mint noti.
+304	Cambio in ricezione
+305	Ricevi a un indirizzo con npub.cash
+306	Ricevuto
+307	Ricevuto {0}
+308	Cambi recenti
+309	Recupera
+310	Recuperato
+311	Recuperato nel tuo wallet
+312	Aggiorna
+313	Relay
+314	Sblocca pagamenti in sospeso
+315	Firmatario remoto (bunker)
+316	Rimuovi mint
+317	Rimuovi prove spese
+318	Rimuovere questo mint dal wallet?
+319	Rimuovi {0}
+320	Rimossi {0} di prove spese
+321	Rimuoverlo cancella quelle prove da questo dispositivo. Spostale o spendile prima.
+322	Richiesta
+323	Richiesta copiata
+324	Reset
+325	Azzera tutto
+326	Azzera wallet
+327	Azzera dati del wallet
+328	Ripristina
+329	Ripristina ecash
+330	Ripristina con frase seed
+331	Ripristino
+332	Restituisce al saldo gli ecash riservati a pagamenti Lightning in corso. Se un pagamento è andato a buon fine, esegui poi “Rimuovi prove spese”.
+333	Recensione pubblicata
+334	Recensioni
+335	Le recensioni della tua rete di fiducia sono contate a parte.
+336	Recensioni: {0}
+337	Revoca e crea nuova connessione
+338	Puoi chiudere. Le fatture in sospeso verranno ricontrollate.
+339	Salva
+340	Salvato
+341	Scansiona
+342	Scansiona codice QR
+343	Scansiona questi mint
+344	Cerca nei tuoi mint gli ecash creati da una frase seed: quella di questo wallet o un’altra. Gli ecash trovati con un altro seed vengono spostati in questo wallet.
+345	Scansiona {0}
+346	Ricerca sui relay
+347	Seed copiato. Svuota poi gli appunti.
+348	Frase seed
+349	Frase seed e recupero degli ecash
+350	Invia
+351	Inviato
+352	Server
+353	Imposta
+354	Configura
+355	Impostazioni
+356	Condividi
+357	Condividi questa chiave. Gli ecash bloccati per lei possono essere riscattati solo da questo wallet.
+358	Mostra un pulsante NFC quando ricevi ecash.
+359	Mostra ultima richiesta
+360	Mostra di nuovo l’introduzione
+361	Mostra dati di affidabilità di un auditor indipendente nei dettagli del mint.
+362	Mostra frase seed
+363	Mostra in ricezione
+364	Mostra il tuo indirizzo in Ricevi → Lightning.
+365	Mostra il saldo in fiat.
+366	Mostra la tua chiave di blocco in Ricevi.
+367	Mostra ₿1,000 invece di 1,000 sat.
+368	Firmatario aggiornato
+369	Estensione di firma
+370	Dimensione: {0}
+371	Codice sorgente
+372	Velocità: {0}
+373	Dividi {0} tra i mint. Ogni mint serve saldo extra per la riserva commissioni Lightning.
+374	Parti da un npub (vuoto per il tuo)
+375	Stato
+376	Statico
+377	Stato
+378	Ancora non pagata.
+379	Salva un link a questo wallet con il token
+380	Salva il token in binario compatto
+381	Salva il token come testo semplice
+382	Mint suggeriti
+383	Funzioni supportate
+384	Cambia nel mint attivo
+385	Cambia in {0}
+386	Cambiato
+387	Cambi, auditor, Multinut
+388	Passa al nuovo seed
+389	Passa a {0}
+390	Cambia unità
+391	Tocca un keyset per aumentarne il contatore di 10. Risolve gli errori “outputs have already been signed”.
+392	Tocca per riscattare
+393	Mint di prova. Sats finti, le fatture si pagano da sole.
+394	Testo
+395	Questi ecash sono già stati riscattati.
+396	Non è un token cashu valido.
+397	Questa frase seed non è valida.
+398	La richiesta accetta solo {0}.
+399	Il token è stato riscattato.
+400	Tema
+401	Tema, tastierino e simbolo Bitcoin
+402	Queste funzioni sono nuove. Usa importi piccoli.
+403	Queste impostazioni cambiano quanto spesso il wallet contatta mint e altri servizi.
+404	Questi token sono denaro. Chiunque li veda può spenderli.
+405	Questo browser non supporta Web NFC. Funziona con Chrome su Android.
+406	Questo mint non è ancora sottoposto ad audit.
+407	Questo mint custodisce ancora ecash tuoi.
+408	Questa richiesta è in {0}. Cambia prima unità.
+409	Ora
+410	A
+411	Al mint
+412	Token copiato
+413	Token copiati
+414	Token che tieni sul dispositivo, come banconote nel portafoglio. I pagamenti sono privati: il mint non vede chi paga chi.
+415	Troppo grande per un QR. Usa il codice animato o copia.
+416	Totale
+417	Fidati del mint e ricevi
+418	Fidati: {0}
+419	Trasforma subito i pagamenti in arrivo in ecash.
+420	Scrivi “reset” per confermare.
+421	Non riscattato
+422	Unità
+423	Sconosciuto
+424	Mint sconosciuto. Ricevendo verrà aggiunto al wallet. Accetta ecash solo da mint di cui ti fidi.
+425	La riserva commissioni non usata torna come resto.
+426	Aggiornato
+427	Usa
+428	Usa WebSocket
+429	Usa un’estensione del browser NIP-07
+430	Usa una chiave privata nostr come chiave P2PK, per riscattare qui gli ecash bloccati per il tuo npub.
+431	Usa il tastierino numerico integrato per gli importi.
+432	Usa questo mint
+433	Usa il tuo wallet da altre app
+434	Usa il simbolo ₿
+435	Usata per il tuo indirizzo Lightning e le recensioni dei mint. Richieste di pagamento e messaggi usano sempre la chiave del seed del wallet.
+436	Versione
+437	Versione e link
+438	In attesa del pagamento
+439	Frase seed del wallet
+440	Rete di fiducia
+441	Rete di fiducia: {0} chiavi
+442	Com’è stata la tua esperienza con questo mint?
+443	Bianco
+444	Chi ha questo token può spenderlo. Finché non viene riscattato puoi recuperarlo dalla cronologia.
+445	Scrivi una recensione
+446	Scrivi queste 12 parole in ordine e conservale offline. Ripristinano i tuoi ecash se perdi questo dispositivo.
+447	Scrivi su carta NFC
+448	Scritto sulla carta NFC
+449	Sì, P2PK
+450	Il tuo indirizzo Lightning
+451	Il saldo verrà spostato sul nuovo seed. Scrivi le nuove parole prima di continuare.
+452	La tua identità nostr
+453	Il tuo nsec
+454	Le tue richieste
+455	Il seed è il tuo backup
+456	La frase seed ripristina il tuo wallet. Tienila privata.
+457	attivo
+458	limite residuo: {0} sat
+459	l’importo deve essere tra {0} e {1} sat
+460	importo richiesto
+461	importo troppo basso per coprire le commissioni del cambio
+462	importo libero
+463	impossibile coprire le commissioni del cambio
+464	contatore {0}
+465	veloce
+466	inattivo
+467	saldo insufficiente su questo mint
+468	URI bunker non valido
+469	fattura non trovata
+470	adesso
+471	media
+472	metodo non supportato
+473	servono {0} incl. riserva commissioni // hai {1} su {2}
+474	nessuna estensione di firma NIP-07 trovata
+475	nessun mint attivo
+476	nessuna commissione
+477	nessuna fattura restituita
+478	nessun relay ha accettato l’evento
+479	messaggio nostr
+480	non è un endpoint di pagamento Lightning
+481	non è una chiave pubblica o un npub valido
+482	non è un nsec
+483	non riscattato
+484	saldo insufficiente sul mint attivo
+485	npub copiato
+486	nsec copiato. Tienilo segreto.
+487	pagamento in sospeso
+488	richiesta di pagamento
+489	rimuovi
+490	ripristinato dal seed
+491	scegli uno dei mint accettati dalla richiesta
+492	lenta
+493	pagamento del cambio in sospeso
+494	il mint attivo
+495	la richiesta è in {0}; cambia prima unità
+496	questa richiesta non ha modo di consegnare il pagamento
+497	il token è già del mint attivo
+498	fino a {0}
+499	usata
+500	il wallet non ha ancora un seed
+501	rete di fiducia
+502	{0} su questo mint
+503	{0} disponibili
+504	{0} min fa
+505	{0} stelle
+506	{0} parole
+507	· il checksum non corrisponde
+508	✓ Gli importi tornano
+509	✓ Bloccato per la tua chiave
+510	✓ Frase valida

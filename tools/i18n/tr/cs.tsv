@@ -1,0 +1,510 @@
+1	Fráze o 12 slovech dokáže obnovit váš ecash, pokud ztratíte toto zařízení. Zapište si ji a uložte offline.
+2	Ecash peněženka Cashu postavená na cashu-ts. Ecash a váš seed jsou uloženy jen v tomto prohlížeči. Minty jsou správci: používejte ty, kterým věříte, a držte malé částky.
+3	Mint vydává ecash krytý bitcoinem, který spravuje. Svěřujete mu své prostředky, tak začněte s malými částkami.
+4	Mint vydává ecash krytý bitcoinem, který drží. Svěřujete mintu své prostředky, tak vybírejte pečlivě a začněte s malými částkami.
+5	Platební požadavek (NUT-18) umožní komukoli zaplatit vám ecash přes nostr, i když nejste online současně.
+6	O aplikaci
+7	Přidat
+8	Nejdřív přidejte mint.
+9	Přidat vybrané
+10	Přidejte minty, které jste používali. Každý se prohledá kvůli vašemu ecash.
+11	Přidat tento mint
+12	Adresa zkopírována
+13	Pokročilé
+14	Vše
+15	Všechny proofy jsou platné
+16	Limit
+17	Zbývající limit
+18	Přijímá i ecash zaslaný v přímých zprávách nostr.
+19	Jantarová
+20	Částka
+21	Animovaný
+22	Animovaný kód · {0} %
+23	Libovolný
+24	Libovolná částka
+25	Kdo má tato slova, může vzít váš ecash. Nikdy je nesdílejte.
+26	Vzhled
+27	Zeptá se vašich mintů, který ecash je už utracený, a odstraní ho. Použijte, když zůstatek nesedí.
+28	Auditor
+29	URL API auditora
+30	URL auditora
+31	Auditor není dostupný: {0}
+32	K dispozici: {0}
+33	Zpět
+34	Zálohovat seznam mintů na nostr
+35	Zálohovat teď
+36	Záloha a obnovení
+37	Zůstatek
+38	Binární
+39	Vytvořit síť důvěry
+40	Kamera není dostupná. Vložte raději ze schránky.
+41	Zkontrolovat znovu
+42	Kontrolovat všechny faktury
+43	Zkontrolovat platby
+44	Kontrolovat příchozí fakturu
+45	Zkontrolovat teď
+46	Zkontrolovat platbu
+47	Při otevření aplikace zkontroluje čekající faktury a platby.
+48	Kontrola čekajících při spuštění
+49	Kontrolovat odeslaný ecash
+50	Zkontrolovat stav
+51	Kontroluji…
+52	Vyberte mint
+53	Vybrat mint
+54	Vyberte, které přidat.
+55	Vyberte jazyk
+56	Vyzvednout automaticky
+57	Vyzvednuto
+58	Zavřít
+59	Coinos. Skutečné saty.
+60	Shromáždí lidi, které sledujete, a ty, které sledují oni, aby zvýraznila jejich recenze mintů.
+61	Komentář (volitelný)
+62	Dokončeno
+63	Připojit URI bunkeru NIP-46
+64	Připojení zkopírováno. Zacházejte s ním jako s heslem.
+65	Pokračovat
+66	Zkopírováno
+67	Kopírovat
+68	Kopírovat URL
+69	Kopírovat vše
+70	Kopírování blokováno. Podržením vyberte text.
+71	Kopírovat připojení
+72	Kopírovat fakturu
+73	Kopírovat klíč
+74	Kopírovat odkaz
+75	Kopírovat npub
+76	Kopírovat nsec
+77	Kopírovat požadavek
+78	Kopírovat seed frázi
+79	Zkopíruje celý zůstatek aktivního mintu a jednotky jako jeden token.
+80	Konflikt čítače. Zvyšte čítače keysetů v pokročilém nastavení.
+81	Vytvořte novou peněženku nebo obnovte existující pomocí seed fráze.
+82	Vytvořit fakturu
+83	Vytvořit novou peněženku
+84	Vytvořit platební požadavek
+85	Vytvořit požadavek
+86	Vytvořit token
+87	Aktuálně {0} klíčů.
+88	Smaže vše na tomto zařízení. Nejdřív si zálohujte seed.
+89	Smaže váš seed, minty a veškerý ecash na tomto zařízení. Bez seed fráze jsou prostředky ztracené.
+90	Doručení
+91	Odvodit klíč ze seedu (doporučeno)
+92	Popis (volitelný)
+93	Podrobnosti pro {0}
+94	Vývojářské nástroje a reset peněženky
+95	Kód nebyl rozpoznán.
+96	Objevit minty
+97	Skrýt
+98	Hotovo
+99	Ecash
+100	Ecash je digitální hotovost
+101	Ecash token
+102	Zapnout
+103	Zapnout NWC
+104	Zapnout platební požadavky
+105	Šifrováno klíčem z vašeho seedu, aby obnova našla vaše minty.
+106	Zadejte částku.
+107	Zadejte seed frázi o 12 nebo 24 slovech.
+108	Chyby
+109	Experimentální
+110	Vypršela
+111	Export
+112	Exportovat aktivní proofy
+113	Exportovat veškerý ecash jako tokeny
+114	Selhalo
+115	Selhalo, ecash vrácen
+116	Poplatek
+117	Poplatek {0}
+118	Fiat měna
+119	Při otevření Přijmout vloží token ze schránky. Na iOS může vyvolat dotazy.
+120	Najít moje minty
+121	Najít moje minty na nostru
+122	Za co
+123	Pro řešení potíží. Před použitím si přečtěte každý popis.
+124	Z {0}. Zaplatí Lightning fakturu mezi minty, takže se platí poplatky.
+125	Celá zpráva na {0}
+126	Vytvoří nový seed a přesune na něj celý zůstatek. Starý seed už tento ecash neobnoví.
+127	Vytvořit klíč
+128	Vytvořte klíče pro příjem ecash uzamčeného pro vás. Experimentální: pokud klíče ztratíte, ecash uzamčený k nim nepůjde odemknout. Klíče se ukládají s peněženkou, ale neodvozují se ze seedu.
+129	Vytvořit nový seed
+130	Vytvořit novou seed frázi
+131	Získejte Lightning adresu od npub.cash. Platby na ni se stanou ecash u vámi zvoleného mintu. Používá váš nostr klíč (viz nastavení Nostr).
+132	Kurz z Coinbase
+133	Získat nabídku
+134	Zelená
+135	HTTP POST
+136	Hardware
+137	Historie
+138	Přiložte NFC kartu k telefonu…
+139	Přiložte kartu k telefonu…
+140	Jak se tokeny zapisují na NFC karty.
+141	Chápu, že moje stará seed fráze přestane fungovat
+142	Chápu, že ecash zde bude ztracen
+143	Zapsal(a) jsem nová slova
+144	Zapsal(a) jsem si ji
+145	Importovat
+146	Importovat nsec
+147	Včetně poplatku mintu {0}
+148	Příchozí ecash: {0}. Klepněte na něj v historii a vyzvedněte ho.
+149	Nainstalovat
+150	Okamžité aktualizace od mintů, které to podporují (NUT-17).
+151	Do {0}
+152	Faktura
+153	Faktura zkopírována
+154	Faktura vypršela.
+155	Faktura, Lightning adresa, LNURL nebo platební požadavek
+156	Klíč zkopírován
+157	Klíč vytvořen
+158	Klíč importován
+159	Klíče se vytvářejí v tomto zařízení a nikdy ho neopouštějí.
+160	Klíče, relaye, záloha a síť důvěry
+161	Klíče: {0}
+162	Čítače keysetů
+163	Keysety
+164	Jazyk
+165	Poslední záloha {0}
+166	Nechte prázdné, ať zvolí plátce
+167	Nechte prázdné pro seed této peněženky
+168	Umožněte jiným aplikacím platit faktury z vaší peněženky. Platby jdou z aktivního mintu, v satech, do výše limitu. Funguje, dokud je aplikace otevřená.
+169	Knihovna
+170	Lightning
+171	Lightning adresa
+172	Lightning adresa přes {0}
+173	Lightning poplatek
+174	Odkaz zkopírován
+175	Naslouchá platbám, dokud je aplikace otevřená.
+176	Načítám data auditu…
+177	Načítám recenze
+178	Načítám…
+179	Zámek
+180	Zamykací klíč
+181	Uzamknout platby k mému P2PK klíči
+182	Uzamknout k veřejnému klíči (P2PK)
+183	Uzamčeno
+184	Uzamčeno pro někoho jiného
+185	Uzamčeno pro {0}
+186	Uzamčeno pro {0}…
+187	Podržte pole a vložte.
+188	Hledám váš seznam mintů na nostru
+189	Poznámka
+190	Poznámka (volitelná)
+191	Zpráva od mintu: {0}
+192	Minibits. Skutečné saty.
+193	Mint
+194	URL mintu zkopírována
+195	Mint přidán
+196	Auditor mintů
+197	Podrobnosti mintu
+198	Mint pro příchozí platby
+199	Seznam mintů zálohován
+200	Záloha seznamu mintů
+201	Zpráva od mintu:
+202	Recenze mintu
+203	Mint je nedostupný. Zkontrolujte připojení.
+204	Mint aktualizován
+205	Minty
+206	Mintování / meltování
+207	Minty ohlášené a hodnocené na nostru (NIP-87). Recenze nejsou ověřené: čtěte je kriticky.{0}
+208	Nalezené minty: {0}
+209	Minty drží bitcoin
+210	Více o tomto mintu
+211	Přesunout
+212	Přesunout prostředky
+213	Přesunout prostředky mezi minty
+214	Přesunuto {0}
+215	Multinut
+216	NFC
+217	NFC karty
+218	Kódování NFC
+219	NFC: {0}
+220	Síťové kontroly a cena bitcoinu
+221	Nový limit v satech
+222	Nové připojení vytvořeno. Staré přestává fungovat.
+223	Nový platební požadavek
+224	Nové platby: {0}
+225	Nový seed je aktivní
+226	Nová seed fráze
+227	Další
+228	Přezdívka
+229	Ne
+230	Rozšíření NIP-07 nenalezeno
+231	Zatím žádné čítače.
+232	Není vybrán žádný mint
+233	Na vašich relayích nebyly nalezeny žádné minty.
+234	V záloze na nostru nejsou žádné nové minty.
+235	Žádné nové platby
+236	Žádný jiný mint nepodporuje {0}.
+237	Zatím žádné recenze.
+238	Není k dispozici žádný podepisovač.
+239	Na této kartě není žádný token.
+240	Zatím žádné transakce.
+241	Zatím žádné transakce. Přijměte ecash nebo dobijte přes Lightning.
+242	Zatím žádné.
+243	Nostr
+244	Nostr Wallet Connect
+245	Zatím nezálohováno.
+246	Zatím nevyzvednuto.
+247	U tohoto mintu nemáte dost.
+248	Nedostatečný zůstatek včetně poplatků.
+249	Zatím nezaplaceno.
+250	Neodemčeno
+251	V tomto zobrazení nic není.
+252	Nic nečeká
+253	Není co exportovat.
+254	Při příjmu nabídne výměnu ecash z jiného mintu do aktivního mintu.
+255	Na Androidu: otevřete nabídku prohlížeče a zvolte Nainstalovat aplikaci.
+256	Na iPhonu: klepněte na Sdílet a pak na Přidat na plochu.
+257	Klávesnice na obrazovce
+258	Úvod
+259	Přijímat ecash jen z {0}
+260	Uplatnit ho může jen držitel odpovídajícího soukromého klíče.
+261	Nebo vytvořte jednorázovou fakturu:
+262	P2PK
+263	Zaplaceno
+264	Zaplaceno. Cílový mint ještě vypořádává.
+265	Části dávají {0} z {1}
+266	Vložit
+267	Vložte cashu token
+268	Vložte soukromý klíč. Nedoporučuje se.
+269	Automaticky vkládat ecash
+270	Zaplatit
+271	Zaplatit z více mintů (Multinut)
+272	Zaplatit jednu fakturu z více mintů najednou (NUT-15).
+273	Zaplatit {0}
+274	Zaplatit {0} v ecash
+275	Zvolí plátce
+276	Platba probíhá. Dokončí se.
+277	Platební požadavek
+278	Platební požadavky
+279	Platební požadavky (NUT-18) umožňují platit vám ecash přes nostr. Když jsou zapnuté, peněženka naslouchá na vašich relayích, dokud je otevřená.
+280	Platební požadavky jsou vypnuté; zapněte je pro příjem.
+281	Platební požadavky zapnuty
+282	Platby
+283	Platby: {0}
+284	Čeká
+285	Uvolněné čekající platby: {0}
+286	Pravidelně kontroluje, zda byly odeslané tokeny vyzvednuty.
+287	Namiřte na QR kód
+288	Dotazuje se na zobrazenou fakturu, dokud není zaplacena.
+289	Preimage
+290	Soukromí
+291	Uložené proofy
+292	Veřejný klíč zkopírován
+293	Veřejný klíč nebo npub
+294	Zveřejnit recenzi
+295	Zveřejní se na nostru pod vaší nostr identitou.
+296	QR kód
+297	Rychlý přístup
+298	Rychlý přístup k NFC
+299	Až dva týdny na pozadí znovu kontroluje nezaplacené faktury.
+300	Přijmout
+301	Přijímat ecash uzamčený k vašim klíčům
+302	Přijímat ecash platby přes nostr
+303	Okamžitě přijme odpovídající platby ze známých mintů.
+304	Výměna při příjmu
+305	Přijímat na adresu přes npub.cash
+306	Přijato
+307	Přijato {0}
+308	Nedávné výměny
+309	Vzít zpět
+310	Vzato zpět
+311	Vráceno do vaší peněženky
+312	Obnovit
+313	Relaye
+314	Uvolnit čekající platby
+315	Vzdálený podepisovač (bunker)
+316	Odebrat mint
+317	Odebrat utracené proofy
+318	Odebrat tento mint z peněženky?
+319	Odebrat {0}
+320	Odebráno {0} utracených proofů
+321	Odebráním se tyto proofy smažou z tohoto zařízení. Nejdřív je přesuňte nebo utraťte.
+322	Požadavek
+323	Požadavek zkopírován
+324	Reset
+325	Resetovat vše
+326	Resetovat peněženku
+327	Resetovat data peněženky
+328	Obnovit
+329	Obnovit ecash
+330	Obnovit ze seed fráze
+331	Obnovuji
+332	Vrátí do zůstatku ecash držený pro probíhající Lightning platby. Pokud platba přesto prošla, spusťte poté „Odebrat utracené proofy“.
+333	Recenze zveřejněna
+334	Recenze
+335	Recenze z vaší sítě důvěry se počítají zvlášť.
+336	Recenze: {0}
+337	Zrušit a vytvořit nové připojení
+338	Můžete zavřít. Čekající faktury se později zkontrolují znovu.
+339	Uložit
+340	Uloženo
+341	Skenovat
+342	Skenovat QR kód
+343	Prohledat tyto minty
+344	Prohledá vaše minty kvůli ecash vytvořenému seed frází: touto peněženkou nebo jinou. Ecash nalezený s jiným seedem se přesune do této peněženky.
+345	Skenovat {0}
+346	Prohledávám relaye
+347	Seed zkopírován. Poté vymažte schránku.
+348	Seed fráze
+349	Seed fráze a obnova ecash
+350	Odeslat
+351	Odesláno
+352	Server
+353	Nastavit
+354	Nastavení
+355	Nastavení
+356	Sdílet
+357	Sdílejte tento klíč. Ecash uzamčený k němu může uplatnit jen tato peněženka.
+358	Při příjmu ecash zobrazí tlačítko NFC.
+359	Zobrazit poslední požadavek
+360	Zobrazit úvod znovu
+361	V podrobnostech mintu zobrazí údaje o spolehlivosti od nezávislého auditora.
+362	Zobrazit seed frázi
+363	Zobrazit při příjmu
+364	Zobrazí vaši adresu v Přijmout → Lightning.
+365	Zobrazí zůstatek ve fiat měně.
+366	Zobrazí váš zamykací klíč v Přijmout.
+367	Zobrazí ₿1,000 místo 1,000 sat.
+368	Podepisovač aktualizován
+369	Podepisovací rozšíření
+370	Velikost: {0}
+371	Zdrojový kód
+372	Rychlost: {0}
+373	Rozdělit {0} mezi minty. Každý mint potřebuje navíc zůstatek na rezervu Lightning poplatku.
+374	Začít od npub (prázdné = váš)
+375	Stav
+376	Statický
+377	Stav
+378	Stále nezaplaceno.
+379	Uloží odkaz na tuto peněženku s tokenem
+380	Uloží token jako kompaktní binární data
+381	Uloží token jako prostý text
+382	Doporučené minty
+383	Podporované funkce
+384	Vyměnit do aktivního mintu
+385	Vyměnit do {0}
+386	Vyměněno
+387	Výměny, auditor, Multinut
+388	Přepnout na nový seed
+389	Přepnout na {0}
+390	Přepnout jednotku
+391	Klepnutím na keyset zvýšíte jeho čítač o 10. Opravuje chyby „outputs have already been signed“.
+392	Klepněte pro vyzvednutí
+393	Testovací mint. Falešné saty, faktury se zaplatí samy.
+394	Text
+395	Tento ecash už byl vyzvednut.
+396	Není to platný cashu token.
+397	Tato seed fráze není platná.
+398	Požadavek přijímá jen {0}.
+399	Token byl vyzvednut.
+400	Motiv
+401	Motiv, klávesnice a symbol bitcoinu
+402	Tyto funkce jsou nové. Používejte malé částky.
+403	Tato nastavení mění, jak často peněženka komunikuje s minty a jinými službami.
+404	Tyto tokeny jsou vaše peníze. Kdo je uvidí, může je utratit.
+405	Tento prohlížeč nepodporuje Web NFC. Funguje v Chromu na Androidu.
+406	Tento mint zatím není auditován.
+407	Tento mint pro vás stále drží ecash.
+408	Tento požadavek je v {0}. Nejdřív přepněte jednotku.
+409	Čas
+410	Komu
+411	Do mintu
+412	Token zkopírován
+413	Tokeny zkopírovány
+414	Tokeny, které držíte v zařízení jako bankovky v peněžence. Platby jsou soukromé: mint nevidí, kdo komu platí.
+415	Příliš velké na jeden QR. Použijte animovaný kód nebo kopírování.
+416	Celkem
+417	Důvěřovat mintu a přijmout
+418	Důvěryhodné: {0}
+419	Příchozí platby hned převede na ecash.
+420	Pro potvrzení napište „reset“.
+421	Nevyzvednuto
+422	Jednotky
+423	Neznámé
+424	Neznámý mint. Přijetím se přidá do peněženky. Přijímejte ecash jen od mintů, kterým věříte.
+425	Nevyužitá rezerva poplatku se vrátí jako drobné.
+426	Aktualizováno
+427	Použít
+428	Používat WebSockety
+429	Použít rozšíření prohlížeče NIP-07
+430	Použijte soukromý nostr klíč jako P2PK klíč, aby šel zde uplatnit ecash uzamčený k vašemu npub.
+431	Pro částky použít vestavěnou číselnou klávesnici.
+432	Použít tento mint
+433	Používejte peněženku z jiných aplikací
+434	Použít symbol ₿
+435	Používá se pro Lightning adresu a recenze mintů. Platební požadavky a zprávy vždy používají klíč ze seedu peněženky.
+436	Verze
+437	Verze a odkazy
+438	Čekám na platbu
+439	Seed fráze peněženky
+440	Síť důvěry
+441	Síť důvěry: {0} klíčů
+442	Jaká byla vaše zkušenost s tímto mintem?
+443	Bílá
+444	Kdo má tento token, může ho utratit. Dokud ho nikdo nevyzvedne, můžete ho vzít zpět z historie.
+445	Napsat recenzi
+446	Zapište si těchto 12 slov v pořadí a uložte je offline. Obnoví váš ecash, pokud ztratíte toto zařízení.
+447	Zapsat na NFC kartu
+448	Zapsáno na NFC kartu
+449	Ano, P2PK
+450	Vaše Lightning adresa
+451	Váš zůstatek se přesune na nový seed. Před pokračováním si zapište nová slova.
+452	Vaše nostr identita
+453	Váš nsec
+454	Vaše požadavky
+455	Váš seed je vaše záloha
+456	Vaše seed fráze obnoví peněženku. Držte ji v soukromí.
+457	aktivní
+458	zbývající limit: {0} sat
+459	částka musí být {0}–{1} sat
+460	částka je povinná
+461	částka je příliš malá na pokrytí poplatků výměny
+462	libovolná částka
+463	poplatky výměny se nevešly
+464	čítač {0}
+465	rychlá
+466	neaktivní
+467	nedostatečný zůstatek u tohoto mintu
+468	neplatné URI bunkeru
+469	faktura nenalezena
+470	právě teď
+471	střední
+472	metoda není podporována
+473	potřebujete {0} vč. rezervy poplatku // máte {1} u {2}
+474	podepisovací rozšíření NIP-07 nenalezeno
+475	žádný aktivní mint
+476	bez poplatku
+477	nebyla vrácena žádná faktura
+478	žádný relay událost nepřijal
+479	zpráva z nostru
+480	není to Lightning platební endpoint
+481	není to platný veřejný klíč ani npub
+482	není to nsec
+483	nevyzvednuto
+484	nedostatečný zůstatek u aktivního mintu
+485	npub zkopírován
+486	nsec zkopírován. Držte ho v tajnosti.
+487	platba čeká
+488	platební požadavek
+489	odebrat
+490	obnoveno ze seedu
+491	vyberte jeden z mintů, které požadavek přijímá
+492	pomalá
+493	platba výměny čeká
+494	aktivní mint
+495	požadavek je v {0}; nejdřív přepněte jednotku
+496	tento požadavek nemá jak doručit platbu
+497	token už je z aktivního mintu
+498	až {0}
+499	použitý
+500	peněženka zatím nemá seed
+501	síť důvěry
+502	{0} u tohoto mintu
+503	{0} k dispozici
+504	před {0} min
+505	{0} hvězd
+506	{0} slov
+507	· kontrolní součet nesedí
+508	✓ Částky sedí
+509	✓ Uzamčeno k vašemu klíči
+510	✓ Platná fráze

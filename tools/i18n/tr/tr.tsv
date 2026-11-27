@@ -1,0 +1,510 @@
+1	12 kelimelik bir ifade, bu cihazı kaybedersen ecash'ini geri yükleyebilir. Yaz ve çevrim dışı sakla.
+2	cashu-ts üzerine kurulu bir Cashu ecash cüzdanı. Ecash ve seed'in yalnızca bu tarayıcıda saklanır. Mint'ler emanetçidir: güvendiklerini kullan ve tutarları küçük tut.
+3	Bir mint, sakladığı bitcoin karşılığında ecash çıkarır. Fonlarını ona emanet edersin, bu yüzden küçük başla.
+4	Bir mint, elinde tuttuğu bitcoin karşılığında ecash çıkarır. Fonlarını mint'e emanet edersin, bu yüzden dikkatle seç ve küçük başla.
+5	Ödeme isteği (NUT-18), aynı anda çevrim içi olmasanız bile birinin sana nostr üzerinden ecash ödemesini sağlar.
+6	Hakkında
+7	Ekle
+8	Önce bir mint ekle.
+9	Seçilenleri ekle
+10	Daha önce kullandığın mint'leri ekle. Her biri ecash'in için taranacak.
+11	Bu mint'i ekle
+12	Adres kopyalandı
+13	Gelişmiş
+14	Tümü
+15	Tüm proof'lar geçerli
+16	Limit
+17	Kalan limit
+18	Nostr doğrudan mesajlarıyla gönderilen ecash'i de alır.
+19	Kehribar
+20	Tutar
+21	Animasyonlu
+22	Animasyonlu kod · %{0}
+23	Herhangi
+24	Herhangi bir tutar
+25	Bu kelimelere sahip olan herkes ecash'ini alabilir. Asla paylaşma.
+26	Görünüm
+27	Mint'lerine hangi ecash'in zaten harcandığını sorar ve onları kaldırır. Bakiyen yanlış görünüyorsa kullan.
+28	Denetçi
+29	Denetçi API URL'si
+30	Denetçi URL'si
+31	Denetçi kullanılamıyor: {0}
+32	Kullanılabilir: {0}
+33	Geri
+34	Mint listesini nostr'a yedekle
+35	Şimdi yedekle
+36	Yedekleme ve geri yükleme
+37	Bakiye
+38	İkili
+39	Güven ağı oluştur
+40	Kamera kullanılamıyor. Bunun yerine yapıştır.
+41	Tekrar kontrol et
+42	Tüm faturaları kontrol et
+43	Ödemeleri kontrol et
+44	Gelen faturayı kontrol et
+45	Şimdi kontrol et
+46	Ödemeyi kontrol et
+47	Uygulama açıldığında bekleyen faturaları ve ödemeleri kontrol eder.
+48	Başlangıçta bekleyenleri kontrol et
+49	Gönderilen ecash'i kontrol et
+50	Durumu kontrol et
+51	Kontrol ediliyor…
+52	Bir mint seç
+53	Mint seç
+54	Hangilerinin ekleneceğini seç.
+55	Dilini seç
+56	Otomatik al
+57	Alındı
+58	Kapat
+59	Coinos. Gerçek sat'lar.
+60	Takip ettiğin kişileri ve onların takip ettiklerini toplar, böylece onların mint yorumlarını öne çıkarır.
+61	Yorum (isteğe bağlı)
+62	Tamamlandı
+63	NIP-46 bunker URI'si bağla
+64	Bağlantı kopyalandı. Ona bir parola gibi davran.
+65	Devam
+66	Kopyalandı
+67	Kopyala
+68	URL'yi kopyala
+69	Tümünü kopyala
+70	Kopyalama engellendi. Seçmek için basılı tut.
+71	Bağlantıyı kopyala
+72	Faturayı kopyala
+73	Anahtarı kopyala
+74	Bağlantıyı kopyala
+75	npub'u kopyala
+76	nsec'i kopyala
+77	İsteği kopyala
+78	Seed ifadesini kopyala
+79	Etkin mint ve birimin tüm bakiyesini tek bir token olarak kopyalar.
+80	Sayaç çakışması. Gelişmiş ayarlarda keyset sayaçlarını artır.
+81	Yeni bir cüzdan oluştur ya da seed ifadenle geri yükle.
+82	Fatura oluştur
+83	Yeni cüzdan oluştur
+84	Ödeme isteği oluştur
+85	İstek oluştur
+86	Token oluştur
+87	Şu anda {0} anahtar.
+88	Bu cihazdaki her şeyi siler. Önce seed'ini yedekle.
+89	Seed'ini, mint'lerini ve bu cihazdaki tüm ecash'i siler. Seed ifaden olmadan fonlar kaybolur.
+90	Teslimat
+91	Seed'inden anahtar türet (önerilen)
+92	Açıklama (isteğe bağlı)
+93	{0} ayrıntıları
+94	Geliştirici araçları ve cüzdan sıfırlama
+95	Kod tanınmadı.
+96	Mint keşfet
+97	Kapat
+98	Tamam
+99	Ecash
+100	Ecash dijital nakittir
+101	Ecash token'ı
+102	Etkinleştir
+103	NWC'yi etkinleştir
+104	Ödeme isteklerini etkinleştir
+105	Seed'inden türetilen bir anahtarla şifrelenir, böylece geri yükleme mint'lerini bulabilir.
+106	Bir tutar gir.
+107	12 veya 24 kelimelik seed ifadeni gir.
+108	Hatalar
+109	Deneysel
+110	Süresi doldu
+111	Dışa aktar
+112	Etkin proof'ları dışa aktar
+113	Tüm ecash'i token olarak dışa aktar
+114	Başarısız
+115	Başarısız, ecash iade edildi
+116	Ücret
+117	Ücret {0}
+118	Fiat para birimi
+119	Al'ı açtığında panodaki token'ı doldurur. iOS'ta uyarılara neden olabilir.
+120	Mint'lerimi bul
+121	Mint'lerimi nostr'da bul
+122	Açıklama
+123	Sorun giderme için. Kullanmadan önce her açıklamayı oku.
+124	{0} kaynağından. Mint'ler arasında bir Lightning faturası öder, bu yüzden ücret alınır.
+125	Tam rapor: {0}
+126	Yeni bir seed oluşturur ve tüm bakiyeni ona taşır. Eski seed'in bu ecash'i artık geri yükleyemez.
+127	Anahtar oluştur
+128	Sana kilitlenmiş ecash almak için anahtar oluştur. Deneysel: bu anahtarları kaybedersen onlara kilitli ecash açılamaz. Anahtarlar cüzdanla saklanır ama seed'inden türetilmez.
+129	Yeni seed oluştur
+130	Yeni seed ifadesi oluştur
+131	npub.cash'ten bir Lightning adresi al. Bu adrese gelen ödemeler seçtiğin mint'te ecash olur. Nostr anahtarını kullanır (Nostr ayarlarına bak).
+132	Kuru Coinbase'den al
+133	Teklif al
+134	Yeşil
+135	HTTP POST
+136	Donanım
+137	Geçmiş
+138	Bir NFC kartını telefona yaklaştır…
+139	Kartı telefona yaklaştır…
+140	Token'ların NFC kartlara nasıl yazıldığı.
+141	Eski seed ifademin çalışmayacağını anlıyorum
+142	Buradaki ecash'in kaybolacağını anlıyorum
+143	Yeni kelimeleri yazdım
+144	Yazdım
+145	İçe aktar
+146	nsec içe aktar
+147	{0} mint ücreti dahil
+148	Gelen ecash: {0}. Almak için geçmişte ona dokun.
+149	Yükle
+150	Destekleyen mint'lerden anında güncellemeler (NUT-17).
+151	{0} hedefine
+152	Fatura
+153	Fatura kopyalandı
+154	Faturanın süresi doldu.
+155	Fatura, Lightning adresi, LNURL veya ödeme isteği
+156	Anahtar kopyalandı
+157	Anahtar oluşturuldu
+158	Anahtar içe aktarıldı
+159	Anahtarlar bu cihazda oluşturulur ve asla cihazdan çıkmaz.
+160	Anahtarlar, relay'ler, yedek ve güven ağı
+161	Anahtarlar: {0}
+162	Keyset sayaçları
+163	Keyset'ler
+164	Dil
+165	Son yedek {0}
+166	Ödeyenin seçmesi için boş bırak
+167	Bu cüzdanın seed'ini kullanmak için boş bırak
+168	Diğer uygulamaların cüzdanından fatura ödemesine izin ver. Ödemeler etkin mint'ten, sat cinsinden, limite kadar yapılır. Uygulama açıkken çalışır.
+169	Kütüphane
+170	Lightning
+171	Lightning adresi
+172	{0} ile Lightning adresi
+173	Lightning ücreti
+174	Bağlantı kopyalandı
+175	Uygulama açıkken ödemeler dinleniyor.
+176	Denetim verileri yükleniyor…
+177	Yorumlar yükleniyor
+178	Yükleniyor…
+179	Kilit
+180	Kilit anahtarı
+181	Ödemeleri P2PK anahtarıma kilitle
+182	Bir açık anahtara kilitle (P2PK)
+183	Kilitli
+184	Başkasına kilitli
+185	{0} için kilitli
+186	{0}… için kilitli
+187	Yapıştırmak için alana basılı tut.
+188	Mint listen nostr'da aranıyor
+189	Not
+190	Not (isteğe bağlı)
+191	Mint'ten mesaj: {0}
+192	Minibits. Gerçek sat'lar.
+193	Mint
+194	Mint URL'si kopyalandı
+195	Mint eklendi
+196	Mint denetçisi
+197	Mint ayrıntıları
+198	Gelen ödemeler için mint
+199	Mint listesi yedeklendi
+200	Mint listesi yedeği
+201	Mint'ten mesaj:
+202	Mint yorumları
+203	Mint'e ulaşılamıyor. Bağlantını kontrol et.
+204	Mint güncellendi
+205	Mint'ler
+206	Basım / eritme
+207	Nostr'da duyurulan ve yorumlanan mint'ler (NIP-87). Yorumlar doğrulanmaz: eleştirel oku.{0}
+208	Bulunan mint'ler: {0}
+209	Mint'ler bitcoin'i tutar
+210	Bu mint hakkında daha fazla
+211	Taşı
+212	Fon taşı
+213	Mint'ler arasında fon taşı
+214	{0} taşındı
+215	Multinut
+216	NFC
+217	NFC kartları
+218	NFC kodlaması
+219	NFC: {0}
+220	Ağ kontrolleri ve Bitcoin fiyatı
+221	Sat cinsinden yeni limit
+222	Yeni bağlantı oluşturuldu. Eskisi artık çalışmaz.
+223	Yeni ödeme isteği
+224	Yeni ödemeler: {0}
+225	Yeni seed etkin
+226	Yeni seed ifadesi
+227	İleri
+228	Takma ad
+229	Hayır
+230	NIP-07 uzantısı bulunamadı
+231	Henüz sayaç yok.
+232	Mint seçilmedi
+233	Relay'lerinde mint bulunamadı.
+234	Nostr yedeğinde yeni mint bulunamadı.
+235	Yeni ödeme yok
+236	{0} birimini destekleyen başka mint yok.
+237	Henüz yorum yok.
+238	Kullanılabilir imzalayıcı yok.
+239	Bu kartta token yok.
+240	Henüz işlem yok.
+241	Henüz işlem yok. Ecash al ya da Lightning ile yükle.
+242	Henüz yok.
+243	Nostr
+244	Nostr Wallet Connect
+245	Henüz yedeklenmedi.
+246	Henüz alınmadı.
+247	Bu mint'te yeterli bakiye yok.
+248	Ücretler dahil yetersiz bakiye.
+249	Henüz ödenmedi.
+250	Kilidi açılmadı
+251	Bu görünümde bir şey yok.
+252	Bekleyen bir şey yok
+253	Dışa aktarılacak bir şey yok.
+254	Alırken başka bir mint'teki ecash'i etkin mint'ine takas etmeyi önerir.
+255	Android'de: tarayıcı menüsünü aç, ardından Uygulamayı yükle'yi seç.
+256	iPhone'da: Paylaş'a, ardından Ana Ekrana Ekle'ye dokun.
+257	Ekran tuş takımı
+258	Tanıtım
+259	Yalnızca {0} kaynaklı ecash'i kabul et
+260	Yalnızca eşleşen özel anahtarın sahibi bunu kullanabilir.
+261	Ya da tek kullanımlık bir fatura oluştur:
+262	P2PK
+263	Ödendi
+264	Ödendi. Hedef mint hâlâ işliyor.
+265	Parçaların toplamı {0} / {1}
+266	Yapıştır
+267	Bir cashu token'ı yapıştır
+268	Özel anahtar yapıştır. Önerilmez.
+269	Ecash'i otomatik yapıştır
+270	Öde
+271	Birden fazla mint'ten öde (Multinut)
+272	Tek bir faturayı aynı anda birden fazla mint'ten öde (NUT-15).
+273	{0} öde
+274	{0} tutarını ecash ile öde
+275	Ödeyen seçer
+276	Ödeme sürüyor. Tamamlanacak.
+277	Ödeme isteği
+278	Ödeme istekleri
+279	Ödeme istekleri (NUT-18) sana nostr üzerinden ecash ödenmesini sağlar. Etkinleştirildiğinde cüzdan, açık olduğu sürece relay'lerini dinler.
+280	Ödeme istekleri kapalı; almak için aç.
+281	Ödeme istekleri etkinleştirildi
+282	Ödemeler
+283	Ödemeler: {0}
+284	Bekliyor
+285	Serbest bırakılan bekleyen ödemeler: {0}
+286	Gönderdiğin token'ların alınıp alınmadığını düzenli olarak kontrol eder.
+287	Bir QR koduna doğrult
+288	Baktığın faturayı ödenene kadar sorgular.
+289	Preimage
+290	Gizlilik
+291	Tutulan proof'lar
+292	Açık anahtar kopyalandı
+293	Açık anahtar veya npub
+294	Yorumu yayınla
+295	Nostr kimliğinle nostr'da herkese açık yayınlanır.
+296	QR kodu
+297	Hızlı erişim
+298	NFC'ye hızlı erişim
+299	Ödenmemiş faturaları arka planda iki haftaya kadar yeniden kontrol eder.
+300	Al
+301	Anahtarlarına kilitli ecash al
+302	Nostr üzerinden ecash ödemeleri al
+303	Bilinen mint'lerden gelen uyumlu ödemeleri hemen al.
+304	Alırken takas
+305	npub.cash ile bir adrese al
+306	Alındı
+307	{0} alındı
+308	Son takaslar
+309	Geri al
+310	Geri alındı
+311	Cüzdanına geri alındı
+312	Yenile
+313	Relay'ler
+314	Bekleyen ödemeleri serbest bırak
+315	Uzak imzalayıcı (bunker)
+316	Mint'i kaldır
+317	Harcanmış proof'ları kaldır
+318	Bu mint cüzdanından kaldırılsın mı?
+319	{0} kaldır
+320	{0} harcanmış proof kaldırıldı
+321	Kaldırmak bu proof'ları cihazdan siler. Önce taşı ya da harca.
+322	İstek
+323	İstek kopyalandı
+324	Sıfırla
+325	Her şeyi sıfırla
+326	Cüzdanı sıfırla
+327	Cüzdan verilerini sıfırla
+328	Geri yükle
+329	Ecash'i geri yükle
+330	Seed ifadesiyle geri yükle
+331	Geri yükleniyor
+332	Süren Lightning ödemeleri için tutulan ecash'i bakiyene geri verir. Bir ödeme gerçekten gittiyse sonrasında “Harcanmış proof'ları kaldır”ı çalıştır.
+333	Yorum yayınlandı
+334	Yorumlar
+335	Güven ağından gelen yorumlar ayrıca sayılır.
+336	Yorumlar: {0}
+337	İptal et ve yeni bağlantı oluştur
+338	Kapatabilirsin. Bekleyen faturalar daha sonra yeniden kontrol edilir.
+339	Kaydet
+340	Kaydedildi
+341	Tara
+342	QR kodu tara
+343	Bu mint'leri tara
+344	Mint'lerinde bir seed ifadesiyle oluşturulmuş ecash'i arar: bu cüzdanınki ya da başka biri. Başka bir seed ile bulunan ecash bu cüzdana taşınır.
+345	{0} tara
+346	Relay'lerde aranıyor
+347	Seed kopyalandı. Sonra panonu temizle.
+348	Seed ifadesi
+349	Seed ifadesi ve ecash kurtarma
+350	Gönder
+351	Gönderildi
+352	Sunucu
+353	Ayarla
+354	Kurulum
+355	Ayarlar
+356	Paylaş
+357	Bu anahtarı paylaş. Ona kilitlenen ecash yalnızca bu cüzdanla kullanılabilir.
+358	Ecash alırken bir NFC düğmesi gösterir.
+359	Son isteği göster
+360	Tanıtımı yeniden göster
+361	Mint ayrıntılarında bağımsız bir denetçiden güvenilirlik verileri gösterir.
+362	Seed ifadesini göster
+363	Alırken göster
+364	Adresini Al → Lightning bölümünde gösterir.
+365	Bakiyeni fiat olarak gösterir.
+366	Kilit anahtarını Al bölümünde gösterir.
+367	1,000 sat yerine ₿1,000 gösterir.
+368	İmzalayıcı güncellendi
+369	İmzalama uzantısı
+370	Boyut: {0}
+371	Kaynak kodu
+372	Hız: {0}
+373	{0} tutarını mint'lere böl. Her mint'in Lightning ücret rezervi için ek bakiyeye ihtiyacı var.
+374	Bir npub'dan başla (seninki için boş bırak)
+375	Durum
+376	Sabit
+377	Durum
+378	Hâlâ ödenmedi.
+379	Bu cüzdana bir bağlantıyı token ile saklar
+380	Token'ı kompakt ikili olarak saklar
+381	Token'ı düz metin olarak saklar
+382	Önerilen mint'ler
+383	Desteklenen özellikler
+384	Etkin mint'e takas et
+385	{0} için takas et
+386	Takas edildi
+387	Takas, denetçi, Multinut
+388	Yeni seed'e geç
+389	{0} seçeneğine geç
+390	Birimi değiştir
+391	Sayacını 10 artırmak için bir keyset'e dokun. “outputs have already been signed” hatalarını giderir.
+392	Almak için dokun
+393	Test mint'i. Sahte sat'lar, faturalar kendiliğinden ödenir.
+394	Metin
+395	Bu ecash zaten alınmış.
+396	Geçerli bir cashu token'ı değil.
+397	Bu seed ifadesi geçerli değil.
+398	İstek yalnızca {0} kabul ediyor.
+399	Token alındı.
+400	Tema
+401	Tema, tuş takımı ve Bitcoin simgesi
+402	Bu özellikler yeni. Küçük tutarlar kullan.
+403	Bu ayarlar cüzdanın mint'ler ve diğer hizmetlerle ne sıklıkta konuştuğunu değiştirir.
+404	Bu token'lar senin paran. Onları gören herkes harcayabilir.
+405	Bu tarayıcı Web NFC'yi desteklemiyor. Android'de Chrome'da çalışır.
+406	Bu mint henüz denetlenmiyor.
+407	Bu mint hâlâ senin için ecash tutuyor.
+408	Bu istek {0} biriminde. Önce birimi değiştir.
+409	Zaman
+410	Alıcı
+411	Hedef mint
+412	Token kopyalandı
+413	Token'lar kopyalandı
+414	Cihazında tuttuğun token'lar, cüzdandaki banknotlar gibi. Ödemeler gizlidir: mint kimin kime ödediğini göremez.
+415	Tek bir QR için çok büyük. Animasyonlu kodu kullan ya da kopyala.
+416	Toplam
+417	Mint'e güven ve al
+418	Güvenilir: {0}
+419	Gelen ödemeleri hemen ecash'e dönüştürür.
+420	Onaylamak için “reset” yaz.
+421	Alınmadı
+422	Birimler
+423	Bilinmiyor
+424	Bilinmeyen mint. Almak onu cüzdanına ekler. Yalnızca güvendiğin mint'lerden ecash kabul et.
+425	Kullanılmayan ücret rezervi para üstü olarak geri gelir.
+426	Güncellendi
+427	Kullan
+428	WebSocket kullan
+429	Bir NIP-07 tarayıcı uzantısı kullan
+430	Bir nostr özel anahtarını P2PK anahtarı olarak kullan; böylece npub'ına kilitli ecash burada kullanılabilir.
+431	Tutarlar için yerleşik sayı tuş takımını kullan.
+432	Bu mint'i kullan
+433	Cüzdanını diğer uygulamalardan kullan
+434	₿ simgesini kullan
+435	Lightning adresin ve mint yorumların için kullanılır. Ödeme istekleri ve mesajlar her zaman cüzdan seed'inden gelen anahtarı kullanır.
+436	Sürüm
+437	Sürüm ve bağlantılar
+438	Ödeme bekleniyor
+439	Cüzdan seed ifadesi
+440	Güven ağı
+441	Güven ağı: {0} anahtar
+442	Bu mint ile deneyimin nasıldı?
+443	Beyaz
+444	Bu token'a sahip olan herkes onu harcayabilir. Alınana kadar geçmişinden geri alabilirsin.
+445	Yorum yaz
+446	Bu 12 kelimeyi sırasıyla yaz ve çevrim dışı sakla. Bu cihazı kaybedersen ecash'ini geri yüklerler.
+447	NFC kartına yaz
+448	NFC kartına yazıldı
+449	Evet, P2PK
+450	Lightning adresin
+451	Bakiyen yeni seed'e taşınacak. Devam etmeden önce yeni kelimeleri yaz.
+452	Nostr kimliğin
+453	nsec'in
+454	İsteklerin
+455	Seed'in senin yedeğin
+456	Seed ifaden cüzdanını geri yükler. Gizli tut.
+457	etkin
+458	kalan limit: {0} sat
+459	tutar {0}–{1} sat arasında olmalı
+460	tutar gerekli
+461	tutar takas ücretlerini karşılamak için çok küçük
+462	herhangi bir tutar
+463	takas ücretleri sığmadı
+464	sayaç {0}
+465	hızlı
+466	etkin değil
+467	bu mint'te yetersiz bakiye
+468	geçersiz bunker URI'si
+469	fatura bulunamadı
+470	az önce
+471	orta
+472	yöntem desteklenmiyor
+473	ücret rezervi dahil {0} gerekli // {2} üzerinde {1} var
+474	NIP-07 imzalama uzantısı bulunamadı
+475	etkin mint yok
+476	ücretsiz
+477	fatura döndürülmedi
+478	hiçbir relay olayı kabul etmedi
+479	nostr mesajı
+480	bir Lightning ödeme uç noktası değil
+481	geçerli bir açık anahtar veya npub değil
+482	bir nsec değil
+483	alınmadı
+484	etkin mint'te yetersiz bakiye
+485	npub kopyalandı
+486	nsec kopyalandı. Gizli tut.
+487	ödeme bekliyor
+488	ödeme isteği
+489	kaldır
+490	seed'den geri yüklendi
+491	isteğin kabul ettiği mint'lerden birini seç
+492	yavaş
+493	takas ödemesi bekliyor
+494	etkin mint
+495	istek {0} biriminde; önce birimi değiştir
+496	bu isteğin ödemeyi teslim etme yolu yok
+497	token zaten etkin mint'e ait
+498	en fazla {0}
+499	kullanıldı
+500	cüzdanın henüz seed'i yok
+501	güven ağı
+502	bu mint'te {0}
+503	{0} kullanılabilir
+504	{0} dk önce
+505	{0} yıldız
+506	{0} kelime
+507	· sağlama toplamı eşleşmiyor
+508	✓ Tutarlar tutuyor
+509	✓ Anahtarına kilitli
+510	✓ Geçerli ifade

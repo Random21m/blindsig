@@ -1,6 +1,6 @@
 // blindsig service worker: caches the app shell so it opens offline.
 // Mint API calls are never cached.
-const VERSION = 'mwz1c3ds';
+const VERSION = 'mwz27w6l';
 const SHELL = ['./', './index.html', './app.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/apple-touch-icon.png'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
@@ -38,5 +38,8 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(req).catch(() => caches.match('./index.html')));
     return;
   }
-  e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req)));
+  e.respondWith(caches.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req).then((r) => {
+    if (r.ok && url.pathname.includes('/i18n/')) { const copy = r.clone(); caches.open('shell-' + VERSION).then((c) => c.put(req, copy)); }
+    return r;
+  })));
 });

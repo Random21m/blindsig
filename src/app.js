@@ -13,6 +13,7 @@ import {
 import * as C from './core.js';
 import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
+import * as I18N from './i18n.js';
 
 const SUGGESTED = [
   { url: 'https://testnut.cashu.space', note: 'Test mint. Fake sats, invoices pay themselves.' },
@@ -649,11 +650,11 @@ const MENU = [
   ['hardware', 'Hardware', 'NFC cards'],
   ['experimental', 'Experimental', 'Swaps, auditor, Multinut'],
   ['advanced', 'Advanced', 'Developer tools and wallet reset'],
+  ['language', 'Language', 'Choose your language'],
   ['about', 'About', 'Version and links'],
 ];
 function settingsSheet() {
-  sheet('Settings', `<ul class="menu">${MENU.map(([k, t, d]) => `<li><button data-k="${k}"><span class="mt"><b>${t}</b><small>${d}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ul>
-    <p class="dim small">Coming next: more languages.</p>`, (b) => {
+  sheet('Settings', `<ul class="menu">${MENU.map(([k, t, d]) => `<li><button data-k="${k}"><span class="mt"><b>${t}</b><small>${d}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ul>`, (b) => {
     $$('.menu button', b).forEach((x) => (x.onclick = () => SECTIONS[x.dataset.k]()));
   });
 }
@@ -683,7 +684,7 @@ const SECTIONS = {
     sheet('P2PK', `<p class="dim">Generate keys to receive ecash locked to you. Experimental: if you lose these keys, ecash locked to them can’t be unlocked. Keys are stored with your wallet but are not derived from your seed.</p>
       <div class="btnrow"><button class="btn primary" id="gen">Generate key</button><button class="btn" id="imp">Import nsec</button></div>
       ${toggle('t_p2pkQuick', 'Quick access', 'Show your locking key in Receive.', st.p2pkQuick)}
-      <h3>${S.p2pk.length} key${S.p2pk.length === 1 ? '' : 's'}</h3>
+      <h3>${`Keys: ${S.p2pk.length}`}</h3>
       <ul class="keys">${S.p2pk.map((k) => `<li><button data-p="${esc(k.pub)}"><code>${esc(k.pub.slice(0, 20))}…${esc(k.pub.slice(-6))}</code>${k.used ? '<em class="pill">used</em>' : ''}</button></li>`).join('')}</ul>`, (b) => {
       $('#gen', b).onclick = () => { C.newP2pkKey(); toast('Key generated'); SECTIONS.p2pk(); };
       $('#imp', b).onclick = () => importNsecSheet();
@@ -757,10 +758,16 @@ const SECTIONS = {
       const sw = $('#sw', b); sw.onclick = withBusy(sw, async () => { const r = await C.sweepSpent(); render(); toast(r ? `Removed ${fmt(r)} of spent proofs` : 'All proofs are valid'); });
       $('#ex', b).onclick = () => exportSheet(true);
       $$('.kc', b).forEach((x) => (x.onclick = () => { S.counters[x.dataset.id] = (S.counters[x.dataset.id] || 0) + 10; save(); SECTIONS.advanced(); }));
-      $('#rel', b).onclick = () => { const n = C.releasePending(); render(); toast(n ? `Released ${n} pending payment${n > 1 ? 's' : ''}` : 'Nothing pending'); };
+      $('#rel', b).onclick = () => { const n = C.releasePending(); render(); toast(n ? `Pending payments released: ${n}` : 'Nothing pending'); };
       $('#ns', b).onclick = newSeedSheet;
       $('#ob', b).onclick = () => welcome(0, true);
       $('#wipe', b).onclick = wipeSheet;
+    }, { back });
+  },
+  language() {
+    const cur = st.lang || I18N.detect();
+    sheet('Language', `<ul class="langs">${I18N.LANGS.map(([c, n]) => `<li><label class="radio"><input type="radio" name="lg" value="${c}" ${c === cur ? 'checked' : ''}><span class="mt"><b data-notr>${esc(n)}</b></span></label></li>`).join('')}</ul>`, (b) => {
+      $$('input[name=lg]', b).forEach((r) => (r.onchange = async () => { st.lang = r.value; save(); await I18N.setLang(r.value); render(); }));
     }, { back });
   },
   about() {
@@ -814,7 +821,7 @@ function newSeedSheet() {
 }
 function wipeSheet() {
   sheet('Reset wallet', `<p class="warn">Deletes your seed, mints and all ecash on this device. Without your seed phrase the funds are gone.</p>
-    <p>Type <b>reset</b> to confirm.</p><input id="cf" class="field" autocomplete="off" autocapitalize="off">
+    <p>Type “reset” to confirm.</p><input id="cf" class="field" autocomplete="off" autocapitalize="off">
     <button class="btn wide danger" id="go" disabled>Reset everything</button>`, (b) => {
     $('#cf', b).oninput = (e) => ($('#go', b).disabled = e.target.value.trim().toLowerCase() !== 'reset');
     $('#go', b).onclick = () => { localStorage.removeItem(KEY); location.replace(location.pathname); };
@@ -920,7 +927,7 @@ let installEvt = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; $('#instBtn').hidden = false; });
 function installHelp() {
   if (installEvt) { installEvt.prompt(); installEvt = null; $('#instBtn').hidden = true; return; }
-  sheet('Install', `<p>On iPhone: tap <b>Share</b>, then <b>Add to Home Screen</b>.</p><p>On Android: open the browser menu, then <b>Install app</b>.</p>`);
+  sheet('Install', `<p>On iPhone: tap Share, then Add to Home Screen.</p><p>On Android: open the browser menu, then Install app.</p>`);
 }
 
 /* ================= boot ================= */
@@ -944,6 +951,8 @@ $('#logTabs').onclick = (e) => { const b = e.target.closest('button'); if (b) { 
 $('#hist').onclick = (e) => { const r = e.target.closest('.row'); if (r) { const h = S.history.find((x) => x.id === r.dataset.id); if (h) detail(h); } };
 if (!navigator.standalone && !matchMedia('(display-mode: standalone)').matches && /iphone|ipad/i.test(navigator.userAgent)) $('#instBtn').hidden = false;
 
+I18N.startObserver();
+I18N.setLang(st.lang || I18N.detect()).then(render);
 render();
 schedule();
 if (!S.mnemonic) setTimeout(() => welcome(0), 300);

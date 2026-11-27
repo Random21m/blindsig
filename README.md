@@ -18,7 +18,14 @@ A cypherpunk Cashu ecash wallet. Installs as a PWA.
 - Nostr Wallet Connect (NIP-47, nip04 and nip44): pay_invoice, make_invoice, get_balance, get_info, list_transactions, lookup_invoice, with an allowance
 - Mint discovery and reviews (NIP-87), web of trust, and encrypted mint list backup on nostr (cashu.me compatible)
 
-Coming next: languages.
+- 14 languages, like cashu.me: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right-to-left), ไทย, 日本語, 中文. Follows the device language; change it in Settings → Language.
+
+## Translations
+
+UI text is English in the source and swapped at runtime from `public/i18n/<code>.json`.
+Source strings live in `tools/i18n/en.json`; translations in `tools/i18n/tr/<code>.tsv`
+(`index<TAB>text`). Run `python3 tools/i18n/build.py` to regenerate the JSON files.
+Translations were machine-assisted and have not been reviewed by native speakers; corrections are welcome.
 
 ## Deploy
 
