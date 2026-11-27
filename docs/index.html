@@ -179,8 +179,20 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .slh{font:600 22px/1.25 var(--sans)!important;color:var(--ink)!important;margin:6px 0 10px!important}
 .lead{font-size:17px;color:var(--ink)}
 .dots{display:flex;gap:6px;margin:6px 0 4px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--ac)}
-.okb{width:84px;height:84px;margin:18px auto 0;border-radius:50%;display:grid;place-items:center;background:var(--ac);color:var(--ac-ink);font:600 40px var(--sans);box-shadow:0 0 0 10px var(--ac-soft);animation:pop .4s cubic-bezier(.2,1.5,.4,1)}
+.okb{width:92px;height:92px;margin:18px auto 0;position:relative;animation:pop .45s cubic-bezier(.2,1.5,.4,1)}
+.okb::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 0 var(--glow);animation:ripple 1.2s .55s ease-out}
+.okb svg{width:100%;height:100%;overflow:visible}
+.okb .ring{fill:none;stroke:var(--ac);stroke-width:3;stroke-dasharray:239;stroke-dashoffset:239;transform:rotate(-90deg);transform-origin:center;animation:draw .5s ease-out forwards}
+.okb .disc{fill:var(--ac);opacity:0;transform:scale(.6);transform-origin:center;animation:fill .3s .42s cubic-bezier(.2,1.4,.4,1) forwards;filter:drop-shadow(0 0 14px var(--glow))}
+.okb .tick{fill:none;stroke:var(--ac-ink);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:48;stroke-dashoffset:48;animation:draw .32s .62s ease-out forwards}
 @keyframes pop{from{transform:scale(.5);opacity:0}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fill{to{opacity:1;transform:none}}
+@keyframes ripple{from{box-shadow:0 0 0 0 var(--glow)}to{box-shadow:0 0 0 26px transparent}}
+.shake{animation:shake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{15%,55%{transform:translateX(-7px)}35%,75%{transform:translateX(7px)}90%{transform:translateX(-2px)}}
+.confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:80}
+.kp button{transition:transform .08s}.kp button:active{transform:scale(.94)}
 .seed{list-style:none;margin:6px 0 16px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .seed li{border-radius:12px;background:var(--card);padding:10px 12px;font:500 16px var(--mono)}
 .seed span{color:var(--faint);margin-right:10px;font-size:13px}
@@ -261,6 +273,9 @@ details.more[open]{padding-bottom:14px}
 #toast[data-kind=warn]{border-left-color:var(--warn)}#toast[data-kind=err]{border-left-color:var(--err)}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){.okb .ring,.okb .tick{stroke-dashoffset:0}.okb .disc{opacity:1;transform:none}}
+[data-motion=off] *:not(.spin),[data-motion=off] *::before,[data-motion=off] *::after{animation:none!important}
+[data-motion=off] .okb .ring,[data-motion=off] .okb .tick{stroke-dashoffset:0}[data-motion=off] .okb .disc{opacity:1;transform:none}
 @media (min-width:700px){.app{padding-top:32px}}
 /* small phones: everything still fits, primary buttons stay reachable */
 @media (max-width:370px){

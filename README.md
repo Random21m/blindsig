@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.4.3-72d99b?style=flat-square&labelColor=161512" alt="version 1.4.3">
+  <img src="https://img.shields.io/badge/version-1.5.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.5.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -118,6 +118,7 @@ Green, white and amber, all on the same soft charcoal background. Change it unde
 
 - 14 languages: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right to left), ไทย, 日本語 and 中文
 - On-screen keypad, optional ₿ symbol, prices in 20 currencies
+- Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off)
 - Works offline once installed
 
 ## Run it yourself

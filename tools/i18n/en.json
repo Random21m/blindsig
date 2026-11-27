@@ -581,5 +581,12 @@
 "Bitcoin price",
 "Offer",
 "Emoji",
-"Nothing to release. Payments still in flight are left to settle."
+"Nothing to release. Payments still in flight are left to settle.",
+"Sound and motion",
+"Sounds",
+"A coin sound when money arrives, a whoosh when it leaves.",
+"Keypad clicks",
+"A faint click on each key press.",
+"Animations",
+"Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion."
 ]

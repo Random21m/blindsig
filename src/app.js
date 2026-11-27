@@ -1,3 +1,4 @@
+import * as FX from './fx.js';
 import { Buffer } from 'buffer';
 globalThis.Buffer = globalThis.Buffer || Buffer;
 import { generateMnemonic, validateMnemonic } from '@scure/bip39';
@@ -36,6 +37,8 @@ async function copy(text, label = 'Copied') {
 async function pasteInto(el) {
   try { el.value = (await navigator.clipboard.readText()).trim(); el.dispatchEvent(new Event('input')); } catch { el.focus(); toast('Long-press the field to paste.', 'warn'); }
 }
+// a gentle "no": warning toast, error sound and a shake of the amount being typed
+function nope(msg) { toast(msg, 'warn'); FX.fail($('#sheet .amt:not([hidden])') || $('#sheet .sb')); }
 function niceErr(e) {
   const m = String(e?.message || e);
   if (/failed to fetch|networkerror|load failed/i.test(m)) return 'Mint unreachable. Check your connection.';
@@ -48,7 +51,7 @@ function withBusy(btn, fn) {
   return async (...a) => {
     if (btn.disabled) return;
     const html = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spin"></span>';
-    try { await fn(...a); } catch (e) { console.error(e); toast(niceErr(e), 'err'); } finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = html; } }
+    try { await fn(...a); } catch (e) { console.error(e); toast(niceErr(e), 'err'); FX.fail(btn); } finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = html; } }
   };
 }
 const later = (f) => setTimeout(f, 0);
@@ -102,8 +105,9 @@ function bindKeypads(b) {
       let v = inp.value;
       if (k === '⌫') v = v.slice(0, -1);
       else if (k === '.') { if (!v.includes('.')) v = (v || '0') + '.'; }
-      else if (v.replace('.', '').length < 12) { if (v.includes('.') && v.split('.')[1].length >= 2) return; v = v === '0' ? k : v + k; }
-      inp.value = v; inp.dispatchEvent(new Event('input')); navigator.vibrate?.(8);
+      else if (v.replace('.', '').length < 12) { if (v.includes('.') && v.split('.')[1].length >= 2) return FX.shake(inp.closest('.amt')); v = v === '0' ? k : v + k; }
+      else return FX.shake(inp.closest('.amt'));
+      inp.value = v; inp.dispatchEvent(new Event('input')); FX.play('tap'); navigator.vibrate?.(8);
     };
   });
   $$('.amt input', b).forEach((i) => i.addEventListener('input', () => { if (!st.keypad) i.value = i.value.replace(isFiatUnit(i.dataset.unit) ? /[^0-9.]/g : /\D/g, ''); }));
@@ -149,6 +153,7 @@ function btcPrice() {
 }
 function render() {
   document.documentElement.dataset.accent = st.theme;
+  document.documentElement.dataset.motion = st.motion === false ? 'off' : 'on';
   const m = mintOf(S.active);
   $('#mintName').textContent = m ? mintLabel(m) : 'No mint selected';
   $('#mintHost').textContent = m && m.nick ? host(m.url) : '';
@@ -387,7 +392,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       const a = readAmt(b);
       const desc = $('#desc', b).value.trim() || undefined;
       if ($('#b12', b)?.checked) return liveView(await C.createOffer(a || 0, S.active, S.unit, desc));
-      if (!a) return toast('Enter an amount.', 'warn');
+      if (!a) return nope('Enter an amount.');
       invoiceView(await C.createInvoice(a, S.active, S.unit, desc));
     });
     const ad = $('#addr', b);
@@ -443,7 +448,7 @@ function liveView(h) {
     qrSvg(qrText).then((x) => { const q = $('#lq', b); if (q) q.innerHTML = x; });
     $('#cp', b).onclick = () => copy(h.request, chain ? 'Address copied' : 'Offer copied');
     let timer, dead = false, seen = h.received || 0;
-    const update = () => { const r = $('#rsf', b); if (r) r.textContent = fmt(h.received || 0, h.unit); if ((h.received || 0) > seen) { toast(`Received ${fmt(h.received - seen, h.unit)}`); seen = h.received; render(); } };
+    const update = () => { const r = $('#rsf', b); if (r) r.textContent = fmt(h.received || 0, h.unit); if ((h.received || 0) > seen) { toast(`Received ${fmt(h.received - seen, h.unit)}`); FX.success('received'); seen = h.received; render(); } };
     const ck = $('#ck', b);
     ck.onclick = withBusy(ck, async () => { await C.checkInvoice(h); update(); if ((h.received || 0) === seen) toast('Nothing new yet.', 'warn'); });
     const tick = async () => { if (dead || !h.live) return; try { await C.checkInvoice(h); update(); } catch {} timer = setTimeout(tick, chain ? 15000 : 4000); };
@@ -475,14 +480,14 @@ function sendSheet(tab = 'ecash', prefill = '') {
     bindSeg(b);
     const mk = $('#mk', b);
     mk.onclick = withBusy(mk, async () => {
-      const a = readAmt(b); if (!a) return toast('Enter an amount.', 'warn');
+      const a = readAmt(b); if (!a) return nope('Enter an amount.');
       const lockRaw = $('#lock', b).value.trim();
       const lockTo = lockRaw ? C.parsePubkey(lockRaw) : undefined;
       const offline = $('#off', b).checked;
       let h;
       try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, offline }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
-      render(); tokenView(h); C.watchSent(render);
+      render(); tokenView(h); C.watchSent(sentClaimed);
     });
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
@@ -521,7 +526,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       }
       if (stage === 'offeramt') { method = 'bolt12'; quote = await C.quoteOffer(v, readAmt(b, 'oamt')); return showQuote(); }
       if (stage === 'chainamt') {
-        const a = readAmt(b, 'oamt'); if (!a) return toast('Enter an amount.', 'warn');
+        const a = readAmt(b, 'oamt'); if (!a) return nope('Enter an amount.');
         method = 'onchain'; quote = await C.quoteOnchain(chainInfo.address, a);
         const opts = quote.fee_options || [];
         feeIndex = opts[0]?.fee_index;
@@ -544,7 +549,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         stage = 'creqpay'; setPay(req.amount ? `Pay ${fmt(req.amount, req.unit)}` : 'Pay', !okMint || req.unit !== S.unit); return;
       }
       if (stage === 'creqpay') {
-        const a = req.amount || readAmt(b, 'ramt'); if (!a) return toast('Enter an amount.', 'warn');
+        const a = req.amount || readAmt(b, 'ramt'); if (!a) return nope('Enter an amount.');
         const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
       }
       if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
@@ -557,7 +562,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         stage = 'lnamt'; setPay('Get quote'); return;
       }
       if (stage === 'lnamt') {
-        const a = readAmt(b, 'lamt'); if (!a) return toast('Enter an amount.', 'warn');
+        const a = readAmt(b, 'lamt'); if (!a) return nope('Enter an amount.');
         invoice = await C.lnurlInvoice(meta, a, $('#cmt', b)?.value.trim());
         quote = await C.quoteInvoice(invoice); return showQuote();
       }
@@ -625,13 +630,18 @@ function tokenView(h, fromLog) {
 }
 function done(h, verb) {
   const out = h.kind.endsWith('out');
-  sheet(verb, `<div class="okb"><span aria-hidden="true">✓</span></div>
-    <p class="big">${bigAmt(h.amount, h.unit, out ? '−' : '+')}</p>
+  sheet(verb, `<div class="okb" aria-hidden="true"><svg viewBox="0 0 84 84"><circle class="ring" cx="42" cy="42" r="38"/><circle class="disc" cx="42" cy="42" r="38"/><path class="tick" d="M26 43.5l10.5 10.5L58.5 31"/></svg></div>
+    <p class="big" id="dnAmt">${bigAmt(h.amount, h.unit, out ? '−' : '+')}</p>
     ${h.fee ? `<p class="dim small center">Fee ${esc(fmt(h.fee, h.unit))}</p>` : ''}
-    <button class="btn primary wide" id="dn">Done</button>`, (b) => ($('#dn', b).onclick = () => closeSheet()));
-  navigator.vibrate?.([20, 40, 20]);
+    <button class="btn primary wide" id="dn">Done</button>`, (b) => {
+    $('#dn', b).onclick = () => closeSheet();
+    if (h.amount) FX.countUp($('#dnAmt', b), h.amount, (n) => bigAmt(n, h.unit, out ? '−' : '+'));
+    setTimeout(() => FX.success(out ? 'sent' : 'received', $('.okb', b)), 120);
+  });
   render();
 }
+
+const sentClaimed = () => { render(); FX.play('claimed'); FX.buzz('claimed'); };
 
 /* ================= history detail ================= */
 function detail(h) {
@@ -755,7 +765,7 @@ function moveSheet() {
     <button class="btn primary wide" id="go">Move</button>`, (b) => {
     const go = $('#go', b);
     go.onclick = withBusy(go, async () => {
-      const a = readAmt(b); if (!a) return toast('Enter an amount.', 'warn');
+      const a = readAmt(b); if (!a) return nope('Enter an amount.');
       const { inv } = await C.moveFunds($('#to', b).value, a);
       toast(inv.status === 'done' ? `Moved ${fmt(a)}` : 'Paid. Destination mint still settling.', inv.status === 'done' ? 'ok' : 'warn');
       closeSheet();
@@ -833,9 +843,17 @@ const SECTIONS = {
     sheet('Appearance', `<h3>Theme</h3>
       <div class="themes">${THEMES.map(([k, l]) => `<button class="th" data-th="${k}" aria-pressed="${st.theme === k}"><i class="sw sw-${k}"></i>${l}</button>`).join('')}</div>
       ${toggle('t_keypad', 'On-screen keypad', 'Use the built-in number pad for amounts.', st.keypad)}
-      ${toggle('t_btcSymbol', 'Use ₿ symbol', 'Show ₿1,000 instead of 1,000 sat.', st.btcSymbol)}`, (b) => {
+      ${toggle('t_btcSymbol', 'Use ₿ symbol', 'Show ₿1,000 instead of 1,000 sat.', st.btcSymbol)}
+      <h3>Sound and motion</h3>
+      ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
+      ${toggle('t_keyClicks', 'Keypad clicks', 'A faint click on each key press.', st.keyClicks)}
+      ${toggle('t_motion', 'Animations', 'Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.', st.motion)}`, (b) => {
       $$('.th', b).forEach((x) => (x.onclick = () => { st.theme = x.dataset.th; save(); render(); SECTIONS.appearance(); }));
-      bindToggles(b, ['keypad', 'btcSymbol']);
+      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'keyClicks', 'motion'], (k) => {
+        if (k === 'sounds' && st.sounds) FX.play('received');
+        if (k === 'keyClicks' && st.keyClicks) FX.play('tap');
+        if (k === 'motion' && st.motion) FX.confetti($('#t_motion', b));
+      });
     }, { back });
   },
   hardware() {
@@ -1072,7 +1090,7 @@ const NU = nostrUI({ $, $$, sheet, closeSheet, toast, copy, withBusy, kv, toggle
 MENU.splice(1, 0, ...NU.menu);
 Object.assign(SECTIONS, NU.sections);
 N.on('incoming', (h) => { toast(`Incoming ecash: ${fmt(h.amount, h.unit)}. Tap it in your history to claim.`, 'warn'); render(); });
-N.on('received', (h) => { toast(`Received ${fmt(h.amount, h.unit)}`); render(); });
+N.on('received', (h) => { toast(`Received ${fmt(h.amount, h.unit)}`); FX.success('received'); render(); });
 N.on('nwc', () => render());
 $('#recvBtn').onclick = () => receiveSheet();
 $('#sendBtn').onclick = () => sendSheet();
@@ -1122,7 +1140,7 @@ setTimeout(() => {
   else {
     if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render);
     S.mints.forEach((m) => { if (!m.updated || Date.now() - m.updated > 6 * 3600e3) C.refreshMint(m.url).then(render).catch(() => {}); });
-    C.watchSent(render);
+    C.watchSent(sentClaimed);
   }
   C.loadPrice().then(render);
   if (S.mnemonic) N.startAll();
