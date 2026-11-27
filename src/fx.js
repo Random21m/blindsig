@@ -50,6 +50,9 @@ const unlock = (e) => {
   if (!a) return;
   try { a.resume().catch(() => {}); const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050); src.connect(a.destination); src.start(0); unlocked = everUnlocked = true; } catch {}
 };
+// the backup elements need their own first start inside a tap
+addEventListener('touchend', (e) => { if (e.isTrusted && st().sounds !== false) primeBackup(); }, { capture: true, passive: true });
+addEventListener('click', (e) => { if (e.isTrusted && st().sounds !== false) primeBackup(); }, { capture: true, passive: true });
 for (const ev of ['touchend', 'click', 'keydown']) addEventListener(ev, unlock, { capture: true, passive: true });
 document.addEventListener('visibilitychange', () => {
   if (!ctx) return;
@@ -98,10 +101,60 @@ const SOUNDS = {
   // PIN keys: a slightly fuller click, like a phone's passcode screen
   pin: (a) => { note(a, { f: 1500, dur: 0.035, vol: 0.05, type: 'triangle' }); note(a, { f: 3000, dur: 0.02, vol: 0.012 }); },
 };
+/* backup player: the same sounds pre-rendered to tiny WAV files and played with <audio>.
+   iPhone sometimes leaves Web Audio "interrupted" after the app was in the background, and a new
+   context can't start until the next tap. <audio> elements that were started once inside a tap
+   can play later without one, so they cover that gap. */
+const backup = {};
+let lastEngine = '';
+function wav(buf) {
+  const d = buf.getChannelData(0), n = d.length, b = new DataView(new ArrayBuffer(44 + n * 2));
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) b.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); b.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+  b.setUint32(24, buf.sampleRate, true); b.setUint32(28, buf.sampleRate * 2, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true); w(36, 'data'); b.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) b.setInt16(44 + i * 2, Math.max(-1, Math.min(1, d[i])) * 32767, true);
+  return URL.createObjectURL(new Blob([b], { type: 'audio/wav' }));
+}
+async function renderBackup() {
+  const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if (!OC || typeof Audio === 'undefined') return;
+  for (const kind of ['received', 'sent', 'claimed', 'error', 'pin']) {
+    try {
+      const oc = new OC(1, Math.round(44100 * 0.7), 44100);
+      const lim = oc.createDynamicsCompressor(); lim.threshold.value = -6; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.002; lim.release.value = 0.12;
+      const g = oc.createGain(); g.gain.value = 2.6; g.connect(lim); lim.connect(oc.destination);
+      const keep = out; out = g; try { SOUNDS[kind](oc); } finally { out = keep; }
+      const el = new Audio(wav(await oc.startRendering())); el.preload = 'auto';
+      backup[kind] = el;
+    } catch {}
+  }
+}
+renderBackup();
+// start each backup element once inside a real tap (muted), so it may play later without one
+function primeBackup() {
+  for (const el of Object.values(backup)) {
+    if (el._ok) continue;
+    try { el.muted = true; const pr = el.play(); el._ok = true; (pr?.then ? pr : Promise.resolve()).then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el._ok = false; el.muted = false; }); } catch {}
+  }
+}
+function playBackup(kind) {
+  const el = backup[kind === 'tap' ? 'pin' : kind];
+  if (!el || !el._ok) return false;
+  try { el.muted = false; el.currentTime = 0; el.play()?.catch?.(() => {}); lastEngine = 'backup'; return true; } catch { return false; }
+}
 export function play(kind) {
   if (st().sounds === false) return;
   if (kind === 'tap' && !st().keyClicks) return;
-  try { const a = audio(); if (a && a.state !== 'closed') SOUNDS[kind]?.(a); } catch {}
+  try {
+    const a = audio();
+    if (a && a.state === 'running') { SOUNDS[kind]?.(a); lastEngine = 'web audio'; return; }
+    if (playBackup(kind)) return;
+    if (a && a.state !== 'closed') { SOUNDS[kind]?.(a); lastEngine = 'web audio (waking)'; } // plays as soon as it wakes
+  } catch {}
+}
+// Settings → Appearance → Test sound: what the sound system is doing, for troubleshooting
+export function soundStatus() {
+  return [ctx ? ctx.state : 'not started', navigator.audioSession ? navigator.audioSession.type : 'no session control', lastEngine || 'nothing played yet', Object.values(backup).filter((e) => e._ok).length ? 'backup ready' : 'backup not ready'].join(' · ');
 }
 
 /* ---------------- haptics ---------------- */

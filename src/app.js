@@ -932,10 +932,12 @@ const SECTIONS = {
       <h3>Sound and motion</h3>
       ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
       ${FX.isIOS ? toggle('t_soundsOnSilent', 'Play on silent', 'Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open.', st.soundsOnSilent) : ''}
+      <button class="btn wide" id="tsnd">Test sound</button><p class="dim small" id="tsst" data-notr></p>
       ${toggle('t_haptics', 'Vibration', FX.isIOS ? 'A light tap for buttons, payments and errors. Needs iOS 18 or later, with System Haptics on in iPhone Settings → Sounds & Haptics.' : 'A light tap for buttons, payments and errors.', st.haptics !== false)}
       ${toggle('t_keyClicks', 'Button clicks', 'A faint click when you tap a key or button.', st.keyClicks)}
       ${toggle('t_motion', 'Animations', 'Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.', st.motion)}`, (b) => {
       $$('.th', b).forEach((x) => (x.onclick = () => { st.theme = x.dataset.th; save(); render(); SECTIONS.appearance(); }));
+      $('#tsnd', b).onclick = () => { FX.play('received'); setTimeout(() => { const el = $('#tsst', b); if (el) el.textContent = FX.soundStatus(); }, 400); };
       bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'soundsOnSilent', 'haptics', 'keyClicks', 'motion'], (k) => {
         if (k === 'soundsOnSilent') { FX.setSession(); if (st.sounds) FX.play('received'); }
         if (k === 'sounds' && st.sounds) FX.play('received');
