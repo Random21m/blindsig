@@ -39,10 +39,12 @@ export function t(s) {
   if (!k) return s;
   let out = dict[k];
   if (out == null) {
+    // keep numbers and units in their own direction inside right-to-left sentences
+    const rtl = document.documentElement.dir === 'rtl';
     for (const [re, tpl, order, dot] of pats) {
       const m = k.match(re);
       if (m && !dot && m.slice(1).some((v) => v.includes('·'))) continue;
-      if (m) { out = tpl.replace(/\{(\d)\}/g, (_, i) => { const j = order.indexOf(+i); const v = j >= 0 ? m[j + 1] : ''; return t(v); }); break; }
+      if (m) { out = tpl.replace(/\{(\d)\}/g, (_, i) => { const j = order.indexOf(+i); const v = j >= 0 ? m[j + 1] : ''; return rtl ? '\u2068' + t(v) + '\u2069' : t(v); }); break; }
     }
   }
   if (out == null && k.includes(' · ')) {

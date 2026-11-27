@@ -172,10 +172,18 @@ function render() {
     const [verb, via] = KIND[h.kind];
     const open = h.kind === 'ecash-out' && h.status === 'pending';
     const claim = h.kind === 'ecash-in' && h.status === 'pending';
+    if (h.live) {
+      const title = h.method === 'onchain' ? 'Deposit address' : 'Lightning offer';
+      return `<li><button class="row s-live" data-id="${esc(h.id)}">
+      <span class="ri in" aria-hidden="true">↓</span>
+      <span class="rt"><b>${title}</b><small><span>${stamp(h.ts)}</span>${h.memo ? ' · <span dir="auto">' + esc(h.memo) + '</span>' : ''}</small></span>
+      <span class="ra"><span class="amtv in">+${esc(fmt(h.received || 0, h.unit || 'sat'))}</span><em class="pill p-live">Reusable</em></span></button></li>`;
+    }
     const stx = open ? 'Unclaimed' : claim ? 'Tap to claim' : STATUS[h.status] ?? '';
+    const sub = h.kind === 'chain-out' && h.memo === h.request ? '' : h.memo;
     return `<li><button class="row s-${esc(h.status)}" data-id="${esc(h.id)}">
       <span class="ri ${out ? 'out' : 'in'}" aria-hidden="true">${out ? '↑' : '↓'}</span>
-      <span class="rt"><b>${verb} · ${via}</b><small>${stamp(h.ts)}${h.memo ? ' · ' + esc(h.memo) : ''}</small></span>
+      <span class="rt"><b>${verb} · ${via}</b><small><span>${stamp(h.ts)}</span>${sub ? ' · <span dir="auto">' + esc(sub) + '</span>' : ''}</small></span>
       <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${out ? '−' : '+'}${esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
   }).join('');
   $('#empty').hidden = list.length > 0;
@@ -597,7 +605,7 @@ function tokenView(h, fromLog) {
     ${h.fee ? `<p class="dim small center">Includes ${esc(fmt(h.fee, h.unit))} mint fee</p>` : ''}
     ${h.lockTo ? `<p class="dim small center">Locked to ${esc(h.lockTo.slice(0, 12))}…</p>` : ''}
     ${armor(h.token)}
-    <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji">🥜</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
+    <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji" title="Copy as emoji"><span aria-hidden="true">🥜</span> Emoji</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
     ${'NDEFReader' in window ? '<button class="btn wide" id="nfw">Write to NFC card</button>' : ''}
     ${fromLog ? '<div class="btnrow"><button class="btn" id="chk">Check status</button><button class="btn" id="rc">Reclaim</button></div>' : ''}
     <p class="dim small center">Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.</p>`, (b) => {
@@ -634,13 +642,13 @@ function detail(h) {
   const [verb, via] = KIND[h.kind];
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
-    ${kv([['Status', stx], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && ['Memo', esc(h.memo)], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
-    ${h.request ? `<details class="more"><summary>Invoice</summary><pre class="armor sm">${esc(h.request)}</pre><button class="btn wide" id="cpi">Copy invoice</button></details>` : ''}
+    ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
+    ${h.request && h.kind !== 'chain-out' ? `<details class="more"><summary>${h.method === 'bolt12' ? 'Offer' : 'Invoice'}</summary><pre class="armor sm">${esc(h.request)}</pre><button class="btn wide" id="cpi">${h.method === 'bolt12' ? 'Copy offer' : 'Copy invoice'}</button></details>` : ''}
     ${(h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' ? '<button class="btn wide" id="st">Check payment</button>' : ''}
     ${h.kind === 'ln-in' && h.status === 'expired' ? '<button class="btn wide" id="re">Check again</button>' : ''}
     ${h.status !== 'pending' ? '<button class="btn wide danger" id="del">Delete from history</button>' : ''}`, (b) => {
     const del = $('#del', b); if (del) del.onclick = () => { S.history = S.history.filter((x) => x !== h); save(); render(); closeSheet(); };
-    const cpi = $('#cpi', b); if (cpi) cpi.onclick = () => copy(h.request, 'Invoice copied');
+    const cpi = $('#cpi', b); if (cpi) cpi.onclick = () => copy(h.request, h.method === 'bolt12' ? 'Offer copied' : 'Invoice copied');
     const s2 = $('#st', b); if (s2) s2.onclick = withBusy(s2, async () => { await C.settleMelt(h); render(); detail(h); });
     const re = $('#re', b); if (re) re.onclick = withBusy(re, async () => { h.status = 'pending'; const s = await C.checkInvoice(h); if (s === 'pending') { h.status = 'expired'; save(); toast('Still unpaid.', 'warn'); } render(); detail(h); });
   });
@@ -874,7 +882,7 @@ const SECTIONS = {
       const sw = $('#sw', b); sw.onclick = withBusy(sw, async () => { const r = await C.sweepSpent(); render(); toast(r ? `Removed ${fmt(r)} of spent proofs` : 'All proofs are valid'); });
       $('#ex', b).onclick = () => exportSheet(true);
       $$('.kc', b).forEach((x) => (x.onclick = () => { S.counters[x.dataset.id] = (S.counters[x.dataset.id] || 0) + 10; save(); SECTIONS.advanced(); }));
-      $('#rel', b).onclick = () => { const n = C.releasePending(); render(); toast(n ? `Pending payments released: ${n}` : 'Nothing pending'); };
+      const rel = $('#rel', b); rel.onclick = withBusy(rel, async () => { const n = await C.releasePending(); render(); toast(n ? `Pending payments released: ${n}` : 'Nothing to release. Payments still in flight are left to settle.'); });
       $('#ns', b).onclick = newSeedSheet;
       $('#ob', b).onclick = () => welcome(0, true);
       $('#dbg', b).onclick = () => {

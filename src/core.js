@@ -188,7 +188,7 @@ export function decodeEmoji(text) {
 }
 export const hasEmojiToken = (t) => /[\uFE00-\uFE0F]|\uDB40[\uDD00-\uDDEF]/.test(t);
 export function parseToken(str) {
-  if (hasEmojiToken(str)) str = decodeEmoji(str) || str;
+  if (hasEmojiToken(str)) { const d = decodeEmoji(str); if (/^cashu/i.test(d)) str = d; }
   str = str.trim().replace(/^web\+cashu:\/\//i, '').replace(/^cashu:\/\//i, '').replace(/^cashu:/i, '');
   const meta = getTokenMetadata(str);
   return { str, mint: normUrl(meta.mint), unit: meta.unit || 'sat', amount: meta.amount.toNumber(), memo: meta.memo };
@@ -284,7 +284,12 @@ export async function swapIncoming(t, dst = S.active) {
   const ws = await walletFor(t.mint, unit);
   const proofs = await ws.receive(t.str, privkeys().length ? { privkey: privkeys() } : undefined);
   const amt = sum(proofs);
-  const rescue = async () => { await addMint(t.mint); addProofs(t.mint, proofs, unit); };
+  // saved straight away: if the tab closes mid-swap the ecash is still in the wallet at the source mint
+  const knewMint = !!mintOf(t.mint);
+  await addMint(t.mint); addProofs(t.mint, proofs, unit);
+  const secrets = new Set(proofs.map((p) => p.secret));
+  const drop = () => setProofs(t.mint, getProofs(t.mint, unit).filter((p) => !secrets.has(p.secret)), unit);
+  const rescue = async () => {};
   try {
     const inFee = ws.getFeesForProofs(proofs).toNumber();
     let target = amt - inFee, inv, q;
@@ -298,11 +303,17 @@ export async function swapIncoming(t, dst = S.active) {
       target -= need - amt; q = null;
     }
     if (!q) throw new Error('could not fit swap fees');
-    const res = await ws.meltProofsBolt11(q, proofs);
+    drop();
+    let res;
+    try { res = await ws.meltProofsBolt11(q, proofs); }
+    catch (e) { const g = await ws.groupProofsByState(proofs).catch(() => ({ unspent: proofs })); addProofs(t.mint, [...g.unspent], unit); throw e; }
     if (res.quote.state !== 'PAID') throw new Error('swap payment pending');
-    if (res.change?.length) { await addMint(t.mint); addProofs(t.mint, res.change, unit); }
+    if (res.change?.length) addProofs(t.mint, res.change, unit);
     for (let i = 0; i < 8 && inv.status === 'pending'; i++) { await checkInvoice(inv).catch(() => {}); if (inv.status === 'pending') await new Promise((r) => setTimeout(r, 1200)); }
-    inv.fee = Math.max(0, t.amount - inv.amount); save();
+    inv.fee = Math.max(0, t.amount - inv.amount);
+    // the source mint was only added to keep the ecash safe: tidy it away again if nothing is left there
+    if (!knewMint && !(mintOf(t.mint)?.units || ['sat']).some((u) => bal(t.mint, u) > 0)) S.mints = S.mints.filter((m) => m.url !== t.mint);
+    save();
     return inv;
   } catch (e) {
     await rescue().catch(() => {});
@@ -509,10 +520,14 @@ export async function rekeyAll(log = () => {}) {
     setProofs(m.url, fresh, unit);
   }
 }
-export function releasePending() {
+export async function releasePending() {
   let n = 0;
   for (const h of S.history) if ((h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' && h.inflight) {
-    addProofs(h.mint, deserializeProofs(h.inflight), h.unit); delete h.inflight; h.status = 'failed'; n++;
+    const proofs = deserializeProofs(h.inflight);
+    let unspent = proofs;
+    try { unspent = (await (await walletFor(h.mint, h.unit)).groupProofsByState(proofs)).unspent; } catch { continue; } // can't reach the mint: don't guess
+    if (unspent.length < proofs.length) continue; // the mint is still paying (or paid): leave it to settle
+    addProofs(h.mint, unspent, h.unit); delete h.inflight; h.status = 'failed'; n++;
   }
   save();
   return n;
