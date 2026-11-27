@@ -132,6 +132,21 @@ function stamp(ts) {
   if (new Date().toDateString() === d.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
+// small live BTC price in the top bar, in the theme's accent colour
+let shownPrice = 0, dirTimer;
+function btcPrice() {
+  const el = $('#btcPrice'), price = st.fiat ? S.price[st.fiatCur] : 0;
+  el.hidden = !price;
+  if (!price) return;
+  $('#btcVal').textContent = price.toLocaleString('en-US', { style: 'currency', currency: st.fiatCur, maximumFractionDigits: 0 });
+  el.title = `1 BTC · ${st.fiatCur}`;
+  if (shownPrice && price !== shownPrice) {
+    $('#btcDir').textContent = price > shownPrice ? '▲' : '▼';
+    el.classList.remove('moved'); void el.offsetWidth; el.classList.add('moved');
+    clearTimeout(dirTimer); dirTimer = setTimeout(() => el.classList.remove('moved'), 4000);
+  }
+  shownPrice = price;
+}
 function render() {
   document.documentElement.dataset.accent = st.theme;
   const m = mintOf(S.active);
@@ -143,6 +158,7 @@ function render() {
   $('#balPre').textContent = p.pre; $('#balPost').textContent = p.post;
   scramble($('#bal'), p.value);
   $('#fiat').textContent = S.unit === 'sat' && st.fiat ? fiatOf(total('sat')) : '';
+  btcPrice();
   $('#mintBal').textContent = S.mints.length > 1 && m ? `${fmt(bal(m.url))} at this mint` : '';
   // motd
   const motd = m?.info?.motd;
@@ -1056,6 +1072,7 @@ $('#scanBtn').onclick = () => (needMint() ? null : startScan(route));
 $('#mintChip').onclick = () => mintsSheet();
 $('#unitChip').onclick = () => { const m = mintOf(S.active); const u = m?.units || ['sat']; S.unit = u[(u.indexOf(S.unit) + 1) % u.length]; save(); render(); };
 $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
+$('#btcPrice').onclick = () => { if (S.mnemonic) SECTIONS.privacy(); };
 $('#instBtn').onclick = installHelp;
 $('#scanClose').onclick = stopScan;
 $('#motdX').onclick = () => { const m = mintOf(S.active); if (m) { m.motdSeen = m.info.motd; save(); render(); } };

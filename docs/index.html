@@ -51,6 +51,13 @@ a{color:var(--ac)}
 /* top */
 .top{display:flex;align-items:center;gap:8px;height:52px}
 .brand{font:600 16px var(--mono);flex:1}
+.btcp{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:999px;border:1px solid var(--ac-soft);background:var(--ac-soft);color:var(--ac);font:500 13px var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.2px;cursor:pointer;white-space:nowrap}
+.btcp .live{width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 6px var(--glow);animation:livep 2.4s ease-in-out infinite}
+.btcp b{font-weight:500;font-size:10px;width:0;overflow:hidden;opacity:0;transition:opacity .3s,width .3s}
+.btcp.moved b{width:9px;opacity:1}
+.btcp.moved #btcVal{animation:tick .6s ease-out}
+@keyframes livep{50%{opacity:.35}}
+@keyframes tick{from{opacity:.4}}
 .brand b{color:var(--ac);font-weight:600}
 .tbtn{height:44px;min-width:44px;padding:0 10px;color:var(--dim);font:500 14px var(--mono);border-radius:10px}
 .tbtn:hover{color:var(--ink);background:var(--card)}
@@ -256,6 +263,7 @@ details.more[open]{padding-bottom:14px}
 <div class="app">
   <header class="top">
     <div class="brand"><b>$</b> blindsig<span class="cur">_</span></div>
+    <button class="btcp" id="btcPrice" hidden aria-label="Bitcoin price"><i class="live"></i><span id="btcVal"></span><b id="btcDir"></b></button>
     <button class="tbtn" id="instBtn" hidden>Install</button>
     <button class="tbtn" id="setBtn" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
   </header>
