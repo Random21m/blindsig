@@ -201,6 +201,9 @@ function render() {
   $('#motd').hidden = !(motd && motd !== m.motdSeen);
   if (motd) $('#motdText').textContent = motd;
   // log
+  // folded history: just the "History ▸" line, for a clean main screen
+  $('#histToggle').setAttribute('aria-expanded', String(!st.hideHistory));
+  $('#logBody').hidden = !!st.hideHistory; $('#logTabs').hidden = !!st.hideHistory;
   const q = histQ.trim().toLowerCase();
   $('#histQ').hidden = S.history.length < 2 && !q;
   const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash')))
@@ -987,12 +990,13 @@ const SECTIONS = {
       ${toggle('t_checkStartup', 'Check pending on startup', 'Check pending invoices and payments when the app opens.', st.checkStartup)}
       ${toggle('t_checkAll', 'Check all invoices', 'Re-check unpaid invoices in the background for up to two weeks.', st.checkAll)}
       ${toggle('t_checkSent', 'Check sent ecash', 'Periodically check whether tokens you sent were claimed.', st.checkSent)}
+      ${toggle('t_hideHistory', 'Hide history', 'Fold your transactions away on the main screen for a clean look. Tap History to open it.', st.hideHistory)}
       ${toggle('t_hideAmounts', 'Hide amounts', 'Show •••• instead of your balance and payment amounts on the main screen. Tap the balance to switch.', st.hideAmounts)}
       ${toggle('t_websockets', 'Use WebSockets', 'Instant updates from mints that support it (NUT-17).', st.websockets)}
       ${toggle('t_fiat', 'Get exchange rate from Coinbase', 'Show your balance in fiat.', st.fiat)}
       <label class="lbl" for="cur">Fiat currency</label>
       <select id="cur" class="field">${FIAT_CURRENCIES.map((c) => `<option ${c === st.fiatCur ? 'selected' : ''}>${c}</option>`).join('')}</select>`, (b) => {
-      bindToggles(b, ['hideAmounts', 'checkIncoming', 'checkStartup', 'checkAll', 'checkSent', 'websockets', 'fiat'], (k) => { if (k === 'fiat' && st.fiat) C.loadPrice().then(render); schedule(); });
+      bindToggles(b, ['hideHistory', 'hideAmounts', 'checkIncoming', 'checkStartup', 'checkAll', 'checkSent', 'websockets', 'fiat'], (k) => { if (k === 'fiat' && st.fiat) C.loadPrice().then(render); schedule(); });
       $('#cur', b).onchange = (e) => { st.fiatCur = e.target.value; save(); C.loadPrice().then(render); };
     }, { back });
   },
@@ -1379,6 +1383,7 @@ $('#moreHist').onclick = () => { logLimit += 100; render(); };
 {
   const flip = () => { st.hideAmounts = !st.hideAmounts; save(); shownBal = null; render(); toast(st.hideAmounts ? 'Amounts hidden. Tap the balance to show them.' : 'Amounts shown'); };
   const br = $('.balrow'); br.onclick = flip;
+  $('#histToggle').onclick = () => { st.hideHistory = !st.hideHistory; save(); render(); };
   br.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } };
 }
 { let t = null; $('#histQ').oninput = (e) => { clearTimeout(t); t = setTimeout(() => { histQ = e.target.value; logLimit = 100; render(); }, 120); }; }

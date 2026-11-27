@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.10.1-72d99b?style=flat-square&labelColor=161512" alt="version 1.10.1">
+  <img src="https://img.shields.io/badge/version-1.10.2-72d99b?style=flat-square&labelColor=161512" alt="version 1.10.2">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -135,6 +135,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 **Privacy and safety**
 
 - Hide amounts: tap the balance to show •••• instead of your balance and payment amounts (like cashu.me)
+- Hide history: tap History to fold your transactions away for a clean main screen
 - You choose which background checks run: invoices, sent tokens, WebSockets (NUT-17) and price lookups
 - Sent tokens update live when someone claims them
 - Private notes on any transaction, kept only on your device (and encrypted with the PIN lock), and search across notes, memos and amounts

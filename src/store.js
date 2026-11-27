@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.10.1';
+export const VERSION = '1.10.2';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -13,7 +13,8 @@ export const DEFAULT_SETTINGS = {
   haptics: true,
   motion: true,
   btcSymbol: false,
-  hideAmounts: false, // show •••• instead of balances and amounts on the main screen (tap the balance)
+  hideAmounts: false,
+  hideHistory: false, // fold the history away on the main screen, for a clean screen (tap History) // show •••• instead of balances and amounts on the main screen (tap the balance)
   fiat: true,
   fiatCur: 'USD',
   checkIncoming: true,

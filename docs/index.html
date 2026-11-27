@@ -79,6 +79,8 @@ a{color:var(--ac)}
 /* readout */
 .hero{padding:26px 2px 22px}
 .lab{color:var(--dim);font:500 13px var(--mono)}
+.htog{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 2px}.htog .hch{transition:transform .2s}.htog[aria-expanded=false] .hch{transform:rotate(-90deg)}
+[dir=rtl] .htog[aria-expanded=false] .hch{transform:rotate(90deg)}
 .balrow{display:flex;align-items:baseline;gap:6px;margin:12px 0 4px;color:var(--ac);white-space:nowrap;cursor:pointer;-webkit-user-select:none;user-select:none}
 .bal{font-family:var(--d);font-weight:300;letter-spacing:-.04em;font-size:clamp(52px,16vw,80px);line-height:1;text-shadow:0 0 22px var(--glow);font-variant-numeric:tabular-nums}
 #balPre{font-family:var(--d);font-weight:300;font-size:clamp(30px,9vw,46px);line-height:1;opacity:.85}
@@ -348,13 +350,15 @@ details.more[open]{padding-bottom:14px}
   </div>
 
   <section class="log">
-    <div class="loghead"><div class="lab">History</div>
+    <div class="loghead"><button class="lab htog" id="histToggle" aria-expanded="true" aria-controls="logBody"><span>History</span><span class="hch" aria-hidden="true">▾</span></button>
       <div class="tabs" id="logTabs" role="tablist" aria-label="Filter history"><button role="tab" data-f="all" aria-selected="true">All</button><button role="tab" data-f="ecash" aria-selected="false">Ecash</button><button role="tab" data-f="ln" aria-selected="false">Lightning</button><button role="tab" data-f="pending" aria-selected="false">Pending</button></div></div>
+    <div id="logBody">
     <input type="search" id="histQ" class="field hq" placeholder="Search notes, memos, amounts" aria-label="Search history" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" hidden>
     <button class="btn wide" id="chkAll" hidden>Check all pending</button>
     <ul id="hist"></ul>
     <button class="btn wide" id="moreHist" hidden>Show older</button>
     <p class="empty" id="empty">No transactions yet.</p>
+    </div>
   </section>
 </main>
 
