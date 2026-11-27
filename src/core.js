@@ -23,7 +23,14 @@ export const counterSource = {
   async snapshot() { return { ...S.counters }; },
   async setNext(id, n) { S.counters[id] = n; save(); },
 };
-export function setSeed(m) { S.mnemonic = m; save(); SEED = mnemonicToSeedSync(m); wallets.clear(); }
+export function setSeed(m) { S.mnemonic = m; save(); SEED = mnemonicToSeedSync(m); wallets.clear(); seedListeners.forEach((f) => f()); }
+const seedListeners = [];
+export const onSeedChange = (f) => seedListeners.push(f);
+// nostr key derived like cashu.me: first 32 bytes of the BIP39 seed
+export const seedNostrSk = () => (SEED ? SEED.slice(0, 32) : null);
+// extra private keys that may unlock NUT-20 locked mint quotes (e.g. npub.cash)
+let quoteKeyProvider = () => [];
+export const setQuoteKeyProvider = (f) => { quoteKeyProvider = f; };
 
 /* ---------------- wallets ---------------- */
 const wallets = new Map();
@@ -103,7 +110,12 @@ export async function checkInvoice(h) {
     const w = await walletFor(h.mint, h.unit);
     const q = await w.checkMintQuoteBolt11(h.quote);
     if (q.state === 'PAID') {
-      const proofs = await w.mintProofsBolt11(h.amount, q);
+      let cfg;
+      if (q.pubkey) {
+        const keys = [...quoteKeyProvider(), ...S.p2pk.map((k) => k.priv), h.privkey].filter(Boolean);
+        cfg = { privkey: keys };
+      }
+      const proofs = await w.mintProofsBolt11(h.amount, q, cfg);
       addProofs(h.mint, proofs, h.unit);
       h.status = 'done'; h.ts = Date.now();
     } else if (q.state === 'ISSUED') h.status = 'done';
@@ -156,6 +168,8 @@ export async function receiveEcash(t) {
   addProofs(t.mint, proofs, t.unit);
   markP2pkUsed(t);
   const got = sum(proofs);
+  const pend = S.history.find((x) => x.kind === 'ecash-in' && x.status === 'pending' && x.token === t.str);
+  if (pend) { Object.assign(pend, { amount: got, fee: Math.max(0, t.amount - got), status: 'done', ts: Date.now() }); delete pend.token; save(); return pend; }
   return H({ kind: 'ecash-in', amount: got, unit: t.unit, fee: Math.max(0, t.amount - got), mint: t.mint, status: 'done', memo: t.memo });
 }
 function markP2pkUsed(t) {

@@ -12,7 +12,13 @@ A cypherpunk Cashu ecash wallet. Installs as a PWA.
 - On-screen keypad, ₿ symbol, unclaimed-token tracking, spent-proof cleanup, keyset counters, export, new seed, reset
 - Built on @cashu/cashu-ts 4.14 (latest stable)
 
-Coming next: Lightning address (npub.cash), Nostr Wallet Connect, payment requests, mint discovery and reviews, languages.
+- Nostr: identity from your seed (same key as cashu.me), nsec, NIP-07 extension or NIP-46 bunker; custom relays
+- Lightning address via npub.cash (NIP-98 auth), with automatic claiming
+- Payment requests (NUT-18): create and pay, delivered over nostr (NIP-17) or HTTP POST; ecash in nostr DMs is picked up too
+- Nostr Wallet Connect (NIP-47, nip04 and nip44): pay_invoice, make_invoice, get_balance, get_info, list_transactions, lookup_invoice, with an allowance
+- Mint discovery and reviews (NIP-87), web of trust, and encrypted mint list backup on nostr (cashu.me compatible)
+
+Coming next: languages.
 
 ## Deploy
 

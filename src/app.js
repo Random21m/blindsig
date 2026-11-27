@@ -11,6 +11,8 @@ import {
   toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY,
 } from './store.js';
 import * as C from './core.js';
+import * as N from './nostr.js';
+import { nostrUI } from './nostr-ui.js';
 
 const SUGGESTED = [
   { url: 'https://testnut.cashu.space', note: 'Test mint. Fake sats, invoices pay themselves.' },
@@ -151,11 +153,12 @@ function render() {
     const out = h.kind.endsWith('out');
     const [verb, via] = KIND[h.kind];
     const open = h.kind === 'ecash-out' && h.status === 'pending';
-    const stx = open ? 'Unclaimed' : STATUS[h.status] ?? '';
+    const claim = h.kind === 'ecash-in' && h.status === 'pending';
+    const stx = open ? 'Unclaimed' : claim ? 'Tap to claim' : STATUS[h.status] ?? '';
     return `<li><button class="row s-${esc(h.status)}" data-id="${esc(h.id)}">
       <span class="ri ${out ? 'out' : 'in'}" aria-hidden="true">${out ? '↑' : '↓'}</span>
       <span class="rt"><b>${verb} · ${via}</b><small>${stamp(h.ts)}${h.memo ? ' · ' + esc(h.memo) : ''}</small></span>
-      <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${out ? '−' : '+'}${esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
+      <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${out ? '−' : '+'}${esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
   }).join('');
   $('#empty').hidden = list.length > 0;
   $('#empty').textContent = S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
@@ -280,7 +283,7 @@ function restoreRun(urls, mnemonic) {
 function receiveSheet(tab = 'ecash', prefill = '') {
   if (needMint()) return;
   const k = C.currentP2pk();
-  const tabs = [['ecash', 'Ecash'], ['ln', 'Lightning']];
+  const tabs = [['ecash', 'Ecash'], ['ln', 'Lightning'], ['req', 'Request']];
   if (st.p2pkQuick && k) tabs.push(['lock', 'Lock key']);
   sheet('Receive', `${seg(tabs, tab)}
     <div class="pane" data-p="ecash" ${tab !== 'ecash' ? 'hidden' : ''}>
@@ -291,9 +294,15 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <button class="btn wide" id="swp" hidden>Swap to active mint</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
+      ${S.npc.enabled && S.npc.showOnReceive && S.npc.address ? `<div class="addrcard"><small class="dim">Your Lightning address</small><b>${esc(S.npc.address)}</b><div class="btnrow"><button class="btn" id="cpa">Copy</button><button class="btn" id="qra">QR code</button></div><div id="aq"></div></div><p class="dim small center">Or create a one-time invoice:</p>` : ''}
       ${amountField('amt', `Into ${esc(mintLabel(mintOf(S.active)))}`)}
       <input id="desc" class="field" placeholder="Description (optional)" maxlength="80">
       <button class="btn primary wide" id="inv">Create invoice</button>
+    </div>
+    <div class="pane" data-p="req" ${tab !== 'req' ? 'hidden' : ''}>
+      <p class="dim">A payment request (NUT-18) lets someone pay you ecash over nostr, even when you’re not online at the same time.</p>
+      <button class="btn primary wide" id="nreq">Create payment request</button>
+      ${S.pr.requests[0] ? '<button class="btn wide" id="lreq">Show last request</button>' : ''}
     </div>
     ${st.p2pkQuick && k ? `<div class="pane" data-p="lock" ${tab !== 'lock' ? 'hidden' : ''}>
       <p class="dim">Share this key. Ecash locked to it can only be redeemed by this wallet.</p>
@@ -333,6 +342,9 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       const a = readAmt(b); if (!a) return toast('Enter an amount.', 'warn');
       invoiceView(await C.createInvoice(a, S.active, S.unit, $('#desc', b).value.trim() || undefined));
     });
+    const cpa = $('#cpa', b); if (cpa) { cpa.onclick = () => copy(S.npc.address, 'Address copied'); $('#qra', b).onclick = () => qrSvg('lightning:' + S.npc.address).then((s) => { $('#aq', b).innerHTML = `<div class="qr">${s}</div>`; }); N.npcSync().then((n) => n && render()).catch(() => {}); }
+    $('#nreq', b).onclick = () => NU.newRequest(() => receiveSheet('req'));
+    const lreq = $('#lreq', b); if (lreq) lreq.onclick = () => NU.showRequest(S.pr.requests[0], () => receiveSheet('req'));
     if (st.p2pkQuick && k) { qrSvg(k.pub).then((s) => { const q = $('#pkq', b); if (q) q.innerHTML = `<div class="qr">${s}</div>`; }); $('#pkc', b).onclick = () => copy(k.pub, 'Key copied'); }
   });
 }
@@ -373,7 +385,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       <button class="btn primary wide" id="mk">Create token</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
-      <textarea id="ln" rows="3" placeholder="Invoice, Lightning address or LNURL" spellcheck="false" autocapitalize="off"></textarea>
+      <textarea id="ln" rows="3" placeholder="Invoice, Lightning address, LNURL or payment request" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button></div>
       <div id="lnx"></div>
       <button class="btn primary wide" id="pay" disabled>Continue</button>
@@ -387,12 +399,13 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo }); render(); tokenView(h);
     });
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
-    let stage = null, quote = null, meta = null, label = '', invoice = '';
+    let stage = null, quote = null, meta = null, label = '', invoice = '', req = null;
     const setPay = (t, dis = false) => later(() => { pay.textContent = t; pay.disabled = dis; });
     ln.oninput = () => {
       const v = ln.value.trim().replace(/^lightning:/i, '');
       stage = quote = meta = null; x.innerHTML = '';
-      if (C.isInvoice(v)) { stage = 'invoice'; label = ''; }
+      if (N.isRequest(v)) { stage = 'creq'; label = 'payment request'; }
+      else if (C.isInvoice(v)) { stage = 'invoice'; label = ''; }
       else if (C.isAddress(v) || C.isLnurl(v)) { stage = 'lnurl'; label = C.isAddress(v) ? v.toLowerCase() : 'LNURL'; }
       pay.textContent = 'Continue'; pay.disabled = !stage;
     };
@@ -408,6 +421,22 @@ function sendSheet(tab = 'ecash', prefill = '') {
     };
     pay.onclick = withBusy(pay, async () => {
       const v = ln.value.trim().replace(/^lightning:/i, '');
+      if (stage === 'creq') {
+        req = N.decodeRequest(v);
+        const okMint = !req.mints.length || req.mints.includes(S.active);
+        const alt = req.mints.find((u) => mintOf(u));
+        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], req.memo && ['For', esc(req.memo)], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
+          + (req.unit !== S.unit ? `<p class="warn">This request is in ${esc(unitLabel(req.unit))}. Switch unit first.</p>` : '')
+          + (okMint ? '' : `<p class="warn">The request only accepts ${esc(req.mints.map(host).join(', '))}.</p>${alt ? `<button class="btn wide" id="swm">Switch to ${esc(host(alt))}</button>` : ''}`)
+          + (req.amount ? '' : amountField('ramt', `Available: ${esc(fmt(bal(S.active)))}`));
+        bindKeypads(x);
+        const swm = $('#swm', b); if (swm) swm.onclick = () => { C.selectMint(alt); render(); sendSheet('ln', v); };
+        stage = 'creqpay'; setPay(req.amount ? `Pay ${fmt(req.amount, req.unit)}` : 'Pay', !okMint || req.unit !== S.unit); return;
+      }
+      if (stage === 'creqpay') {
+        const a = req.amount || readAmt(b, 'ramt'); if (!a) return toast('Enter an amount.', 'warn');
+        const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
+      }
       if (stage === 'invoice') { invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
       if (stage === 'lnurl') {
         meta = await C.lnurlMeta(v);
@@ -497,6 +526,7 @@ function done(h, verb) {
 function detail(h) {
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
   if (h.kind === 'ecash-out' && h.status === 'pending') return tokenView(h, true);
+  if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) return receiveSheet('ecash', h.token);
   const [verb, via] = KIND[h.kind];
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
@@ -523,20 +553,24 @@ function mintsSheet(first = false) {
     ${rows ? `<ul class="mints">${rows}</ul>` : ''}
     <form id="add" class="addm"><input id="mu" class="field" placeholder="https://mint.url" inputmode="url" autocapitalize="off" spellcheck="false"><button class="btn primary" id="ab">Add</button></form>
     ${sugg ? `<h3>Suggested mints</h3><ul class="sugs">${sugg}</ul>` : ''}
+    ${restoring ? '<button class="btn wide" id="fnm">Find my mints on nostr</button>' : ''}
+    <button class="btn wide" id="dsc">Discover mints</button>
     ${S.mints.length > 1 && !first ? '<button class="btn wide" id="mv">Move funds between mints</button>' : ''}
     ${first && S.mints.length ? `<button class="btn primary wide" id="fin">${restoring ? 'Scan these mints' : 'Done'}</button>` : ''}`, (b) => {
     $$('.pick', b).forEach((x) => (x.onclick = () => { C.selectMint(x.dataset.u); render(); if (first) mintsSheet(true); else closeSheet(); }));
     $$('.info', b).forEach((x) => (x.onclick = () => mintDetails(x.dataset.u, () => mintsSheet(first))));
     const ab = $('#ab', b);
     const add = withBusy(ab, async (u) => {
-      const url = await C.addMint(u); C.selectMint(url); render(); toast('Mint added');
+      const url = await C.addMint(u); C.selectMint(url); render(); toast('Mint added'); N.backupMints().catch(() => {});
       if (first) mintsSheet(true); else closeSheet();
     });
     $('#add', b).onsubmit = (e) => { e.preventDefault(); const u = $('#mu', b).value.trim(); if (u) add(u); };
     $$('.sug', b).forEach((x) => (x.onclick = () => add(x.dataset.u)));
     const mv = $('#mv', b); if (mv) mv.onclick = moveSheet;
+    $('#dsc', b).onclick = () => NU.discover(() => mintsSheet(first));
+    const fnm = $('#fnm', b); if (fnm) fnm.onclick = () => NU.findMints(S.mnemonic, () => mintsSheet(true));
     const fin = $('#fin', b);
-    if (fin) fin.onclick = () => { if (restoring) restoreRun(S.mints.map((m) => m.url)); else { locked = false; closeSheet(); } };
+    if (fin) fin.onclick = () => { N.startAll(); if (restoring) restoreRun(S.mints.map((m) => m.url)); else { locked = false; closeSheet(); } };
   }, { locked: first });
 }
 function mintDetails(url, back) {
@@ -556,11 +590,12 @@ function mintDetails(url, back) {
     <h3>Keysets</h3>
     <ul class="ks">${(m.keysets || []).map((k) => `<li><code>${esc(k.id.slice(0, 16))}…</code><span>${esc(k.unit)}</span><span>${k.active ? 'active' : 'inactive'}</span><span>${k.fee ? k.fee + ' ppk' : 'no fee'}</span></li>`).join('')}</ul>
     ${st.auditor ? '<h3>Auditor</h3><div id="aud" class="dim">Loading audit data…</div>' : ''}
-    <div class="btnrow"><button class="btn" id="cu">Copy URL</button><button class="btn" id="rf">Refresh</button></div>
+    <div class="btnrow"><button class="btn" id="cu">Copy URL</button><button class="btn" id="rf">Refresh</button><button class="btn" id="rvw">Reviews</button></div>
     ${url !== S.active ? '<button class="btn primary wide" id="use">Use this mint</button>' : ''}
     <button class="btn wide danger" id="rm">Remove mint</button>`, (b) => {
     $('#sv', b).onclick = () => { m.nick = $('#nick', b).value.trim(); save(); render(); toast('Saved'); };
     $('#cu', b).onclick = () => copy(url, 'Mint URL copied');
+    $('#rvw', b).onclick = () => NU.reviews(url, () => mintDetails(url, back), false);
     const rf = $('#rf', b); rf.onclick = withBusy(rf, async () => { await C.refreshMint(url); mintDetails(url, back); });
     const use = $('#use', b); if (use) use.onclick = () => { C.selectMint(url); render(); closeSheet(); };
     $('#rm', b).onclick = () => removeMint(url, back);
@@ -583,7 +618,7 @@ function removeMint(url, back) {
       S.mints = S.mints.filter((x) => x.url !== url);
       for (const k of Object.keys(S.proofs)) if (k.startsWith(url + '|')) delete S.proofs[k];
       if (S.active === url) { S.active = S.mints[0]?.url || null; if (S.active) C.selectMint(S.active); }
-      save(); render(); mintsSheet();
+      save(); render(); N.backupMints().catch(() => {}); mintsSheet();
     };
   }, { back: () => mintDetails(url, back) });
 }
@@ -618,7 +653,7 @@ const MENU = [
 ];
 function settingsSheet() {
   sheet('Settings', `<ul class="menu">${MENU.map(([k, t, d]) => `<li><button data-k="${k}"><span class="mt"><b>${t}</b><small>${d}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ul>
-    <p class="dim small">Coming next: Lightning address, Nostr Wallet Connect, payment requests and mint discovery.</p>`, (b) => {
+    <p class="dim small">Coming next: more languages.</p>`, (b) => {
     $$('.menu button', b).forEach((x) => (x.onclick = () => SECTIONS[x.dataset.k]()));
   });
 }
@@ -864,7 +899,7 @@ function stopScan() {
 function route(txt) {
   const t = txt.trim().replace(/^lightning:/i, '');
   if (/^(cashu:)?cashu[AB]/i.test(t) || /^web\+cashu:/i.test(t)) return receiveSheet('ecash', t);
-  if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t)) return sendSheet('ln', t);
+  if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t) || N.isRequest(t)) return sendSheet('ln', t);
   if (/[#?]token=/.test(t)) { const m = t.match(/token=([^&]+)/); if (m) return receiveSheet('ecash', decodeURIComponent(m[1])); }
   if (/^https?:\/\//i.test(t)) { mintsSheet(); later(() => { const f = $('#mu'); if (f) f.value = t; }); return; }
   toast('Didn’t recognise that code.', 'warn');
@@ -889,6 +924,12 @@ function installHelp() {
 }
 
 /* ================= boot ================= */
+const NU = nostrUI({ $, $$, sheet, closeSheet, toast, copy, withBusy, kv, toggle, qrSvg, render, niceErr, amountField, readAmt, settingsSheet, isLocked: () => locked });
+MENU.splice(1, 0, ...NU.menu);
+Object.assign(SECTIONS, NU.sections);
+N.on('incoming', (h) => { toast(`Incoming ecash: ${fmt(h.amount, h.unit)}. Tap it in your history to claim.`, 'warn'); render(); });
+N.on('received', (h) => { toast(`Received ${fmt(h.amount, h.unit)}`); render(); });
+N.on('nwc', () => render());
 $('#recvBtn').onclick = () => receiveSheet();
 $('#sendBtn').onclick = () => sendSheet();
 $('#scanBtn').onclick = () => (needMint() ? null : startScan(route));
@@ -912,6 +953,7 @@ else {
   S.mints.forEach((m) => { if (!m.updated || Date.now() - m.updated > 6 * 3600e3) C.refreshMint(m.url).then(render).catch(() => {}); });
 }
 C.loadPrice().then(render);
+if (S.mnemonic) N.startAll();
 document.addEventListener('visibilitychange', () => { if (!document.hidden && S.mints.length && st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render); });
 
 const incoming = (location.hash.match(/token=([^&]+)/) || [])[1] || new URLSearchParams(location.search).get('token');

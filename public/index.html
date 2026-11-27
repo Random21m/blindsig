@@ -35,6 +35,7 @@ LAYOUT: one column, thumb-first: mint line, readout, three actions, history; flo
 [data-accent=white]{--ac:#efe9dd;--ac-ink:#161411;--ac-soft:rgba(239,233,221,.10);--glow:rgba(239,233,221,.18)}
 [data-accent=amber]{--ac:#f2b763;--ac-ink:#1e1507;--ac-soft:rgba(242,183,99,.13);--glow:rgba(242,183,99,.26);--warn:#e88f5a}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:radial-gradient(120% 60% at 50% -10%,#1b1915 0%,var(--bg) 60%) fixed,var(--bg);color:var(--ink);font:16px/1.55 var(--sans);overflow-x:clip;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--ac);color:var(--ac-ink)}
@@ -191,6 +192,7 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .sug b{font-weight:500}.sug small{color:var(--dim);font-size:13px}
 .sug:hover{border-color:var(--ac)}
 .menu button{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:66px;border-radius:var(--r);background:var(--card);text-align:left}
+.menu .mt{flex:1}
 .menu button>span:last-child{color:var(--dim);font-size:22px}
 .tg{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line2);cursor:pointer}
 .tgt{flex:1;display:flex;flex-direction:column}.tgt b{font-weight:500}.tgt small{color:var(--dim);font-size:14px;line-height:1.45;margin-top:2px}
@@ -216,6 +218,15 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 details.more{margin:12px 0;border-radius:12px;background:var(--card);padding:0 14px}
 details.more summary{min-height:48px;display:flex;align-items:center;cursor:pointer;color:var(--dim);font:500 14px var(--mono)}
 details.more[open]{padding-bottom:14px}
+.addrcard{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:var(--r);background:var(--card);margin:6px 0 12px}
+.addrcard b{font:500 16px var(--mono);color:var(--ac);overflow-wrap:anywhere}
+.revs{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.revs li{padding:12px 14px;border-radius:12px;background:var(--card)}
+.revs p{margin:6px 0!important}
+.rh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rh small{color:var(--dim);margin-left:auto}
+.stars{color:var(--ac);letter-spacing:2px}
+.rate{display:flex;gap:6px;justify-content:center;margin:8px 0 14px}
+.rate button{width:52px;height:52px;font-size:32px;color:var(--ac);border-radius:12px;background:var(--card)}
 .spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:r .7s linear infinite;display:inline-block}
 @keyframes r{to{transform:rotate(1turn)}}
 
