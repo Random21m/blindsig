@@ -626,3 +626,4 @@
 625	✓ npub.cash bekräftar: betalningar är låsta till din nyckel.
 626	Inte låst: npub.cash eller någon med betalningsuppgifterna skulle kunna ta emot en betalning.
 627	Kunde inte nå npub.cash för att kontrollera låsningen.
+628	Ny version klar. Tryck för att uppdatera.

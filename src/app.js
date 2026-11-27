@@ -1199,4 +1199,18 @@ if (action && S.mnemonic) {
   setTimeout(() => { if (needMint()) return; if (action === 'receive') receiveSheet(); else if (action === 'send') sendSheet(); else if (action === 'scan') startScan(route); }, 500);
 }
 
-if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  // a new version takes over in the background; offer a one-tap reload instead of waiting for the next launch
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('./sw.js').then((reg) => {
+    const check = () => reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+  }).catch(() => {});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || $('#updBar')) return;
+    const bar = document.createElement('button');
+    bar.id = 'updBar'; bar.className = 'updbar'; bar.textContent = 'New version ready. Tap to update.';
+    bar.onclick = () => location.reload();
+    document.body.appendChild(bar);
+  });
+}

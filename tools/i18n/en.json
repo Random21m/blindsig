@@ -626,5 +626,6 @@
 "Checking with npub.cash…",
 "✓ npub.cash confirms: payments are locked to your key.",
 "Not locked: npub.cash or anyone with the payment details could claim a payment.",
-"Couldn’t reach npub.cash to check the lock setting."
+"Couldn’t reach npub.cash to check the lock setting.",
+"New version ready. Tap to update."
 ]

@@ -626,3 +626,4 @@
 625	✓ npub.cash lo confirma: los pagos están bloqueados a tu clave.
 626	Sin bloquear: npub.cash o cualquiera con los detalles del pago podría reclamar un pago.
 627	No se pudo contactar con npub.cash para comprobar el bloqueo.
+628	Nueva versión lista. Toca para actualizar.

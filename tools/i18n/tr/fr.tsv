@@ -626,3 +626,4 @@
 625	✓ npub.cash confirme : les paiements sont verrouillés sur votre clé.
 626	Non verrouillé : npub.cash ou toute personne ayant les détails du paiement pourrait le récupérer.
 627	Impossible de joindre npub.cash pour vérifier le verrouillage.
+628	Nouvelle version prête. Touchez pour mettre à jour.
