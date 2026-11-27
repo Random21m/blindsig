@@ -1,0 +1,37 @@
+# Library updates for blindsig.
+# Security fixes arrive as soon as they're published (Dependabot security updates are on).
+# Everything else is bundled into one pull request a month so it's easy to review.
+# Note: merging only updates package.json; the live site in docs/ changes after a rebuild.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+      day: monday
+      time: "09:00"
+      timezone: America/Chicago
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: deps
+    groups:
+      # wallet and protocol libraries: the ones that matter most
+      core:
+        patterns:
+          - "@cashu/*"
+          - "nostr-tools"
+          - "@noble/*"
+          - "@scure/*"
+          - "@gandlaf21/*"
+        update-types: [minor, patch]
+      # build tools, fonts and the debug console
+      tooling:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "@cashu/*"
+          - "nostr-tools"
+          - "@noble/*"
+          - "@scure/*"
+          - "@gandlaf21/*"
+        update-types: [minor, patch]
