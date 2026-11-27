@@ -22,7 +22,7 @@
 VOICE: calm, private, a little terminal. Plain words, no jargon unless it helps.
 IDEA: a terminal on warm charcoal, like a screen in a dim room: soft light, nothing harsh.
 PICTURE: the balance as large, gently glowing digits over the mint's details.
-COLOUR and TYPE: warm charcoal ground, off-white ink, one accent the user picks (green, white or amber). JetBrains Mono light numerals and labels, Inter text.
+COLOUR and TYPE: warm charcoal ground, off-white ink, one accent the user picks (green, white, amber or burnt orange). JetBrains Mono light numerals and labels, Inter text.
 LAYOUT: one column, thumb-first: mint line, readout, three actions, history; flows open in bottom sheets.
 */
 :root{color-scheme:dark;
@@ -34,7 +34,10 @@ LAYOUT: one column, thumb-first: mint line, readout, three actions, history; flo
   --r:14px}
 [data-accent=white]{--ac:#efe9dd;--ac-ink:#161411;--ac-soft:rgba(239,233,221,.10);--glow:rgba(239,233,221,.18)}
 [data-accent=amber]{--ac:#f2b763;--ac-ink:#1e1507;--ac-soft:rgba(242,183,99,.13);--glow:rgba(242,183,99,.26);--warn:#e88f5a}
+[data-accent=orange]{--ac:#d0784a;--ac-ink:#1f1209;--ac-soft:rgba(208,120,74,.14);--glow:rgba(208,120,74,.26);--warn:#e3b65c;--err:#e46a6a}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+/* no double-tap zoom: quick taps on the keypad must never enlarge the page */
+html,button,a,input,textarea,select,label{touch-action:manipulation}
 [hidden]{display:none!important}
 html,body{height:100%}
 body{margin:0;background:radial-gradient(120% 60% at 50% -10%,#1b1915 0%,var(--bg) 60%) fixed,var(--bg);color:var(--ink);font:16px/1.55 var(--sans);overflow-x:clip;-webkit-font-smoothing:antialiased}
@@ -139,7 +142,7 @@ a{color:var(--ac)}
 .seg button{flex:1 1 0;min-width:0;min-height:42px;padding:0 4px;border-radius:10px;color:var(--dim);font:500 14px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg button[aria-selected=true]{background:var(--card2);color:var(--ink);box-shadow:0 1px 0 var(--line)}
 textarea,.field{width:100%;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:14px;font-size:16px;resize:none;outline:none}
-textarea{font:15px/1.5 var(--mono);word-break:break-all}
+textarea{font:16px/1.5 var(--mono);word-break:break-all}
 textarea::placeholder{word-break:normal;overflow-wrap:break-word;font-family:var(--sans)}
 textarea:focus,.field:focus{border-color:var(--ac)}
 select.field{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat}
@@ -231,11 +234,11 @@ select.field{appearance:none;-webkit-appearance:none;background-image:linear-gra
 .tg input:checked + i{background:var(--ac)}
 .tg input:checked + i::after{transform:translateX(20px);background:var(--ac-ink)}
 .tg input:focus-visible + i{outline:2px solid var(--ac);outline-offset:2px}
-.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.themes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .th{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border-radius:var(--r);background:var(--card);border:1px solid var(--line2);font:500 14px var(--mono)}
 .th[aria-pressed=true]{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac-soft)}
 .sw{width:36px;height:36px;border-radius:50%;display:block}
-.sw-green{background:#72d99b;box-shadow:0 0 14px rgba(114,217,155,.45)}.sw-white{background:#efe9dd;box-shadow:0 0 14px rgba(239,233,221,.3)}.sw-amber{background:#f2b763;box-shadow:0 0 14px rgba(242,183,99,.45)}
+.sw-green{background:#72d99b;box-shadow:0 0 14px rgba(114,217,155,.45)}.sw-white{background:#efe9dd;box-shadow:0 0 14px rgba(239,233,221,.3)}.sw-amber{background:#f2b763;box-shadow:0 0 14px rgba(242,183,99,.45)}.sw-orange{background:#d0784a;box-shadow:0 0 14px rgba(208,120,74,.45)}
 .keys button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--card);text-align:left;min-height:48px}
 .ks li{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 14px;border-radius:12px;background:var(--card);font-size:14px;color:var(--dim)}
 .ks code{color:var(--ink)}
@@ -265,16 +268,18 @@ details.more[open]{padding-bottom:14px}
 #pinLock>.brand{align-self:flex-start;direction:ltr;flex:0 0 auto}
 .plbox{width:100%;max-width:360px;margin:auto 0;padding-top:12px}
 .pinpad{text-align:center}
+.pinpad .pt:focus{outline:none}
 .pinpad .pt{font:600 20px var(--mono);color:var(--ac);margin:0 0 6px}
 .pinpad .ps{color:var(--dim);min-height:1.4em;margin:0 0 18px;font-size:15px}
 .pdots{display:flex;justify-content:center;gap:14px;margin:6px 0 10px;direction:ltr}
 .pdots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--faint);transition:background .12s,border-color .12s,transform .12s}
 .pdots i.on{background:var(--ac);border-color:var(--ac);transform:scale(1.08)}
 .pinpad .pm{min-height:1.5em;font-size:14px;color:var(--dim);margin:0 0 12px}.pinpad .pm.bad{color:var(--err)}
-.pkp{max-width:300px;margin:0 auto 10px}.pkp button{min-height:62px;font-size:24px;border-radius:50%;aspect-ratio:auto}
+.pinpad .pkp{grid-template-columns:repeat(3,74px);justify-content:center;gap:14px 28px;margin:0 auto 10px}
+.pinpad .pkp button{width:74px;height:74px;min-height:0;padding:0;border-radius:50%;font-size:26px}
 .pinpad .lnk{display:inline-block;margin-top:8px;padding:10px;color:var(--dim)}
 .okline{color:var(--ac)}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
-@media (max-height:660px){.pkp button{min-height:50px}.pinpad .ps{margin-bottom:10px}}
+@media (max-height:700px){.pinpad .pkp{grid-template-columns:repeat(3,64px);gap:10px 26px}.pinpad .pkp button{width:64px;height:64px;font-size:23px}.pinpad .ps{margin-bottom:10px}}
 #chkAll{margin-top:10px}
 .audbars{display:flex;align-items:flex-end;gap:2px;height:44px;margin:6px 0}.audbars i{flex:1;border-radius:2px}.audbars i.ok{height:100%;background:var(--ac)}.audbars i.bad{height:35%;background:var(--err)}
 .spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:r .7s linear infinite;display:inline-block}

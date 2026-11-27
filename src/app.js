@@ -417,7 +417,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       toast('Ecash added to history'); closeSheet();
     };
     const autoPaste = async () => {
-      if (!st.autoPaste || ta.value) return;
+      // iPhone shows a Paste bubble for every clipboard read, which blocks the page until it's tapped
+      if (!st.autoPaste || ta.value || FX.isIOS) return;
       try { const t = (await navigator.clipboard.readText()).trim(); if (/^(cashu:)?cashu[AB]/i.test(t) || C.hasEmojiToken(t)) { ta.value = t; ta.oninput(); } } catch {}
     };
     if (prefill) { ta.value = prefill; ta.oninput(); } else if (tab === 'ecash') autoPaste();
@@ -912,7 +913,7 @@ const SECTIONS = {
     }, { back });
   },
   appearance() {
-    const THEMES = [['green', 'Green'], ['white', 'White'], ['amber', 'Amber']];
+    const THEMES = [['green', 'Green'], ['white', 'White'], ['amber', 'Amber'], ['orange', 'Burnt orange']];
     sheet('Appearance', `<h3>Theme</h3>
       <div class="themes">${THEMES.map(([k, l]) => `<button class="th" data-th="${k}" aria-pressed="${st.theme === k}"><i class="sw sw-${k}"></i>${l}</button>`).join('')}</div>
       ${toggle('t_keypad', 'On-screen keypad', 'Use the built-in number pad for amounts.', st.keypad)}
@@ -944,7 +945,7 @@ const SECTIONS = {
   experimental() {
     sheet('Experimental', `<p class="dim">These features are new. Use small amounts.</p>
       ${toggle('t_receiveSwaps', 'Receive swaps', 'Offer to swap ecash from another mint into your active mint when receiving.', st.receiveSwaps)}
-      ${toggle('t_autoPaste', 'Paste ecash automatically', 'Fill in a token from your clipboard when you open Receive. Can cause prompts on iOS.', st.autoPaste)}
+      ${FX.isIOS ? '' : toggle('t_autoPaste', 'Paste ecash automatically', 'Fill in a token from your clipboard when you open Receive.', st.autoPaste)}
       ${toggle('t_multinut', 'Multinut', 'Pay one invoice from several mints at once (NUT-15).', st.multinut)}
       ${toggle('t_auditor', 'Mint auditor', 'Show reliability data from an independent auditor in mint details.', st.auditor)}
       <label class="lbl" for="au">Auditor URL</label><input id="au" class="field" value="${esc(st.auditorUrl)}">

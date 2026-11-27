@@ -678,5 +678,7 @@
 "To get back in, reset blindsig on this device, then restore it with your seed phrase. Your ecash comes back from your mints.",
 "Without your seed phrase, resetting loses the ecash on this device for good. P2PK keys you imported and your history are not part of the seed.",
 "Reset this wallet",
-"Try my PIN again"
+"Try my PIN again",
+"Burnt orange",
+"Fill in a token from your clipboard when you open Receive."
 ]
