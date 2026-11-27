@@ -271,7 +271,7 @@ function bindSeg(b, onSwitch) {
 const bigAmt = (n, unit, sign = '') => { const p = fmtParts(n, unit); return `${sign}${esc(p.pre)}${esc(p.value)}${p.post ? ` <small>${esc(p.post)}</small>` : ''}`; };
 const kv = (rows) => `<dl class="kv">${rows.filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
 const armor = (t) => `<pre class="armor"><span>-----BEGIN CASHU TOKEN-----</span>\n${esc(t)}\n<span>-----END CASHU TOKEN-----</span></pre>`;
-const toggle = (id, label, desc, on) => `<label class="tg"><span class="tgt"><b>${label}</b>${desc ? `<small>${desc}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i aria-hidden="true"></i></label>`;
+const toggle = (id, label, desc, on) => `<label class="tg"><span class="tgt"><b>${label}</b>${desc ? `<small>${desc}</small>` : ''}</span><input type="checkbox" switch id="${id}" ${on ? 'checked' : ''}><i aria-hidden="true"></i></label>`;
 // every switch says what it just did ("Sounds: on"); runs before the switch's own handler, so a
 // handler with its own message (an error, "Mint list backed up") still has the last word
 document.addEventListener('change', (e) => {

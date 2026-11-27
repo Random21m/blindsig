@@ -146,6 +146,9 @@ export function play(kind) {
   if (st().sounds === false) return;
   if (kind === 'tap' && !st().keyClicks) return;
   try {
+    // iPhone: the pre-rendered <audio> sounds are the steadier path there (Web Audio can go quiet
+    // after the app was in the background), so use them first once they're ready
+    if (isIOS && playBackup(kind)) return;
     const a = audio();
     if (a && a.state === 'running') { SOUNDS[kind]?.(a); lastEngine = 'web audio'; return; }
     if (playBackup(kind)) return;
@@ -163,11 +166,15 @@ const BUZZ = { received: [18, 40, 28], sent: [22], claimed: [12, 30, 12], error:
 // toggled, so toggle an invisible one. Several ticks a short moment apart make a pattern.
 export const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const TICKS = { received: 2, sent: 1, claimed: 2, error: 3, tap: 1, pin: 1, test: 4 };
+// Newer iOS (26.5+) no longer buzzes for a switch that isn't on screen, so the switch is drawn
+// (tiny and invisible, not display:none) and stays a moment before it's removed.
 function iosTick() {
   try {
     const l = document.createElement('label'), i = document.createElement('input');
-    i.type = 'checkbox'; i.setAttribute('switch', ''); l.setAttribute('aria-hidden', 'true'); l.style.display = 'none';
-    l.appendChild(i); document.head.appendChild(l); l.click(); l.remove();
+    i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+    l.setAttribute('aria-hidden', 'true');
+    l.style.cssText = 'position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;overflow:hidden;pointer-events:none;z-index:-1';
+    l.appendChild(i); document.body.appendChild(l); l.click(); setTimeout(() => l.remove(), 400);
   } catch {}
 }
 export function buzz(kind) {
@@ -187,7 +194,9 @@ addEventListener('click', (e) => {
   if (t.tagName === 'INPUT' && t.closest('label')) return; // the second click a label passes to its switch
   const el = t.closest?.(TAPPABLE);
   if (!el || el.disabled || el.closest('.kp')) return;
-  buzz('tap'); play('tap');
+  // the app's switches are real iPhone switches, which give their own haptic when tapped
+  if (!(isIOS && el.matches('.tg'))) buzz('tap');
+  play('tap');
 }, { capture: true, passive: true });
 
 // iPhone only shows :active (pressed) styles when the page listens for touches, and even then a
