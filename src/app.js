@@ -538,7 +538,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, offline }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
       render(); tokenView(h); C.watchSent(sentClaimed);
-      FX.play('sent'); FX.buzz('sent'); // money leaving: the whoosh, no confetti
+      FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
@@ -959,7 +959,7 @@ const SECTIONS = {
       ${toggle('t_keypad', 'On-screen keypad', 'Use the built-in number pad for amounts.', st.keypad)}
       ${toggle('t_btcSymbol', 'Use ₿ symbol', 'Show ₿1,000 instead of 1,000 sat.', st.btcSymbol)}
       <h3>Sound and motion</h3>
-      ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
+      ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a soft pop when it leaves.', st.sounds)}
       ${FX.isIOS ? toggle('t_soundsOnSilent', 'Play on silent', 'Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open.', st.soundsOnSilent) : ''}
       ${toggle('t_haptics', 'Vibration', 'A short buzz when money arrives or leaves, on phones that allow it.', st.haptics !== false)}
       ${toggle('t_motion', 'Animations', 'Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.', st.motion)}`, (b) => {

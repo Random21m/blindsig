@@ -61,37 +61,25 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // one soft note: frequency glide, quick attack, smooth decay
-function note(a, { f, f2 = f, at = 0, dur = 0.16, vol = 0.16, type = 'sine', lp = 0 }) {
+function note(a, { f, f2 = f, at = 0, dur = 0.16, vol = 0.16, type = 'sine', lp = 0, att = 0.012 }) {
   const t = a.currentTime + at;
   const o = a.createOscillator(), g = a.createGain();
   o.type = type;
   o.frequency.setValueAtTime(f, t);
   if (f2 !== f) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(vol, t + att);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   let node = o;
   if (lp) { const fl = a.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = lp; o.connect(fl); node = fl; }
   node.connect(g); g.connect(out || a.destination);
   o.start(t); o.stop(t + dur + 0.05);
 }
-// a short breath of filtered noise, for the "whoosh" of sending
-function whoosh(a, { at = 0, dur = 0.22, vol = 0.07 } = {}) {
-  const t = a.currentTime + at, len = Math.floor(a.sampleRate * dur);
-  const buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
-  const src = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
-  src.buffer = buf; fl.type = 'bandpass'; fl.Q.value = 0.9;
-  fl.frequency.setValueAtTime(2600, t); fl.frequency.exponentialRampToValueAtTime(500, t + dur);
-  g.gain.setValueAtTime(vol, t);
-  src.connect(fl); fl.connect(g); g.connect(out || a.destination);
-  src.start(t);
-}
 const SOUNDS = {
   // two bright coin notes, a fifth apart, with a soft shimmer on top
   received: (a) => { note(a, { f: 987.8, dur: 0.11, vol: 0.13, type: 'triangle' }); note(a, { f: 1318.5, at: 0.085, dur: 0.42, vol: 0.15, type: 'triangle' }); note(a, { f: 2637, at: 0.085, dur: 0.3, vol: 0.025 }); },
-  // a quick whoosh with a falling tone: money leaving
-  sent: (a) => { whoosh(a); note(a, { f: 880, f2: 523.3, at: 0.04, dur: 0.2, vol: 0.09 }); },
+  // money leaving: a short warm pop, then a soft higher note (G5, then D6 with a faint octave)
+  sent: (a) => { note(a, { f: 784, dur: 0.08, vol: 0.14, type: 'triangle', att: 0.005 }); note(a, { f: 1174.7, at: 0.06, dur: 0.38, vol: 0.11, att: 0.01 }); note(a, { f: 2349.3, at: 0.06, dur: 0.2, vol: 0.015 }); },
 };
 /* backup player: the same sounds pre-rendered to tiny WAV files and played with <audio>.
    iPhone sometimes leaves Web Audio "interrupted" after the app was in the background, and a new
