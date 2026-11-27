@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.8.11';
+export const VERSION = '1.8.12';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -12,7 +12,6 @@ export const DEFAULT_SETTINGS = {
   soundsOnSilent: false, // iPhone: play even with the ring switch on silent
   haptics: true,
   motion: true,
-  keyClicks: false,
   btcSymbol: false,
   fiat: true,
   fiatCur: 'USD',

@@ -112,7 +112,7 @@ function bindKeypads(b) {
       else if (k === '.') { if (!v.includes('.')) v = (v || '0') + '.'; }
       else if (v.replace('.', '').length < 12) { if (v.includes('.') && v.split('.')[1].length >= 2) return FX.shake(inp.closest('.amt')); v = v === '0' ? k : v + k; }
       else return FX.shake(inp.closest('.amt'));
-      inp.value = v; inp.dispatchEvent(new Event('input')); FX.play('tap'); FX.buzz('tap');
+      inp.value = v; inp.dispatchEvent(new Event('input'));
     };
   });
   $$('.amt input', b).forEach((i) => i.addEventListener('input', () => {
@@ -271,7 +271,7 @@ function bindSeg(b, onSwitch) {
 const bigAmt = (n, unit, sign = '') => { const p = fmtParts(n, unit); return `${sign}${esc(p.pre)}${esc(p.value)}${p.post ? ` <small>${esc(p.post)}</small>` : ''}`; };
 const kv = (rows) => `<dl class="kv">${rows.filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
 const armor = (t) => `<pre class="armor"><span>-----BEGIN CASHU TOKEN-----</span>\n${esc(t)}\n<span>-----END CASHU TOKEN-----</span></pre>`;
-const toggle = (id, label, desc, on) => `<label class="tg"><span class="tgt"><b>${label}</b>${desc ? `<small>${desc}</small>` : ''}</span><input type="checkbox" switch id="${id}" ${on ? 'checked' : ''}><i aria-hidden="true"></i></label>`;
+const toggle = (id, label, desc, on) => `<label class="tg"><span class="tgt"><b>${label}</b>${desc ? `<small>${desc}</small>` : ''}</span><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><i aria-hidden="true"></i></label>`;
 // every switch says what it just did ("Sounds: on"); runs before the switch's own handler, so a
 // handler with its own message (an error, "Mint list backed up") still has the last word
 document.addEventListener('change', (e) => {
@@ -534,6 +534,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, offline }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
       render(); tokenView(h); C.watchSent(sentClaimed);
+      FX.play('sent'); FX.buzz('sent'); // money leaving: the whoosh, no confetti
     });
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
@@ -690,7 +691,7 @@ function done(h, verb) {
   render();
 }
 
-const sentClaimed = () => { render(); FX.play('claimed'); FX.buzz('claimed'); };
+const sentClaimed = () => { render(); };
 
 /* ================= history detail ================= */
 function detail(h) {
@@ -937,17 +938,13 @@ const SECTIONS = {
       <h3>Sound and motion</h3>
       ${toggle('t_sounds', 'Sounds', 'A coin sound when money arrives, a whoosh when it leaves.', st.sounds)}
       ${FX.isIOS ? toggle('t_soundsOnSilent', 'Play on silent', 'Hear sounds even when your iPhone is set to silent. Music from other apps may pause while blindsig is open.', st.soundsOnSilent) : ''}
-      <button class="btn wide" id="tsnd">Test sound</button><p class="dim small" id="tsst" data-notr></p>
-      ${toggle('t_haptics', 'Vibration', FX.isIOS ? 'A light tap for buttons, payments and errors. Needs iOS 18 or later, with System Haptics on in iPhone Settings → Sounds & Haptics.' : 'A light tap for buttons, payments and errors.', st.haptics !== false)}
-      ${toggle('t_keyClicks', 'Button clicks', 'A faint click when you tap a key or button.', st.keyClicks)}
+      ${toggle('t_haptics', 'Vibration', 'A short buzz when money arrives or leaves, on phones that allow it.', st.haptics !== false)}
       ${toggle('t_motion', 'Animations', 'Confetti and a drawn checkmark when a payment completes. Off when your device asks for reduced motion.', st.motion)}`, (b) => {
       $$('.th', b).forEach((x) => (x.onclick = () => { st.theme = x.dataset.th; save(); render(); SECTIONS.appearance(); }));
-      $('#tsnd', b).onclick = () => { FX.play('received'); setTimeout(() => { const el = $('#tsst', b); if (el) el.textContent = FX.soundStatus(); }, 400); };
-      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'soundsOnSilent', 'haptics', 'keyClicks', 'motion'], (k) => {
+      bindToggles(b, ['keypad', 'btcSymbol', 'sounds', 'soundsOnSilent', 'haptics', 'motion'], (k) => {
         if (k === 'soundsOnSilent') { FX.setSession(); if (st.sounds) FX.play('received'); }
         if (k === 'sounds' && st.sounds) FX.play('received');
-        if (k === 'haptics' && st.haptics) FX.buzz('test');
-        if (k === 'keyClicks' && st.keyClicks) FX.play('tap');
+        if (k === 'haptics' && st.haptics) FX.buzz('received');
         if (k === 'motion' && st.motion) FX.confetti(null, true);
       });
     }, { back });
@@ -1059,7 +1056,6 @@ function choosePin(change) {
       onPin: async (p) => {
         if (p !== p1) { later(() => first('Those PINs didn’t match. Try again.')); return true; }
         try { await setPin(p); } catch (e) { return niceErr(e); }
-        FX.success('received');
         toast(change ? 'PIN changed' : 'PIN lock is on. Your wallet is now encrypted.');
         render(); SECTIONS.security(); return true;
       },
@@ -1183,7 +1179,7 @@ async function startScan(cb) {
       if (urDec.isComplete() && urDec.isSuccess()) { const out = new TextDecoder().decode(urDec.resultUR().decodeCBOR()); const f = onScan; stopScan(); f && f(out); }
       return;
     }
-    const f = onScan; stopScan(); FX.buzz('tap'); f && f(txt.trim());
+    const f = onScan; stopScan(); f && f(txt.trim());
   };
   raf = requestAnimationFrame(loop);
 }

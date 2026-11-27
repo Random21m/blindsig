@@ -92,14 +92,6 @@ const SOUNDS = {
   received: (a) => { note(a, { f: 987.8, dur: 0.11, vol: 0.13, type: 'triangle' }); note(a, { f: 1318.5, at: 0.085, dur: 0.42, vol: 0.15, type: 'triangle' }); note(a, { f: 2637, at: 0.085, dur: 0.3, vol: 0.025 }); },
   // a quick whoosh with a falling tone: money leaving
   sent: (a) => { whoosh(a); note(a, { f: 880, f2: 523.3, at: 0.04, dur: 0.2, vol: 0.09 }); },
-  // gentle confirmation when someone claims a token you sent
-  claimed: (a) => { note(a, { f: 1568, dur: 0.24, vol: 0.08 }); note(a, { f: 2093, at: 0.07, dur: 0.3, vol: 0.06 }); },
-  // two low, muted notes: not alarming, just "nope"
-  error: (a) => { note(a, { f: 196, dur: 0.09, vol: 0.12, type: 'square', lp: 700 }); note(a, { f: 174.6, at: 0.11, dur: 0.14, vol: 0.12, type: 'square', lp: 700 }); },
-  // the faintest tick for the keypad
-  tap: (a) => note(a, { f: 1900, dur: 0.025, vol: 0.025, type: 'triangle' }),
-  // PIN keys: a slightly fuller click, like a phone's passcode screen
-  pin: (a) => { note(a, { f: 1500, dur: 0.035, vol: 0.05, type: 'triangle' }); note(a, { f: 3000, dur: 0.02, vol: 0.012 }); },
 };
 /* backup player: the same sounds pre-rendered to tiny WAV files and played with <audio>.
    iPhone sometimes leaves Web Audio "interrupted" after the app was in the background, and a new
@@ -118,7 +110,7 @@ function wav(buf) {
 async function renderBackup() {
   const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   if (!OC || typeof Audio === 'undefined') return;
-  for (const kind of ['received', 'sent', 'claimed', 'error', 'pin']) {
+  for (const kind of ['received', 'sent']) {
     try {
       const oc = new OC(1, Math.round(44100 * 0.7), 44100);
       const lim = oc.createDynamicsCompressor(); lim.threshold.value = -6; lim.knee.value = 6; lim.ratio.value = 12; lim.attack.value = 0.002; lim.release.value = 0.12;
@@ -138,13 +130,13 @@ function primeBackup() {
   }
 }
 function playBackup(kind) {
-  const el = backup[kind === 'tap' ? 'pin' : kind];
+  const el = backup[kind];
   if (!el || !el._ok) return false;
   try { el.muted = false; el.currentTime = 0; el.play()?.catch?.(() => {}); lastEngine = 'backup'; return true; } catch { return false; }
 }
 export function play(kind) {
   if (st().sounds === false) return;
-  if (kind === 'tap' && !st().keyClicks) return;
+  if (kind !== 'received' && kind !== 'sent') return; // sound only when money arrives or leaves
   try {
     // iPhone: the pre-rendered <audio> sounds are the steadier path there (Web Audio can go quiet
     // after the app was in the background), so use them first once they're ready
@@ -154,10 +146,6 @@ export function play(kind) {
     if (playBackup(kind)) return;
     if (a && a.state !== 'closed') { SOUNDS[kind]?.(a); lastEngine = 'web audio (waking)'; } // plays as soon as it wakes
   } catch {}
-}
-// Settings → Appearance → Test sound: what the sound system is doing, for troubleshooting
-export function soundStatus() {
-  return [ctx ? ctx.state : 'not started', navigator.audioSession ? navigator.audioSession.type : 'no session control', lastEngine || 'nothing played yet', Object.values(backup).filter((e) => e._ok).length ? 'backup ready' : 'backup not ready'].join(' · ');
 }
 
 /* ---------------- haptics ---------------- */
@@ -178,26 +166,12 @@ function iosTick() {
   } catch {}
 }
 export function buzz(kind) {
-  if (st().haptics === false) return;
+  if (st().haptics === false || (kind !== 'received' && kind !== 'sent')) return;
   if (navigator.vibrate) { try { navigator.vibrate(BUZZ[kind] || [15]); } catch {} return; }
   if (!isIOS) return;
   const n = TICKS[kind] || 1;
   for (let k = 0; k < n; k++) k ? setTimeout(iosTick, k * 110) : iosTick();
 }
-
-// a light tick (and the optional click sound) on every button, switch and list row.
-// Keypads handle their own feedback, so they're skipped here.
-const TAPPABLE = 'button, a.btn, .tg, .radio, .chk, .row, [role=tab]';
-addEventListener('click', (e) => {
-  if (!e.isTrusted) return;
-  const t = e.target;
-  if (t.tagName === 'INPUT' && t.closest('label')) return; // the second click a label passes to its switch
-  const el = t.closest?.(TAPPABLE);
-  if (!el || el.disabled || el.closest('.kp')) return;
-  // the app's switches are real iPhone switches, which give their own haptic when tapped
-  if (!(isIOS && el.matches('.tg'))) buzz('tap');
-  play('tap');
-}, { capture: true, passive: true });
 
 // iPhone only shows :active (pressed) styles when the page listens for touches, and even then a
 // quick tap can miss it, so keypad keys also get a "down" class for the length of the press
@@ -278,4 +252,5 @@ export function success(kind, anchor) {
   // no confetti over the PIN screen: it would draw over the lock and hint at what happened
   if ((kind === 'received' || kind === 'sent') && !document.querySelector('#pinLock:not([hidden])')) confetti(anchor);
 }
-export function fail(el) { play('error'); buzz('error'); shake(el); }
+// errors only shake: sound and vibration are kept for money arriving and leaving
+export function fail(el) { shake(el); }

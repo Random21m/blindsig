@@ -57,7 +57,6 @@ export function pinPad(root, { len = 6, title, sub = '', onPin, extra = '', lenS
     const k = e.target.closest('button')?.dataset.k;
     if (!k || busy) return;
     if (k !== '⌫' && wait()) return FX.fail(D);
-    FX.play('pin'); FX.buzz('pin');
     if (k === '⌫') pin = pin.slice(0, -1);
     else if (pin.length < len) pin += k;
     draw();
@@ -98,7 +97,7 @@ function show(onDone) {
     onPin: async (pin) => {
       const ok = await onDone(pin);
       if (!ok) { const m = failed(); return m.fails < 5 ? (m.fails === 4 ? 'Wrong PIN. 1 try left before a wait.' : 'Wrong PIN.') : 'Wrong PIN.'; }
-      resetFails(); FX.buzz('tap'); hide(); return true;
+      resetFails(); hide(); return true;
     },
   });
   box.querySelector('#plF').onclick = () => forgotPin(box, () => show(onDone));
