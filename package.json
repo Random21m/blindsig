@@ -1,0 +1,20 @@
+{
+  "name": "blindsig",
+  "version": "1.0.0",
+  "description": "Cypherpunk Cashu ecash wallet PWA",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "npx serve docs"
+  },
+  "dependencies": {
+    "@cashu/cashu-ts": "^4.14.0",
+    "@scure/bip39": "^2.0.1",
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4"
+  },
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

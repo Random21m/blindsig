@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <pattern id="scan" width="512" height="6" patternUnits="userSpaceOnUse"><rect width="512" height="2" fill="#000" opacity=".35"/></pattern></defs>
+  <rect width="512" height="512" rx="96" fill="#050605"/>
+  <g filter="url(#glow)" fill="none" stroke="#3dff8a" stroke-width="34" stroke-linecap="square">
+    <path d="M128 170 L218 256 L128 342"/>
+  </g>
+  <rect x="262" y="318" width="132" height="34" fill="#3dff8a" filter="url(#glow)"/>
+  <circle cx="328" cy="200" r="62" fill="none" stroke="#3dff8a" stroke-width="14" stroke-dasharray="10 12" opacity=".75"/>
+  <circle cx="328" cy="200" r="30" fill="#3dff8a" opacity=".9"/>
+  <rect width="512" height="512" rx="96" fill="url(#scan)"/>
+</svg>
