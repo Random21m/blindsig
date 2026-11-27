@@ -23,5 +23,6 @@
     "@fontsource/jetbrains-mono": "^5.3.0",
     "eruda": "^3.4.3",
     "esbuild": "^0.28.2"
-  }
+  },
+  "license": "MIT"
 }
