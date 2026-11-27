@@ -104,7 +104,7 @@ Green, white and amber, all on the same soft charcoal background. Change it unde
 
 - A Nostr identity from your seed (the same key as cashu.me), or an nsec, browser extension (NIP-07) or remote signer (NIP-46)
 - Lightning address via npub.cash, with automatic claiming, live updates and optional short usernames
-- Payment requests (NUT-18) delivered over Nostr or HTTP, and ecash in Nostr DMs picked up automatically
+- Payment requests (NUT-18) with a description, an optional lock to your key, and delete. Delivered over Nostr or HTTP, checked in full before they're claimed, and payable from any of your mints when the request allows it. Ecash in Nostr DMs is picked up automatically
 - Nostr Wallet Connect (NIP-47) with a spending allowance, so other apps can use your wallet
 
 **Privacy and safety**
