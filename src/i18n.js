@@ -33,6 +33,8 @@ export async function setLang(code) {
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   translateTree(document.body);
 }
+// dates and times in the app's language (the phone's own format when that's the same language)
+export const dateLocale = () => ((navigator.language || 'en').toLowerCase().startsWith(lang) ? undefined : lang);
 export function t(s) {
   if (lang === 'en' || !s) return s;
   const k = s.trim();

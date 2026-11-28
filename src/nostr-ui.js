@@ -1,3 +1,4 @@
+import { dateLocale } from './i18n.js';
 // Screens for the nostr features. Receives shared UI helpers from app.js.
 import { S, save, mintOf, mintLabel, host, esc, fmt, unitLabel, normUrl } from './store.js';
 import * as C from './core.js';
@@ -101,7 +102,7 @@ export function nostrUI(x) {
       ${toggle('t_nz', 'Receive nutzaps', 'People can send ecash to your npub from Nostr apps that support nutzaps (NIP-61). Publishes your mints and relays, with a key just for nutzaps. Works while blindsig is open.', N.nutzapsOn())}
       <h3>Mint list backup</h3>
       ${toggle('t_bk', 'Back up mint list on nostr', 'Encrypted with a key from your seed, so a restore can find your mints.', nn.backup)}
-      ${nn.backup ? `<p class="dim small">${nn.backupTs ? 'Last backup ' + new Date(nn.backupTs * 1000).toLocaleString() : 'Not backed up yet.'}</p><button class="btn wide" id="bkn">Back up now</button>` : ''}
+      ${nn.backup ? `<p class="dim small">${nn.backupTs ? 'Last backup ' + new Date(nn.backupTs * 1000).toLocaleString(dateLocale()) : 'Not backed up yet.'}</p><button class="btn wide" id="bkn">Back up now</button>` : ''}
       <h3>Web of trust</h3>
       <p class="dim small"><span>Collects the people you follow and the people they follow, to highlight mint reviews from them.</span> ${nn.wot ? `<span>Currently ${nn.wot.pubkeys.length.toLocaleString()} keys.</span>` : ''}</p>
       <input id="wr" class="field" placeholder="Start from npub (leave empty for yours)" autocapitalize="off">
@@ -143,7 +144,7 @@ export function nostrUI(x) {
       ${toggle('t_pra', 'Claim automatically', 'Receive matching payments from known mints right away.', S.pr.auto)}
       <button class="btn primary wide" id="nr">New payment request</button>
       <h3>Your requests</h3>
-      <ul class="keys">${S.pr.requests.map((r) => `<li><button data-id="${esc(r.id)}"><span class="mt"><b>${r.amount ? esc(fmt(r.amount, r.unit)) : 'Any amount'}${r.memo ? ' · ' + esc(r.memo) : ''}</b><small>${new Date(r.ts).toLocaleDateString()} · ${`Payments: ${(r.payments || []).length}`}</small></span><span aria-hidden="true">›</span></button></li>`).join('') || '<li class="dim">None yet.</li>'}</ul>`, (b) => {
+      <ul class="keys">${S.pr.requests.map((r) => `<li><button data-id="${esc(r.id)}"><span class="mt"><b>${r.amount ? esc(fmt(r.amount, r.unit)) : 'Any amount'}${r.memo ? ' · ' + esc(r.memo) : ''}</b><small>${new Date(r.ts).toLocaleDateString(dateLocale())} · ${`Payments: ${(r.payments || []).length}`}</small></span><span aria-hidden="true">›</span></button></li>`).join('') || '<li class="dim">None yet.</li>'}</ul>`, (b) => {
       $('#t_pr', b).onchange = (e) => { S.pr.enabled = e.target.checked; save(); N.startAll(); };
       $('#t_pra', b).onchange = (e) => { S.pr.auto = e.target.checked; save(); };
       $('#nr', b).onclick = () => newRequest(prSettings);
@@ -172,7 +173,7 @@ export function nostrUI(x) {
       <pre class="armor sm">${esc(r.encoded)}</pre>
       <button class="btn primary wide" id="cp">Copy request</button>
       ${kv([['Mint', r.mint ? esc(host(r.mint)) : 'Any'], ['Locked', r.lock ? 'Yes, P2PK' : 'No'], ['Payments', String(paid.length)]])}
-      ${paid.map((h) => `<p class="small">${h.status === 'done' ? '✓' : '•'} ${esc(fmt(h.amount, h.unit))} · ${new Date(h.ts).toLocaleString()}${h.status === 'pending' ? ' · <span class="warnt">not claimed</span>' : ''}</p>`).join('')}
+      ${paid.map((h) => `<p class="small">${h.status === 'done' ? '✓' : '•'} ${esc(fmt(h.amount, h.unit))} · ${new Date(h.ts).toLocaleString(dateLocale())}${h.status === 'pending' ? ' · <span class="warnt">not claimed</span>' : ''}</p>`).join('')}
       <p class="dim small center">${S.pr.enabled ? 'Listening for payments while the app is open.' : 'Payment requests are off; turn them on to receive.'}</p>
       <button class="btn wide danger" id="rdel">Delete request</button>
       <p class="dim small center">Deleting stops this request from being recognised. Payments already received stay in your history.</p>`, (b) => {
@@ -232,7 +233,7 @@ export function nostrUI(x) {
       try {
         const rs = await N.mintReviews(url);
         const el = $('#rv', b); if (!el) return;
-        el.innerHTML = rs.length ? `<ul class="revs">${rs.map((r) => `<li><div class="rh"><span class="stars">${stars(r.rating)}</span>${r.trusted ? '<em class="pill">web of trust</em>' : ''}<small>${new Date(r.at * 1000).toLocaleDateString()}</small></div>${r.comment ? `<p>${esc(r.comment)}</p>` : ''}<small class="dim">${esc(short(N.npubOf(r.pubkey), 10))}</small></li>`).join('')}</ul>` : '<p class="dim">No reviews yet.</p>';
+        el.innerHTML = rs.length ? `<ul class="revs">${rs.map((r) => `<li><div class="rh"><span class="stars">${stars(r.rating)}</span>${r.trusted ? '<em class="pill">web of trust</em>' : ''}<small>${new Date(r.at * 1000).toLocaleDateString(dateLocale())}</small></div>${r.comment ? `<p>${esc(r.comment)}</p>` : ''}<small class="dim">${esc(short(N.npubOf(r.pubkey), 10))}</small></li>`).join('')}</ul>` : '<p class="dim">No reviews yet.</p>';
       } catch (e) { const el = $('#rv', b); if (el) el.innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`; }
     }, { back });
   }

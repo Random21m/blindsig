@@ -1,3 +1,4 @@
+import { dateLocale } from './i18n.js';
 // Live bitcoin price chart: Coinbase's public price history, drawn as a small SVG line.
 // No keys, no account; the same host the price chip already uses.
 export const RANGES = [
@@ -61,10 +62,10 @@ export function nearest(xy, px) {
 export function when(ms, period) {
   const d = new Date(ms);
   const today = d.toDateString() === new Date().toDateString();
-  if (period === 'hour' || (period === 'day' && today)) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  if (period === 'day') return d.toLocaleDateString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
-  if (period === 'week') return d.toLocaleDateString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
-  if (period === 'month') return d.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-  if (period === 'year') return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
-  return d.toLocaleDateString([], { month: 'short', year: 'numeric' });
+  if (period === 'hour' || (period === 'day' && today)) return d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  if (period === 'day') return d.toLocaleDateString(dateLocale(), { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  if (period === 'week') return d.toLocaleDateString(dateLocale(), { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  if (period === 'month') return d.toLocaleDateString(dateLocale(), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  if (period === 'year') return d.toLocaleDateString(dateLocale(), { month: 'short', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString(dateLocale(), { month: 'short', year: 'numeric' });
 }

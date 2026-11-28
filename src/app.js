@@ -149,7 +149,7 @@ const KIND = {
 const RETURN_AFTER = [[0, 'Never'], [3600e3, '1 hour'], [864e5, '1 day'], [7 * 864e5, '1 week'], [30 * 864e5, '30 days']];
 // contacts saved with an npub can be picked as the person to lock ecash to
 const keyContacts = () => (S.contacts || []).map((c) => ({ ...c, npub: (String(c.to).match(/^(npub1[02-9ac-hj-np-z]+)(@|$)/i) || [])[1] })).filter((c) => c.npub);
-const whenShort = (ts) => new Date(ts).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+const whenShort = (ts) => new Date(ts).toLocaleString(I18N.dateLocale(), { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const isGiftMemo = (m) => /^🎁/u.test(m || '');
 const kindOf = (h) => h.vault ? ['Locked', 'Time vault'] : h.nutzap ? [KIND[h.kind][0], 'Nutzap'] : (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
 const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', returned: 'Came back', expired: 'Expired', failed: 'Failed' };
@@ -157,8 +157,8 @@ let logFilter = 'all', logLimit = 100;
 function stamp(ts) {
   const d = new Date(ts), s = (Date.now() - ts) / 1000;
   if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + ' min ago';
-  if (new Date().toDateString() === d.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  if (new Date().toDateString() === d.toDateString()) return d.toLocaleTimeString(I18N.dateLocale(), { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString(I18N.dateLocale(), { month: 'short', day: 'numeric' });
 }
 // small live BTC price in the top bar, in the theme's accent colour
 let shownPrice = 0, dirTimer;
@@ -372,7 +372,7 @@ const HIDDEN = '••••';
 // history search: notes, memos, amounts (as shown and as plain digits), kind, status and mint
 let histQ = '';
 function searchText(h) {
-  const [verb, via] = KIND[h.kind] || ['', ''];
+  const [verb, via] = (KIND[h.kind] && kindOf(h)) || ['', ''];
   return [I18N.t(verb), I18N.t(via), verb, via, h.note, h.memo, fmt(h.amount || h.received || 0, h.unit || 'sat'), String(h.amount || h.received || 0), I18N.t(STATUS[h.status] || ''), host(h.mint || '')].filter(Boolean).join(' ').toLowerCase();
 }
 
@@ -961,13 +961,16 @@ function splitNew() {
       const shares = Array.from({ length: n }, (_, i) => base + (i < extra ? 1 : 0));
       if ($('#sMe', b).checked) shares.pop();
       const sp = { id: 'sp' + Date.now().toString(36), ts: Date.now(), title, total, n, parts: [] };
-      for (let i = 0; i < shares.length; i++) {
-        const name = names[i] || I18N.t('Person {0}').replace('{0}', i + 1);
-        const h = await C.createInvoice(shares[i], S.active, 'sat', [title || I18N.t('Bill'), name].join(' · '));
-        h.split = sp.id;
-        sp.parts.push({ name, amount: shares[i], hid: h.id });
-      }
-      S.splits = [sp, ...(S.splits || [])].slice(0, 30); save();
+      const keep = () => { S.splits = [sp, ...(S.splits || []).filter((x) => x.id !== sp.id)].slice(0, 30); save(); };
+      try {
+        for (let i = 0; i < shares.length; i++) {
+          const name = names[i] || I18N.t('Person {0}').replace('{0}', i + 1);
+          const h = await C.createInvoice(shares[i], S.active, 'sat', [title || I18N.t('Bill'), name].join(' · '));
+          h.split = sp.id;
+          sp.parts.push({ name, amount: shares[i], hid: h.id });
+        }
+      } catch (e) { if (sp.parts.length) keep(); throw e; } // the requests made so far stay usable
+      keep();
       splitView(sp.id);
     });
   }, { back: () => ((S.splits || []).length ? splitHome() : receiveSheet('ln')) });
@@ -982,7 +985,7 @@ function splitView(id) {
       if (dead || !b.isConnected) return;
       const t = splitStats(sp), pct = t.want ? Math.round((t.got / t.want) * 100) : 0;
       $('#spHead', b).innerHTML = `<p class="big">${bigAmt(t.got, 'sat')}</p>
-        <p class="dim small center">${esc(I18N.t('{0} of {1} paid').replace('{0}', t.paid).replace('{1}', t.n))} · ${esc(I18N.t('of {0}').replace('{0}', fmt(t.want, 'sat')))}</p>
+        <p class="dim small center">${esc(I18N.t('{0} of {1} paid').replace('{0}', t.paid).replace('{1}', t.n))} · ${esc(I18N.t('{0} in total').replace('{0}', fmt(t.want, 'sat')))}</p>
         <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>`;
       $('#spList', b).innerHTML = t.ps.map((x, i) => { const s = x.h?.status || 'expired'; return `<li><button class="splr" data-i="${i}" ${s === 'pending' ? '' : 'disabled'}><span><b dir="auto">${esc(x.name)}</b><small class="dim">${esc(fmt(x.amount, 'sat'))}</small></span><em class="pill ${s === 'done' ? 'p-done' : s === 'pending' ? 'p-open' : 'p-expired'}">${esc(I18N.t(s === 'done' ? 'Paid' : s === 'pending' ? 'Show request' : 'Expired'))}</em></button></li>`; }).join('');
       $$('#spList .splr', b).forEach((x) => (x.onclick = () => splitShare(sp, +x.dataset.i)));
@@ -1019,7 +1022,7 @@ function splitShare(sp, i) {
 }
 /* ================= time vault ================= */
 const vaults = () => S.history.filter((h) => h.vault && h.status === 'pending' && (h.unit || 'sat') === 'sat');
-const vaultDay = (ts) => new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric', year: new Date(ts).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+const vaultDay = (ts) => new Date(ts).toLocaleDateString(I18N.dateLocale(), { month: 'short', day: 'numeric', year: new Date(ts).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
 function vaultLeft(ts) {
   const d = Math.ceil((ts - Date.now()) / 864e5);
   if (ts <= Date.now()) return I18N.t('unlocking now');
@@ -1229,12 +1232,14 @@ function giftWelcome() {
   }, { locked: true });
 }
 // right after a new wallet is made or restored: claim the gift that brought them here
+let retryTok = null; // a gift that couldn't be claimed right away: offered again once a mint is set up
 function claimPending() {
+  if (!pendingToken && retryTok) { const t = retryTok; retryTok = null; later(() => receiveSheet('ecash', t)); return true; }
   if (!pendingToken) return false;
   const tok = pendingToken; pendingToken = null;
   later(async () => {
     try { const t = C.parseToken(tok); const h = await C.receiveEcash(t); C.selectMint(t.mint); locked = false; done(h, 'Gift claimed'); N.backupMints().catch(() => {}); }
-    catch (e) { locked = false; toast(niceErr(e), 'err'); if (!S.mints.length) mintsSheet(true); else receiveSheet('ecash', tok); }
+    catch (e) { locked = false; toast(niceErr(e), 'err'); if (!S.mints.length) { retryTok = tok; mintsSheet(true); } else receiveSheet('ecash', tok); }
   });
   return true;
 }
@@ -1314,7 +1319,7 @@ async function fillFx(list) {
 // what counts: money that really moved (not pending, failed, expired, or sent and taken back)
 const counted = (h) => (h.unit || 'sat') === 'sat' && amountOf(h) > 0 && !h.internal && (h.live || ['done', 'claimed'].includes(h.status));
 const monthKey = (ts) => { const d = new Date(ts); return d.getFullYear() * 100 + d.getMonth(); };
-const monthName = (k, long) => new Date(Math.floor(k / 100), k % 100, 1).toLocaleDateString([], { month: long ? 'long' : 'short', year: long ? 'numeric' : undefined });
+const monthName = (k, long) => new Date(Math.floor(k / 100), k % 100, 1).toLocaleDateString(I18N.dateLocale(), { month: long ? 'long' : 'short', year: long ? 'numeric' : undefined });
 function monthTotals(k) {
   const t = { in: 0, out: 0, fees: 0, nIn: 0, nOut: 0, fIn: 0, fOut: 0, fFees: 0, missing: 0 };
   for (const h of S.history) {
@@ -1384,7 +1389,7 @@ function detail(h) {
   if ((h.unit || 'sat') === 'sat' && st.fiat && !h.fx && counted(h)) fillFx([h]).then((n) => { if (n && open && shownDetail === h) detail(h); });
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', returned: 'Came back: not claimed in time', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
-    ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], ...valueRows(h), h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
+    ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString(I18N.dateLocale())], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], ...valueRows(h), h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
     ${h.request && h.kind !== 'chain-out' ? `<details class="more"><summary>${h.method === 'bolt12' ? 'Offer' : 'Invoice'}</summary><pre class="armor sm">${esc(h.request)}</pre><button class="btn wide" id="cpi">${h.method === 'bolt12' ? 'Copy offer' : 'Copy invoice'}</button></details>` : ''}
     ${(h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' ? '<button class="btn wide" id="st">Check payment</button>' : ''}
     ${h.kind === 'ln-in' && h.status === 'expired' ? '<button class="btn wide" id="re">Check again</button>' : ''}
@@ -1467,7 +1472,7 @@ function mintDetails(url, back) {
       if (!a) { el.innerHTML = `This mint isn’t audited yet. <a href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">${esc(host(st.auditorUrl))}</a>`; return; }
       const ok = a.swaps.filter((s) => s.state === 'OK').length;
       const bars = a.swaps.slice(0, 40).reverse().map((s) => `<i class="${s.state === 'OK' ? 'ok' : 'bad'}" title="${esc(s.state)}"></i>`).join('');
-      el.innerHTML = (a.swaps.length ? `<div class="audbars" aria-label="Recent swaps">${bars}</div><p class="dim small">Recent test swaps, oldest to newest. Tall bars succeeded.</p>` : '') + kv([['State', esc(a.state)], ['Mints / melts', `${a.n_mints} / ${a.n_melts}`], ['Errors', String(a.n_errors)], ['Recent swaps', a.swaps.length ? `${ok}/${a.swaps.length} ok` : '–'], ['Updated', esc(new Date(a.updated_at).toLocaleString())]])
+      el.innerHTML = (a.swaps.length ? `<div class="audbars" aria-label="Recent swaps">${bars}</div><p class="dim small">Recent test swaps, oldest to newest. Tall bars succeeded.</p>` : '') + kv([['State', esc(a.state)], ['Mints / melts', `${a.n_mints} / ${a.n_melts}`], ['Errors', String(a.n_errors)], ['Recent swaps', a.swaps.length ? `${ok}/${a.swaps.length} ok` : '–'], ['Updated', esc(new Date(a.updated_at).toLocaleString(I18N.dateLocale()))]])
         + `<a class="dim small" href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">Full report at ${esc(host(st.auditorUrl))}</a>`
         + `<p class="dim small">The auditor holds ${esc(fmt(a.balance || 0, 'sat'))} at this mint for testing.</p><button class="btn wide" id="don">Support the auditor</button>`;
       const don = $('#don', b);
@@ -1532,6 +1537,7 @@ async function autoSpread() {
   try {
     const moved = await C.spreadRun(plan, { maxFeePct: 2, onStep: () => render() });
     if (moved) toast(`Spread ${fmt(moved, 'sat')} from ${mintLabel(mintOf(plan.from) || { url: plan.from })} to your other mints.`);
+    else spreadAt = Date.now() + 30 * 60e3; // fees too high or a mint offline: wait a while before asking the mints again
   } catch {} finally { spreading = false; render(); }
 }
 function moveSheet() {
@@ -1964,7 +1970,7 @@ function backupRestoreSheet(onboarding) {
       // replacing a wallet that's in use: make sure its owner can get it back
       const now = S.mints.reduce((t, m) => t + bal(m.url), 0);
       sheet('Replace this wallet?', `<p class="warn">Restoring replaces the wallet on this device. Make sure you have its seed phrase or a backup file first.</p>
-        ${kv([['Balance on this device', esc(fmt(now))], ['Backup made', esc(r.created ? new Date(r.created).toLocaleString() : '?')]])}
+        ${kv([['Balance on this device', esc(fmt(now))], ['Backup made', esc(r.created ? new Date(r.created).toLocaleString(I18N.dateLocale()) : '?')]])}
         <label class="chk"><input type="checkbox" id="rok"> I can get the current wallet back</label>
         <button class="btn wide danger" id="rgo" disabled>Replace with backup</button>`, (b2) => {
         $('#rok', b2).onchange = (e) => ($('#rgo', b2).disabled = !e.target.checked);
