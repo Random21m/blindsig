@@ -688,6 +688,12 @@ function liveView(h) {
   });
 }
 
+// from a bitcoin: URI with several ways to pay: ecash straight to their mint when our mint is one
+// they take, otherwise a BOLT12 offer, a Lightning invoice, a payment request, or on-chain
+function pickFromUri(info) {
+  if (info.creq) { try { const r = N.decodeRequest(info.creq); if (N.requestMintOk(r, S.active) && r.unit === S.unit) return info.creq; } catch {} }
+  return info.lno || info.lightning || info.creq || (info.address ? `bitcoin:${info.address}${info.sats ? `?amount=${(info.sats / 1e8).toFixed(8)}` : ''}` : '');
+}
 // LNURL-withdraw (LUD-03): a voucher, faucet or ATM pays sats into the active mint
 async function withdrawSheet(meta) {
   if (needMint()) return;
@@ -763,17 +769,32 @@ function sendSheet(tab = 'ecash', prefill = '') {
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
     const setPay = (t, dis = false) => later(() => { pay.textContent = t; pay.disabled = dis; });
     ln.oninput = () => {
+      bipName = '';
       const v = ln.value.trim().replace(/^lightning:/i, '');
       stage = quote = meta = null; x.innerHTML = '';
       chainInfo = C.parseBitcoin(v);
-      if (chainInfo && (chainInfo.lightning || chainInfo.lno)) { ln.value = chainInfo.lightning || chainInfo.lno; return ln.oninput(); }
-      if (chainInfo) { stage = 'chain'; label = chainInfo.address; }
+      if (chainInfo && (chainInfo.lightning || chainInfo.lno || chainInfo.creq)) { ln.value = pickFromUri(chainInfo); return ln.oninput(); }
+      if (C.isBip353(v)) { stage = 'bip353'; label = v; }
+      else if (chainInfo) { stage = 'chain'; label = chainInfo.address; }
       else if (C.isOffer(v)) { stage = 'offer'; label = 'BOLT12 offer'; }
       else if (N.isRequest(v)) { stage = 'creq'; label = 'payment request'; }
       else if (C.isInvoice(v)) { stage = 'invoice'; label = ''; }
       else if (C.isAddress(v) || C.isLnurl(v)) { stage = 'lnurl'; label = C.isAddress(v) ? v.toLowerCase() : 'LNURL'; }
       else if (isNpub(v)) { stage = 'npub'; label = 'nutzap'; }
       pay.textContent = 'Continue'; pay.disabled = !stage;
+    };
+    // a BIP-353 name, checked with DNSSEC: pay what it points at, and remember the name
+    let bipName = '';
+    const useName = async (name) => {
+      x.innerHTML = '<p class="dim">Checking the name…</p>';
+      const uri = await C.resolveName(name);
+      const info = C.parseBitcoin(uri);
+      if (!info) throw new Error('This name points to something blindsig can’t pay.');
+      const to = info.lightning || info.lno || info.creq ? pickFromUri(info) : uri;
+      ln.value = to; ln.oninput();
+      bipName = name.trim(); label = bipName;
+      toast(`✓ ${bipName} checked with DNSSEC`);
+      later(() => pay.click());
     };
     const showQuote = () => {
       const a = quote.amount.toNumber(), f = quote.fee_reserve.toNumber(), haveNow = bal(S.active);
@@ -829,8 +850,14 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
       }
       if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
+      if (stage === 'bip353') return useName(v);
       if (stage === 'lnurl') {
-        meta = await C.lnurlResolve(v);
+        try { meta = await C.lnurlResolve(v); }
+        catch (e) {
+          // not a Lightning address: maybe it's a BIP-353 name without the ₿
+          if (C.isAddress(v)) { try { return await useName('₿' + v); } catch {} }
+          throw e;
+        }
         if (meta.tag === 'withdrawRequest') return withdrawSheet(meta);
         if (meta.tag !== 'payRequest') throw new Error('This LNURL isn’t for paying or withdrawing.');
         let desc = ''; try { desc = (JSON.parse(meta.metadata).find((e) => e[0] === 'text/plain') || [])[1] || ''; } catch {}
@@ -848,7 +875,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const qa = Number(quote?.amount?.toNumber?.() ?? quote?.amount ?? 0) + Number(quote?.fee_reserve?.toNumber?.() ?? quote?.fee_reserve ?? 0);
         if (!(await bigOk(qa))) return;
         const h = await C.payInvoice(quote, label || undefined, S.active, S.unit, method, feeIndex);
-        const target = reusableTarget(ln.value.trim().replace(/^lightning:/i, ''));
+        const target = bipName || reusableTarget(ln.value.trim().replace(/^lightning:/i, ''));
         const known = target && S.contacts.find((c) => c.to.toLowerCase() === target.toLowerCase());
         if (known) { known.last = Date.now(); save(); }
         if (h.status === 'done') done(h, 'Paid', target && !known ? target : undefined); else { toast(method === 'onchain' ? 'Transaction submitted. It confirms on-chain.' : 'Payment in flight. It will settle.', 'warn'); render(); closeSheet(); }
@@ -1292,7 +1319,7 @@ function claimPending() {
   return true;
 }
 // an address worth saving as a contact: Lightning address, LNURL or BOLT12 offer (not one-time invoices)
-const reusableTarget = (v) => (C.isAddress(v) ? v.toLowerCase() : (C.isLnurl(v) && !/^(lnurlw|keyauth):/i.test(v)) || C.isOffer(v) ? v : '');
+const reusableTarget = (v) => (C.isBip353(v) ? v.trim().toLowerCase() : C.isAddress(v) ? v.toLowerCase() : (C.isLnurl(v) && !/^(lnurlw|keyauth):/i.test(v)) || C.isOffer(v) ? v : '');
 function done(h, verb, saveTo) {
   const out = h.kind.endsWith('out');
   sheet(verb, `<div class="okb" aria-hidden="true"><svg viewBox="0 0 84 84"><circle class="ring" cx="42" cy="42" r="38"/><circle class="disc" cx="42" cy="42" r="38"/><path class="tick" d="M26 43.5l10.5 10.5L58.5 31"/></svg></div>
@@ -2226,7 +2253,7 @@ function stopScan() {
 function route(txt) {
   const t = txt.trim().replace(/^lightning:/i, '');
   if (/^(cashu:)?cashu[AB]/i.test(t) || /^web\+cashu:/i.test(t)) return receiveSheet('ecash', t);
-  if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t) || N.isRequest(t) || C.isOffer(t) || C.parseBitcoin(t)) return sendSheet('ln', t);
+  if (C.isInvoice(t) || C.isAddress(t) || C.isBip353(t) || C.isLnurl(t) || N.isRequest(t) || C.isOffer(t) || C.parseBitcoin(t)) return sendSheet('ln', t);
   if (C.hasEmojiToken(t)) return receiveSheet('ecash', t);
   if (isNpub(t)) return nutzapSheet(t);
   if (/[#?]token=/.test(t)) { const m = t.match(/token=([^&]+)/); if (m) return receiveSheet('ecash', decodeURIComponent(m[1])); }

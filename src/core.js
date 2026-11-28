@@ -488,14 +488,26 @@ export async function quoteInvoice(inv, url = S.active, unit = S.unit, mppMsat) 
   return mppMsat ? w.createMultiPathMeltQuote(inv, mppMsat) : w.createMeltQuoteBolt11(inv);
 }
 export const isOffer = (s) => /^lno1[02-9ac-hj-np-z]+$/i.test(s.trim());
+// bitcoin: URIs (BIP-21/BIP-321), including ones with no on-chain address that only carry a
+// Lightning invoice, a BOLT12 offer or a Cashu payment request, as BIP-353 names usually do
 export function parseBitcoin(s) {
   s = s.trim();
-  const m = s.match(/^bitcoin:([^?]+)(?:\?(.*))?$/i);
+  const m = s.match(/^bitcoin:([^?]*)(?:\?(.*))?$/i);
   const addr = m ? m[1] : s;
-  if (!/^(bc1|tb1|bcrt1)[02-9ac-hj-np-z]{8,87}$/i.test(addr) && !/^[13mn2][1-9A-HJ-NP-Za-km-z]{25,34}$/.test(addr)) return null;
-  let sats = 0;
-  if (m && m[2]) { const p = new URLSearchParams(m[2]); if (p.get('amount')) sats = Math.round(parseFloat(p.get('amount')) * 1e8); if (p.get('lightning')) return { address: addr, sats, lightning: p.get('lightning'), lno: p.get('lno') }; if (p.get('lno')) return { address: addr, sats, lno: p.get('lno') }; }
-  return { address: /^(bc1|tb1|bcrt1)/i.test(addr) ? addr.toLowerCase() : addr, sats };
+  const okAddr = /^(bc1|tb1|bcrt1)[02-9ac-hj-np-z]{8,87}$/i.test(addr) || /^[13mn2][1-9A-HJ-NP-Za-km-z]{25,34}$/.test(addr);
+  if (!okAddr && !(m && !addr)) return null;
+  let sats = 0, lightning = null, lno = null, creq = null;
+  if (m && m[2]) { const p = new URLSearchParams(m[2]); if (p.get('amount')) sats = Math.round(parseFloat(p.get('amount')) * 1e8); lightning = p.get('lightning'); lno = p.get('lno'); creq = p.get('creq'); }
+  if (!okAddr && !lightning && !lno && !creq) return null;
+  const address = !okAddr ? '' : /^(bc1|tb1|bcrt1)/i.test(addr) ? addr.toLowerCase() : addr;
+  return { address, sats, ...(lightning ? { lightning } : {}), ...(lno ? { lno } : {}), ...(creq ? { creq } : {}) };
+}
+// BIP-353 names (₿user@domain): the payment instructions, checked with DNSSEC. The checking code
+// is a separate file, loaded the first time a name is looked up.
+export const isBip353 = (s) => /^₿/.test(s.trim()) && isAddress(s.trim().slice(1));
+export async function resolveName(name) {
+  const mod = await import(/* separate bundle */ new URL('./bip353.js', import.meta.url).href);
+  return mod.resolve(name);
 }
 export async function quoteOffer(offer, sats, url = S.active, unit = S.unit) {
   const w = await walletFor(url, unit);

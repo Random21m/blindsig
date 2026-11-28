@@ -1,6 +1,7 @@
 import { build } from 'esbuild';
 import { cpSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { dnssecBrowser } from './tools/dnssec-esbuild.mjs';
 
 rmSync('docs', { recursive: true, force: true });
 mkdirSync('docs/icons', { recursive: true });
@@ -28,6 +29,20 @@ await build({
   target: ['es2022', 'safari16'],
   outfile: 'docs/app.js',
   legalComments: 'eof',
+});
+
+// BIP-353 names (₿user@domain): DNSSEC checking, loaded only when a name is looked up. The DNSSEC
+// library expects node:crypto; src/dnssec-shim.js stands in for the verification parts, and its key
+// decoding is swapped for one that keeps a key's raw DNSKEY bytes for the shim to check against.
+await build({
+  entryPoints: ['src/bip353.js'],
+  bundle: true,
+  minify: true,
+  format: 'esm',
+  target: ['es2022', 'safari16'],
+  outfile: 'docs/bip353.js',
+  legalComments: 'eof',
+  plugins: [dnssecBrowser('src/dnssec-shim.js')],
 });
 
 const id = Date.now().toString(36);
