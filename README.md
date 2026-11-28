@@ -147,6 +147,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - You choose which background checks run: invoices, sent tokens, WebSockets (NUT-17) and price lookups
 - Sent tokens update live when someone claims them
 - Private notes on any transaction, kept only on your device (and encrypted with the PIN lock), and search across notes, memos and amounts
+- What a payment was worth: each one remembers the bitcoin price at that moment, so its details show the value then and now. A monthly summary shows money in and out, with a CSV export of your whole history for budgeting or taxes
 - Optional PIN lock that also encrypts the wallet on the device (AES-256-GCM, key from the PIN via PBKDF2). It asks again after a time in the background you choose, before showing the seed phrase, and waits longer after repeated wrong guesses. Face ID or Touch ID can unlock it, using a passkey on your phone (WebAuthn PRF), with no server involved
 - Confirm big sends: with the PIN lock on, ask for the PIN (or Face ID) before sending more than an amount you pick
 - Decoy PIN: a second PIN that opens a separate, small wallet instead of your real one, for when someone forces you to unlock. Put a little in it so it looks real; removing it moves its ecash back

@@ -886,3 +886,17 @@
 885	Monedero señuelo
 886	Crear monedero señuelo
 887	PIN señuelo activado
+888	Valor entonces
+889	Valor ahora
+890	(estimado)
+891	Neto
+892	en su momento
+893	Entradas
+894	Salidas
+895	Comisiones
+896	{0} pagos no tienen precio de su momento.
+897	Resumen
+898	Mes
+899	Pagos completados en sats. No se cuentan los pendientes, fallidos ni los envíos recuperados.
+900	Exportar historial (CSV)
+901	Historial exportado

@@ -351,6 +351,7 @@ function render() {
       <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${st.hideAmounts ? HIDDEN : (out ? '−' : '+') + esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
   }).join('');
   $('#empty').hidden = list.length > 0;
+  $('#sumBtn').hidden = !S.history.some(counted);
   $('#chkAll').hidden = !(logFilter === 'pending' && list.length);
   $('#empty').textContent = q ? 'No matches.' : S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
 }
@@ -373,7 +374,7 @@ function searchText(h) {
 /* ================= sheet system ================= */
 let open = false, locked = false, onClose = null, lastFocus = null, flushNote = null;
 function sheet(title, html, mount, opts = {}) {
-  locked = !!opts.locked;
+  locked = !!opts.locked; shownDetail = null;
   if (flushNote) { const f = flushNote; flushNote = null; f(); }
   if (onClose) { const f = onClose; onClose = null; f(); }
   const body = $('#sheetBody');
@@ -1011,6 +1012,100 @@ function addNote(b, h, before) {
   t.onblur = store;
   flushNote = () => { if (tm) store(); };
 }
+/* ================= value then, and monthly summary ================= */
+const amountOf = (h) => (h.live ? h.received || 0 : h.amount || 0);
+const fiatMoney = (v, cur) => v.toLocaleString('en-US', { style: 'currency', currency: cur, maximumFractionDigits: Math.abs(v) < 1 ? 4 : 2 });
+// what this entry was worth when it happened, in the currency of that moment: { v, cur, est }
+function valueThen(h) {
+  if (!h.fx || (h.unit || 'sat') !== 'sat') return null;
+  return { v: (amountOf(h) / 1e8) * h.fx.rate, cur: h.fx.cur, est: !!h.fx.est };
+}
+function valueRows(h) {
+  if ((h.unit || 'sat') !== 'sat' || !st.fiat || !amountOf(h)) return [];
+  const then = valueThen(h), nowP = S.price[st.fiatCur];
+  const now = nowP ? (amountOf(h) / 1e8) * nowP : 0;
+  const rows = [];
+  if (then) rows.push(['Value then', `${esc(fiatMoney(then.v, then.cur))}${then.est ? ` <small class="dim">${esc(I18N.t('(estimated)'))}</small>` : ''}`]);
+  if (now) {
+    const pct = then && then.cur === st.fiatCur && then.v ? ((now - then.v) / then.v) * 100 : null;
+    rows.push(['Value now', `${esc(fiatMoney(now, st.fiatCur))}${pct != null && Math.abs(pct) >= 0.05 ? ` <small class="${pct < 0 ? 'dn' : 'up'}">${pct < 0 ? '▼' : '▲'} ${Math.abs(pct).toFixed(1)}%</small>` : ''}`]);
+  }
+  return rows;
+}
+// older entries (from before this was recorded): estimate the price from the year's or all-time
+// price history. The same requests the price chart makes, so no payment dates leave the phone.
+async function fillFx(list) {
+  if (!st.fiat) return 0;
+  const cur = st.fiatCur, need = list.filter((h) => !h.fx && (h.unit || 'sat') === 'sat' && h.ts);
+  if (!need.length) return 0;
+  const yearAgo = Date.now() - 360 * 864e5;
+  let year = [], all = [];
+  try { year = await CH.series(cur, 'year'); } catch {}
+  if (need.some((h) => h.ts < yearAgo)) { try { all = await CH.series(cur, 'all'); } catch {} }
+  const near = (pts, t) => { if (!pts.length || t < pts[0][0] - 30 * 864e5) return 0; let best = pts[0]; for (const p of pts) if (Math.abs(p[0] - t) < Math.abs(best[0] - t)) best = p; return best[1]; };
+  let n = 0;
+  for (const h of need) { const r = h.ts >= yearAgo ? near(year, h.ts) || near(all, h.ts) : near(all, h.ts); if (r > 0) { h.fx = { cur, rate: r, est: 1 }; n++; } }
+  if (n) save();
+  return n;
+}
+// what counts: money that really moved (not pending, failed, expired, or sent and taken back)
+const counted = (h) => (h.unit || 'sat') === 'sat' && amountOf(h) > 0 && (h.live || ['done', 'claimed'].includes(h.status));
+const monthKey = (ts) => { const d = new Date(ts); return d.getFullYear() * 100 + d.getMonth(); };
+const monthName = (k, long) => new Date(Math.floor(k / 100), k % 100, 1).toLocaleDateString([], { month: long ? 'long' : 'short', year: long ? 'numeric' : undefined });
+function monthTotals(k) {
+  const t = { in: 0, out: 0, fees: 0, nIn: 0, nOut: 0, fIn: 0, fOut: 0, fFees: 0, missing: 0 };
+  for (const h of S.history) {
+    if (!counted(h) || monthKey(h.ts) !== k) continue;
+    const out = h.kind.endsWith('out'), a = amountOf(h), fee = h.fee || 0, then = valueThen(h);
+    const rate = then && then.cur === st.fiatCur ? h.fx.rate / 1e8 : 0;
+    if (out) { t.out += a; t.nOut++; t.fees += fee; } else { t.in += a; t.nIn++; }
+    if (rate) { if (out) { t.fOut += a * rate; t.fFees += fee * rate; } else t.fIn += a * rate; } else if (st.fiat) t.missing++;
+  }
+  return t;
+}
+function summarySheet(k) {
+  const months = [...new Set(S.history.filter(counted).map((h) => monthKey(h.ts)))].sort((a, b) => b - a);
+  const nowK = monthKey(Date.now());
+  if (!months.includes(nowK)) months.unshift(nowK);
+  k = k ?? months[0];
+  const fiat = st.fiat && S.price[st.fiatCur];
+  const draw = (b) => {
+    const t = monthTotals(k), net = t.in - t.out - t.fees, fNet = t.fIn - t.fOut - t.fFees;
+    const fm = (v) => (fiat ? `<small class="dim">${esc(fiatMoney(v, st.fiatCur))}</small>` : '');
+    $('#smBody', b).innerHTML = `<p class="big">${bigAmt(Math.abs(net), 'sat', net < 0 ? '−' : '+')}</p>
+      ${fiat ? `<p class="dim small center">${esc(I18N.t('Net'))} · ${esc(fiatMoney(fNet, st.fiatCur))} ${esc(I18N.t('at the time'))}</p>` : ''}
+      ${kv([[`${I18N.t('In')} (${t.nIn})`, `<b>${esc(fmt(t.in, 'sat'))}</b> ${fm(t.fIn)}`], [`${I18N.t('Out')} (${t.nOut})`, `<span class="ink">${esc(fmt(t.out, 'sat'))}</span> ${fm(t.fOut)}`], ['Fees', `${esc(fmt(t.fees, 'sat'))} ${fm(t.fFees)}`]])}
+      ${t.missing ? `<p class="dim small">${esc(I18N.t('{0} payments have no price from the time.').replace('{0}', t.missing))}</p>` : ''}`;
+    I18N.translateTree($('#smBody', b));
+    // the last six months, in and out
+    const last = []; for (let i = 5; i >= 0; i--) { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i); last.push(monthKey(d)); }
+    const tots = last.map((m) => monthTotals(m)), max = Math.max(1, ...tots.map((x) => Math.max(x.in, x.out + x.fees)));
+    $('#smBars', b).innerHTML = last.map((m, i) => `<button class="smb ${m === k ? 'on' : ''}" data-k="${m}" aria-label="${esc(monthName(m, true))}"><span class="bars"><i class="bi" style="height:${(tots[i].in / max) * 100}%"></i><i class="bo" style="height:${((tots[i].out + tots[i].fees) / max) * 100}%"></i></span><small>${esc(monthName(m))}</small></button>`).join('');
+    $$('.smb', b).forEach((x) => (x.onclick = () => { k = +x.dataset.k; $('#smMonth', b).value = String(k); draw(b); }));
+  };
+  sheet('Summary', `<select id="smMonth" class="field" aria-label="Month">${months.slice(0, 36).map((m) => `<option value="${m}" ${m === k ? 'selected' : ''}>${esc(monthName(m, true))}</option>`).join('')}</select>
+    <div id="smBody"></div>
+    <div class="smbars" id="smBars"></div>
+    <p class="smleg dim small"><span><i class="bi"></i>In</span><span><i class="bo"></i>Out</span></p>
+    <p class="dim small">Completed payments in sats. Pending, failed and taken-back sends aren’t counted.</p>
+    <button class="btn wide" id="smCsv">Export history (CSV)</button>`, (b) => {
+    $('#smMonth', b).onchange = (e) => { k = +e.target.value; draw(b); };
+    draw(b);
+    if (st.fiat && S.history.some((h) => counted(h) && !h.fx)) fillFx(S.history.filter(counted)).then((n) => { if (n && b.isConnected) draw(b); });
+    const csv = $('#smCsv', b);
+    csv.onclick = withBusy(csv, async () => {
+      if (st.fiat) await fillFx(S.history.filter((h) => h.amount || h.received));
+      const q = (v) => { const x = String(v ?? ''); return /[",\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; };
+      const rows = [['date', 'type', 'via', 'status', 'amount', 'unit', 'fee', 'value_then', 'currency', 'estimated', 'mint', 'memo', 'note']];
+      for (const h of [...S.history].reverse()) {
+        const [verb, via] = kindOf(h), then = valueThen(h);
+        rows.push([new Date(h.ts).toISOString(), verb.toLowerCase(), via.toLowerCase(), h.live ? 'live' : h.status, amountOf(h), h.unit || 'sat', h.fee || 0, then ? then.v.toFixed(2) : '', then ? then.cur : '', then?.est ? 'yes' : '', h.mint || '', h.memo || '', h.note || '']);
+      }
+      if (await saveFile(rows.map((r) => r.map(q).join(',')).join('\n') + '\n', `blindsig-history-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv')) toast('History exported');
+    });
+  });
+}
+let shownDetail = null; // the entry whose details are on screen (to refresh them once its old price is found)
 function detail(h) {
   if (h.live) return liveView(h);
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
@@ -1022,13 +1117,15 @@ function detail(h) {
     return;
   }
   const [verb, via] = kindOf(h);
+  if ((h.unit || 'sat') === 'sat' && st.fiat && !h.fx && counted(h)) fillFx([h]).then((n) => { if (n && open && shownDetail === h) detail(h); });
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', returned: 'Came back: not claimed in time', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
-    ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
+    ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], ...valueRows(h), h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
     ${h.request && h.kind !== 'chain-out' ? `<details class="more"><summary>${h.method === 'bolt12' ? 'Offer' : 'Invoice'}</summary><pre class="armor sm">${esc(h.request)}</pre><button class="btn wide" id="cpi">${h.method === 'bolt12' ? 'Copy offer' : 'Copy invoice'}</button></details>` : ''}
     ${(h.kind === 'ln-out' || h.kind === 'chain-out') && h.status === 'pending' ? '<button class="btn wide" id="st">Check payment</button>' : ''}
     ${h.kind === 'ln-in' && h.status === 'expired' ? '<button class="btn wide" id="re">Check again</button>' : ''}
     ${h.status !== 'pending' ? '<button class="btn wide danger" id="del">Delete from history</button>' : ''}`, (b) => {
+    shownDetail = h;
     addNote(b, h); const dl = $('#del', b); if (dl) $('.sb', b).appendChild(dl);
     const del = $('#del', b); if (del) del.onclick = () => { S.history = S.history.filter((x) => x !== h); save(); render(); closeSheet(); };
     const cpi = $('#cpi', b); if (cpi) cpi.onclick = () => copy(h.request, h.method === 'bolt12' ? 'Offer copied' : 'Invoice copied');
@@ -1510,9 +1607,9 @@ function choosePin(change) {
   }, { back: SECTIONS.security });
 }
 /* ---------- backup file ---------- */
-function saveFile(text, name) {
-  const blob = new Blob([text], { type: 'application/json' });
-  const file = typeof File === 'function' ? new File([blob], name, { type: 'application/json' }) : null;
+function saveFile(text, name, type = 'application/json') {
+  const blob = new Blob([text], { type });
+  const file = typeof File === 'function' ? new File([blob], name, { type }) : null;
   const download = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60e3); };
   // phones: the share sheet has "Save to Files"; computers: a normal download
   if (file && navigator.canShare?.({ files: [file] })) return navigator.share({ files: [file], title: 'blindsig backup' }).then(() => true, (e) => { if (e?.name === 'AbortError') return false; download(); return true; });
@@ -1773,6 +1870,7 @@ $('#scanBtn').onclick = () => (needMint() ? null : startScan(route));
 $('#mintChip').onclick = () => mintsSheet();
 $('#unitChip').onclick = () => { const m = mintOf(S.active); const u = m?.units || ['sat']; S.unit = u[(u.indexOf(S.unit) + 1) % u.length]; save(); render(); };
 $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
+$('#sumBtn').onclick = () => summarySheet();
 $('#btcPrice').onclick = () => { if (S.price[st.fiatCur]) priceChart(); };
 $('#instBtn').onclick = installHelp;
 $('#bkHow').onclick = () => backupCreateSheet();

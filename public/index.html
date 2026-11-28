@@ -292,6 +292,13 @@ details.more[open]{padding-bottom:14px}
 .pcnow{animation:livep 2.4s ease-in-out infinite}
 .pcmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 20px}.pcmsg p{margin:0}
 #pcK:empty{display:none}
+.smbtn{display:inline-flex;align-items:center;gap:6px;color:var(--dim)}.smbtn .ic{width:16px;height:16px}.loghead .tabs{flex-basis:100%}
+.smbars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end;margin:18px 0 6px}
+.smb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0;border-radius:10px;color:var(--dim);min-width:0}.smb.on{background:var(--card);color:var(--ink)}
+.smb .bars{display:flex;align-items:flex-end;gap:3px;height:90px}.smb i{display:block;width:10px;min-height:2px;border-radius:3px 3px 0 0}
+.bi{background:var(--ac)}.bo{background:var(--dim);opacity:.7}.smb small{font-size:12px;white-space:nowrap}
+.smleg{display:flex;gap:16px;justify-content:center}.smleg span{display:inline-flex;align-items:center;gap:6px}.smleg i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.kv small.up{color:var(--up,var(--ac))}.kv .ink{color:var(--ink);font-weight:600}.kv small.dn{color:var(--err)}
 .giftr{text-align:center;padding:18px 16px;margin:0 0 14px;border-radius:var(--r);background:var(--ac-soft);border:1px solid var(--ac-soft)}.giftr>span{display:block;font-size:40px;line-height:1.1}.giftr b{display:block;font:600 17px var(--mono);color:var(--ac);margin-top:6px}.giftr p{margin:8px 0 0;font-size:17px;color:var(--ink)}.giftr small{display:block;margin-top:4px;color:var(--dim)}
 .gcard{display:flex;justify-content:center;margin:0 0 14px}.gcard img{width:100%;max-width:340px;aspect-ratio:1080/1800;border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.45);background:var(--card)}
 .gds{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}.gd{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--dim);font:500 13px var(--sans);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gd[aria-checked=true]{border-color:var(--ac);color:var(--ink)}
@@ -369,6 +376,7 @@ details.more[open]{padding-bottom:14px}
 
   <section class="log">
     <div class="loghead"><button class="lab htog" id="histToggle" aria-expanded="true" aria-controls="logBody"><span>History</span><span class="hch" aria-hidden="true">▾</span></button>
+      <button class="lab smbtn" id="sumBtn" hidden><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-7"/></svg><span>Summary</span></button>
       <div class="tabs" id="logTabs" role="tablist" aria-label="Filter history"><button role="tab" data-f="all" aria-selected="true">All</button><button role="tab" data-f="ecash" aria-selected="false">Ecash</button><button role="tab" data-f="ln" aria-selected="false">Lightning</button><button role="tab" data-f="pending" aria-selected="false">Pending</button></div></div>
     <div id="logBody">
     <input type="search" id="histQ" class="field hq" placeholder="Search notes, memos, amounts" aria-label="Search history" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" hidden>

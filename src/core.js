@@ -101,7 +101,14 @@ export function selectMint(url) {
 
 /* ---------------- history ---------------- */
 const busy = new Set();
-export const H = (o) => { const h = { id: uid(), ts: Date.now(), unit: S.unit, ...o }; S.history.unshift(h); save(); return h; };
+// every entry remembers the bitcoin price at that moment (when prices are on), so history can show
+// what a payment was worth then as well as now
+export const H = (o) => {
+  const h = { id: uid(), ts: Date.now(), unit: S.unit, ...o };
+  const cur = S.settings.fiatCur, rate = S.settings.fiat ? S.price[cur] : 0;
+  if (rate > 0 && h.unit === 'sat' && !h.fx) h.fx = { cur, rate };
+  S.history.unshift(h); save(); return h;
+};
 
 /* ---------------- lightning in ---------------- */
 export async function createInvoice(amount, url = S.active, unit = S.unit, memo) {

@@ -886,5 +886,19 @@
 "That’s your real PIN. Pick a different one.",
 "Decoy wallet",
 "Create decoy wallet",
-"Decoy PIN is on"
+"Decoy PIN is on",
+"Value then",
+"Value now",
+"(estimated)",
+"Net",
+"at the time",
+"In",
+"Out",
+"Fees",
+"{0} payments have no price from the time.",
+"Summary",
+"Month",
+"Completed payments in sats. Pending, failed and taken-back sends aren’t counted.",
+"Export history (CSV)",
+"History exported"
 ]

@@ -24,7 +24,7 @@ Fixes ship to the live wallet at <https://random21m.github.io/blindsig/> as soon
 | Service | When | Can turn off |
 | --- | --- | --- |
 | The mints you add | Balances, payments, token checks | No (that's how ecash works) |
-| Coinbase price API | Showing fiat values and the price chart | Settings → Privacy |
+| Coinbase price API | Showing fiat values, the price chart, and estimating older payments' value (the same price-history requests as the chart; no payment dates are sent) | Settings → Privacy |
 | Cashu auditor (audit.8333.space) | Opening mint details | Settings → Experimental |
 | Nostr relays | Only when you use Nostr features (payment requests, NWC, backup, discovery) | Yes, by not enabling them |
 | npub.cash | Only if you turn on the Lightning address | Yes |
