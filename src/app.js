@@ -20,6 +20,7 @@ import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
 import * as I18N from './i18n.js';
 import * as CH from './chart.js';
+import * as GIFT from './gift.js';
 
 // the developer's Lightning address, for tips (Settings → About)
 const TIP_ADDR = 'npub1t5nvfnlmegsqkqegcpnyek4qf4fc2f2gx2t4lm88h2kq22plpmxqdhgpa9@npub.cash';
@@ -144,6 +145,8 @@ const KIND = {
   'ln-in': ['Received', 'Lightning'], 'ln-out': ['Sent', 'Lightning'], 'ecash-in': ['Received', 'Ecash'], 'ecash-out': ['Sent', 'Ecash'],
   'chain-in': ['Received', 'On-chain'], 'chain-out': ['Sent', 'On-chain'],
 };
+const isGiftMemo = (m) => /^🎁/u.test(m || '');
+const kindOf = (h) => (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
 const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed' };
 let logFilter = 'all', logLimit = 100;
 function stamp(ts) {
@@ -325,7 +328,7 @@ function render() {
   $$('#logTabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.f === logFilter));
   $('#hist').innerHTML = shown.map((h) => {
     const out = h.kind.endsWith('out');
-    const [verb, via] = KIND[h.kind];
+    const [verb, via] = kindOf(h);
     const open = h.kind === 'ecash-out' && h.status === 'pending';
     const claim = h.kind === 'ecash-in' && h.status === 'pending';
     if (h.live) {
@@ -461,7 +464,7 @@ function showSeed(m, isNew, back) {
     : '<button class="btn wide" id="cp">Copy seed phrase</button>'}`, (b) => {
     if (isNew) {
       $('#ok', b).onchange = (e) => ($('#go', b).disabled = !e.target.checked);
-      $('#go', b).onclick = () => { C.setSeed(m); S.onboarded = true; save(); mintsSheet(true); };
+      $('#go', b).onclick = () => { C.setSeed(m); S.onboarded = true; save(); if (!claimPending()) mintsSheet(true); };
     } else $('#cp', b).onclick = () => copy(m, 'Seed copied. Clear your clipboard after.');
   }, { locked: isNew, back });
 }
@@ -496,7 +499,7 @@ function restoreRun(urls, mnemonic, afterBackup) {
     const parts = Object.entries(got).filter(([, v]) => v).map(([k, v]) => fmt(v, k));
     log(`done · restored ${parts.length ? parts.join(' + ') : 'nothing'}`);
     restoring = false; render();
-    const dn = $('#dn', b); dn.disabled = false; dn.onclick = () => { locked = false; closeSheet(); };
+    const dn = $('#dn', b); dn.disabled = false; dn.onclick = () => { locked = false; closeSheet(); claimPending(); };
   }, { locked: true });
 }
 
@@ -549,7 +552,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       try { parsed = C.parseToken(ta.value); } catch { $('#prev', b).innerHTML = '<p class="warn">That isn’t a valid cashu token.</p>'; return; }
       const known = mintOf(parsed.mint), me = ++seq;
       const draw = (lock) => {
-        $('#prev', b).innerHTML = kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && ['Memo', esc(parsed.memo)],
+        $('#prev', b).innerHTML = (isGiftMemo(parsed.memo) ? giftBanner(parsed) : '') + kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && !isGiftMemo(parsed.memo) && ['Memo', esc(parsed.memo)],
           lock && lock.locked && ['Lock', lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>']])
           + (known ? '' : '<p class="warn">Unknown mint. Receiving adds it to your wallet. Only accept ecash from mints you trust.</p>');
       };
@@ -662,6 +665,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
         <p class="hint">Only the holder of the matching private key can redeem it.</p></details>
       <button class="btn primary wide" id="mk">Create token</button>
+      <button class="btn wide" id="gft"><span aria-hidden="true">🎁</span> Make a gift card</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
       ${S.contacts?.length ? `<div class="cts" role="list" aria-label="Contacts">${[...S.contacts].sort((p, q) => (q.last || 0) - (p.last || 0)).slice(0, 8).map((c) => `<button role="listitem" class="ctc" data-id="${esc(c.id)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}${S.contacts.length > 8 ? '<button class="ctc more" id="ctAll">All contacts</button>' : ''}</div>` : ''}
@@ -684,6 +688,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       render(); tokenView(h); C.watchSent(sentClaimed);
       FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
+    $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
     const setPay = (t, dis = false) => later(() => { pay.textContent = t; pay.disabled = dis; });
@@ -836,6 +841,119 @@ function tokenView(h, fromLog) {
     }
   });
 }
+/* ================= gift cards ================= */
+// the message rides in the token's memo ("🎁 Happy holidays! — Sam"), so any Cashu wallet shows it
+const giftMemo = (msg, from) => '🎁 ' + [msg || I18N.t('A gift for you'), from && '— ' + from].filter(Boolean).join(' ');
+function splitGift(memo) {
+  const m = String(memo || '').replace(/^🎁\s*/u, ''), i = m.lastIndexOf(' — ');
+  return i > 0 ? { msg: m.slice(0, i), from: m.slice(i + 3) } : { msg: m, from: '' };
+}
+const giftBanner = (t) => { const g = splitGift(t.memo); return `<div class="giftr"><span aria-hidden="true">🎁</span><b>A gift for you</b>${g.msg ? `<p dir="auto">${esc(g.msg)}</p>` : ''}${g.from ? `<small dir="auto">— ${esc(g.from)}</small>` : ''}</div>`; };
+const giftLink = (token) => location.origin + location.pathname + '#token=' + token;
+const seasonDesign = () => ([10, 11, 0].includes(new Date().getMonth()) ? 'winter' : 'classic');
+function giftSheet(amount = 0, msg = '') {
+  if (needMint()) return;
+  sheet('Gift card', `<p class="dim">Send sats as a card with a QR code. Whoever scans it gets the ecash, even without a wallet yet. Share it, save it or print it.</p>
+    ${amountField('gamt', `Available: ${esc(fmt(bal(S.active)))}`)}
+    <label class="lbl" for="gm">Message</label><input id="gm" class="field" maxlength="60" placeholder="Happy holidays!" autocomplete="off" dir="auto" value="${esc(isGiftMemo(msg) ? '' : msg)}">
+    <label class="lbl" for="gf">From</label><input id="gf" class="field" maxlength="24" placeholder="Your name (optional)" autocomplete="off" dir="auto">
+    <button class="btn primary wide" id="gmk">Create gift card</button>`, (b) => {
+    if (amount) { $('#gamt', b).value = String(isFiatUnit(S.unit) ? amount / 100 : amount); $('#gamt', b).dispatchEvent(new Event('input')); }
+    const go = $('#gmk', b);
+    go.onclick = withBusy(go, async () => {
+      const a = readAmt(b, 'gamt'); if (!a) return nope('Enter an amount.');
+      if (!(await bigOk(a))) return;
+      const m = $('#gm', b).value.trim(), f = $('#gf', b).value.trim();
+      const h = await C.sendEcash(a, { memo: giftMemo(m, f) });
+      h.gift = { design: seasonDesign() }; save();
+      render(); giftView(h); C.watchSent(sentClaimed);
+      FX.play('sent'); FX.buzz('sent');
+    });
+  }, { back: () => sendSheet('ecash') });
+}
+function giftView(h, fromLog) {
+  const link = giftLink(h.token), g = splitGift(h.memo), canvas = document.createElement('canvas');
+  let blob = null, url = '';
+  sheet('Gift card', `<div class="gcard"><img id="gImg" alt=""></div>
+    <div class="gds" role="radiogroup" aria-label="Design">${GIFT.DESIGNS.map(([k, l]) => `<button role="radio" class="gd gd-${k}" data-d="${k}" aria-checked="${(h.gift?.design || 'winter') === k}"><i aria-hidden="true"></i>${l}</button>`).join('')}</div>
+    <div class="btnrow"><button class="btn primary" id="gSh">Share</button><button class="btn" id="gSv">Save image</button></div>
+    <div class="btnrow"><button class="btn" id="gCl">Copy link</button>${typeof window.print === 'function' ? '<button class="btn" id="gPr">Print</button>' : ''}</div>
+    ${fromLog ? '<div class="btnrow"><button class="btn" id="chk">Check status</button><button class="btn" id="rc">Reclaim</button></div>' : ''}
+    <p class="dim small center">Whoever scans the code gets the ecash. If nobody claims it, you can take it back from your history.</p>`, (b) => {
+    addNote(b, h);
+    const img = $('#gImg', b);
+    const paint = async () => {
+      const amt = h.unit === 'sat' ? Number(h.amount).toLocaleString('en-US') : fmt(h.amount, h.unit);
+      await GIFT.draw(canvas, {
+        design: h.gift?.design || 'winter', amount: amt, unit: h.unit === 'sat' ? 'sats' : '', fiat: h.unit === 'sat' && st.fiat ? fiatOf(h.amount) : '',
+        msg: g.msg, from: g.from, link, words: { title: I18N.t('A gift for you'), scan: I18N.t('Scan with your phone camera to claim'), from: g.from ? I18N.t('from ' + g.from) : '', tooBig: I18N.t('This gift has too many small parts to fit in one code. Send the link instead.'), link: I18N.t('Open the link to claim') },
+      });
+      blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+      if (url) URL.revokeObjectURL(url);
+      url = URL.createObjectURL(blob); img.src = url;
+      img.alt = `${I18N.t('Gift card')}: ${fmt(h.amount, h.unit)}${g.msg ? ' · ' + g.msg : ''}`;
+    };
+    paint();
+    onClose = () => { setTimeout(() => url && URL.revokeObjectURL(url), 1000); };
+    $$('.gd', b).forEach((x) => (x.onclick = () => {
+      $$('.gd', b).forEach((y) => y.setAttribute('aria-checked', y === x));
+      h.gift = { ...(h.gift || {}), design: x.dataset.d }; save(); paint();
+    }));
+    const file = () => new File([blob], 'blindsig-gift.png', { type: 'image/png' });
+    const canFiles = () => blob && typeof File === 'function' && navigator.canShare?.({ files: [file()] });
+    const download = () => { const a = document.createElement('a'); a.href = url; a.download = 'blindsig-gift.png'; document.body.appendChild(a); a.click(); a.remove(); };
+    const text = `${g.msg ? g.msg + ' ' : ''}🎁 ${link}`;
+    $('#gSh', b).onclick = async () => {
+      if (!blob) return;
+      try {
+        if (canFiles()) await navigator.share({ files: [file()], text });
+        else if (navigator.share) await navigator.share({ text });
+        else return copy(link, 'Link copied');
+      } catch (e) { if (e?.name !== 'AbortError') copy(link, 'Link copied'); }
+    };
+    // phones: the share sheet has "Save Image"; computers: a normal download
+    $('#gSv', b).onclick = async () => { if (!blob) return; if (canFiles()) { try { await navigator.share({ files: [file()] }); } catch (e) { if (e?.name !== 'AbortError') download(); } } else download(); };
+    $('#gCl', b).onclick = () => copy(link, 'Link copied');
+    const pr = $('#gPr', b); if (pr) pr.onclick = () => {
+      if (!url) return;
+      const area = document.createElement('div'); area.id = 'printArea'; area.innerHTML = `<img src="${url}" alt="">`;
+      document.body.appendChild(area); document.documentElement.classList.add('printing');
+      const end = () => { area.remove(); document.documentElement.classList.remove('printing'); removeEventListener('afterprint', end); };
+      addEventListener('afterprint', end);
+      $('img', area).decode().catch(() => {}).then(() => { window.print(); setTimeout(() => { if (area.isConnected && !matchMedia('print').matches) end(); }, 1500); });
+    };
+    if (fromLog) {
+      const chk = $('#chk', b), rc = $('#rc', b);
+      chk.onclick = withBusy(chk, async () => { const s = await C.checkClaimed(h); toast(s === 'claimed' ? 'The gift was claimed.' : 'Not claimed yet.', s === 'claimed' ? 'ok' : 'warn'); if (s === 'claimed') detail(h); });
+      rc.onclick = withBusy(rc, async () => { await C.reclaim(h); toast('Reclaimed into your wallet'); render(); detail(h); });
+    }
+  });
+}
+// someone opened a gift link without a wallet: show the gift first, then set them up and claim it
+let pendingToken = null;
+function giftWelcome() {
+  let t; try { t = C.parseToken(pendingToken); } catch { pendingToken = null; return welcome(0); }
+  sheet('You got a gift', `${isGiftMemo(t.memo) ? giftBanner(t) : '<div class="giftr"><span aria-hidden="true">🎁</span><b>Someone sent you bitcoin</b></div>'}
+    <p class="big">${bigAmt(t.amount, t.unit, '+')}</p>
+    <p class="dim small center">Held by the mint ${esc(host(t.mint))}</p>
+    <p>blindsig is a private bitcoin wallet that runs in your browser. Make one in a few seconds to keep this gift. No account, no email.</p>
+    <button class="btn primary wide" id="gc">Claim it</button>
+    <button class="btn wide" id="gh">I already have a wallet</button>`, (b) => {
+    C.receiveFee(t).then((f) => { if (f > 0 && f < t.amount) $('.big', b).innerHTML = bigAmt(t.amount - f, t.unit, '+'); }).catch(() => {});
+    $('#gc', b).onclick = () => showSeed(generateMnemonic(wordlist, 128), true);
+    $('#gh', b).onclick = () => welcome(SLIDES.length);
+  }, { locked: true });
+}
+// right after a new wallet is made or restored: claim the gift that brought them here
+function claimPending() {
+  if (!pendingToken) return false;
+  const tok = pendingToken; pendingToken = null;
+  later(async () => {
+    try { const t = C.parseToken(tok); const h = await C.receiveEcash(t); C.selectMint(t.mint); locked = false; done(h, 'Gift claimed'); N.backupMints().catch(() => {}); }
+    catch (e) { locked = false; toast(niceErr(e), 'err'); if (!S.mints.length) mintsSheet(true); else receiveSheet('ecash', tok); }
+  });
+  return true;
+}
 // an address worth saving as a contact: Lightning address, LNURL or BOLT12 offer (not one-time invoices)
 const reusableTarget = (v) => (C.isAddress(v) ? v.toLowerCase() : C.isLnurl(v) || C.isOffer(v) ? v : '');
 function done(h, verb, saveTo) {
@@ -874,14 +992,14 @@ function addNote(b, h, before) {
 function detail(h) {
   if (h.live) return liveView(h);
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
-  if (h.kind === 'ecash-out' && h.status === 'pending') return tokenView(h, true);
+  if (h.kind === 'ecash-out' && h.status === 'pending') return h.gift ? giftView(h, true) : tokenView(h, true);
   if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) {
     receiveSheet('ecash', h.token);
     later(() => addNote($('#sheetBody'), h));
     if (h.warn) later(() => $('#sheet .sb')?.insertAdjacentHTML('afterbegin', '<p class="warn">This payment doesn’t fully match your request: after the mint’s fees it comes up short, it isn’t from a mint you asked for, or it isn’t locked to your key as requested. You can still claim it.</p>'));
     return;
   }
-  const [verb, via] = KIND[h.kind];
+  const [verb, via] = kindOf(h);
   const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
     ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
@@ -930,7 +1048,7 @@ function mintsSheet(first = false) {
     $('#dsc', b).onclick = () => NU.discover(() => mintsSheet(first));
     const fnm = $('#fnm', b); if (fnm) fnm.onclick = () => NU.findMints(S.mnemonic, () => mintsSheet(true));
     const fin = $('#fin', b);
-    if (fin) fin.onclick = () => { N.startAll(); if (restoring) restoreRun(S.mints.map((m) => m.url)); else { locked = false; closeSheet(); } };
+    if (fin) fin.onclick = () => { N.startAll(); if (restoring) restoreRun(S.mints.map((m) => m.url)); else { locked = false; closeSheet(); claimPending(); } };
   }, { locked: first });
 }
 function mintDetails(url, back) {
@@ -1317,7 +1435,7 @@ function backupRestoreSheet(onboarding) {
       try { r = await decryptBackup(await f.text(), $('#bpw', b).value); } catch (e) {
         return nope({ 'not-backup': 'That file isn’t a blindsig backup.', 'wrong-password': 'Wrong password, or the file is damaged.', damaged: 'The backup file is damaged.' }[e.message] || niceErr(e));
       }
-      const finish = async () => { r.state.afterImport = 1; r.state.onboarded = true; await replaceState(r.state); location.reload(); };
+      const finish = async () => { r.state.afterImport = 1; r.state.onboarded = true; await replaceState(r.state); if (pendingToken) history.replaceState(null, '', location.pathname + '#token=' + encodeURIComponent(pendingToken)); location.reload(); };
       const have = S.mnemonic && (S.mints.some((m) => bal(m.url) > 0) || S.history.length);
       if (onboarding || !have) return finish();
       // replacing a wallet that's in use: make sure its owner can get it back
@@ -1604,7 +1722,7 @@ $('#tlUse').onclick = () => { chan?.postMessage({ type: 'takeover', from: tabId 
 setTimeout(() => {
   if (blocked) return;
   schedule();
-  if (!S.mnemonic) welcome(0);
+  if (!S.mnemonic) { if (pendingToken) giftWelcome(); else welcome(0); }
   else if (!S.mints.length) mintsSheet(true);
   else if (S.afterImport) { delete S.afterImport; save(); restoreRun(S.mints.map((m) => m.url), undefined, true); C.watchSent(sentClaimed); }
   else {
@@ -1619,6 +1737,13 @@ document.addEventListener('visibilitychange', () => { if (!blocked && !document.
 
 const incoming = (location.hash.match(/token=([^&]+)/) || [])[1] || new URLSearchParams(location.search).get('token');
 if (incoming && S.mnemonic) { history.replaceState(null, '', location.pathname); setTimeout(() => route(decodeURIComponent(incoming)), 500); }
+else if (incoming) { history.replaceState(null, '', location.pathname); pendingToken = decodeURIComponent(incoming); }
+// a token link opened while the app is already open (same page, only the #token part changes)
+addEventListener('hashchange', () => {
+  const t = (location.hash.match(/token=([^&]+)/) || [])[1];
+  if (!t || !S.mnemonic) return;
+  history.replaceState(null, '', location.pathname); route(decodeURIComponent(t));
+});
 // home-screen shortcuts (long-press the app icon on Android): Receive, Send, Scan
 const action = new URLSearchParams(location.search).get('action');
 if (action && S.mnemonic) {

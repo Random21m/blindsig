@@ -243,6 +243,11 @@ function markP2pkUsed(t) {
     if (keys.size) save();
   } catch {}
 }
+// what the mint keeps when this token is received (its input fee), so we can show what you'll get
+export async function receiveFee(t) {
+  const w = await walletFor(t.mint, t.unit);
+  return w.getFeesForProofs(w.decodeToken(t.str).proofs).toNumber();
+}
 export async function checkClaimed(h) {
   if (h.kind !== 'ecash-out' || h.status !== 'pending') return h.status;
   const w = await walletFor(h.mint, h.unit);
