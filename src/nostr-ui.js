@@ -14,8 +14,10 @@ export function nostrUI(x) {
   W60.onChange((r) => {
     if (!r || r.error) return;
     render();
-    const parts = [r.added && `+${fmt(r.added, 'sat')} in`, r.spent && `${fmt(r.spent, 'sat')} spent elsewhere`].filter(Boolean);
-    if (parts.length) toast(`Nostr wallet: ${parts.join(', ')}`);
+    const a = fmt(r.added, 'sat'), sp = fmt(r.spent, 'sat');
+    if (r.added && r.spent) toast(`Nostr wallet: +${a} in, ${sp} spent elsewhere`);
+    else if (r.added) toast(`Nostr wallet: +${a} in`);
+    else if (r.spent) toast(`Nostr wallet: ${sp} spent elsewhere`);
   });
   const syncLine = () => {
     const w = S.nip60;

@@ -995,3 +995,48 @@
 994	Cole no balcão: um toque abre a carteira Lightning de quem paga.
 995	ou encoste um cartão NFC
 996	{0} no total
+997	Assinatura
+998	✓ Assinado por este mint
+999	(verificado offline)
+1000	Só uma parte tem a assinatura do mint
+1001	Não corresponde às chaves do mint
+1002	Não incluída. O mint verifica ao receber.
+1003	Não dá para verificar sem as chaves deste mint
+1004	A assinatura do mint neste ecash não confere. Pode ser falso. Não aceite como pagamento.
+1005	Incluir assinaturas do mint
+1006	Coloca as provas de assinatura do mint (NUT-12) no ecash que você envia, para quem recebe poder verificar que é real, mesmo offline. Os tokens ficam cerca de duas vezes maiores.
+1007	Sacar
+1008	{0} vai pagar em {1}.
+1009	Não há mais nada para sacar aqui.
+1010	Este mint não tem saldo em sats. Escolha antes um mint com sats.
+1011	Aguardando {0} pagar
+1012	O valor deve ser {0} sat.
+1013	O valor deve estar entre {0} e {1} sat.
+1014	Escanear um código de saque
+1015	Isso não é um código LNURL de saque.
+1016	Esse LNURL é para pagar, não para receber. Use Enviar.
+1017	Verificando o LNURL…
+1018	Este LNURL não é para pagar nem para sacar.
+1019	Saque LNURL
+1020	Chave oculta do mint (P2BK)
+1021	Ocultar a chave do mint (P2BK)
+1022	O mint não consegue ligar este pagamento à chave da pessoa. A carteira dela precisa suportar NUT-28: blindsig e carteiras baseadas em Nutshell ou CDK suportam.
+1023	chave oculta do mint
+1024	Carteira Nostr
+1025	Sincronizar com apps Nostr
+1026	Mantém seu ecash nos seus relays, criptografado para a identidade nostr acima, para que apps Nostr com carteira (NIP-60) usem o mesmo saldo. Quem tiver essa chave nostr pode gastá-lo.
+1027	Última sincronização: {0}
+1028	A última sincronização falhou: {0}
+1029	Ainda não sincronizado.
+1030	Sincronizar agora
+1031	Para compartilhar a carteira com outro app, use a mesma chave nostr nos dois: cole seu nsec ou use o mesmo assinador.
+1032	Carteira Nostr: +{0} recebidos, {1} gastos em outro lugar
+1033	Carteira Nostr: +{0} recebidos
+1034	Carteira Nostr: {0} gastos em outro lugar
+1035	Sincronizado com sua carteira Nostr
+1036	Sincronização da carteira Nostr desligada
+1037	Atualizado
+1038	Sincronizado, mas alguns mints não responderam
+1039	Este assinador não consegue criptografar os dados da carteira. Use sua seed, um nsec ou um assinador com suporte a NIP-44.
+1040	da sua carteira Nostr
+1041	gasto em outro app Nostr

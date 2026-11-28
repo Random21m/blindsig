@@ -995,3 +995,48 @@
 994	Collez-le sur le comptoir : un simple contact ouvre le portefeuille Lightning du client.
 995	ou approchez une carte NFC
 996	{0} au total
+997	Signature
+998	✓ Signé par cette mint
+999	(vérifié hors ligne)
+1000	Seule une partie porte la signature de la mint
+1001	Ne correspond pas aux clés de la mint
+1002	Non incluse. La mint le vérifie à la réception.
+1003	Vérification impossible sans les clés de cette mint
+1004	La signature de la mint sur cet ecash n’est pas valide. Il est peut-être faux. Ne l’acceptez pas comme paiement.
+1005	Inclure les signatures de la mint
+1006	Ajoute les preuves de signature de la mint (NUT-12) à l’ecash envoyé, pour que la personne payée puisse vérifier qu’il est authentique, même hors ligne. Les jetons sont environ deux fois plus longs.
+1007	Retirer
+1008	{0} paiera sur {1}.
+1009	Il ne reste rien à retirer ici.
+1010	Cette mint n’a pas de solde en sats. Choisissez d’abord une mint en sats.
+1011	En attente du paiement de {0}
+1012	Le montant doit être de {0} sat.
+1013	Le montant doit être compris entre {0} et {1} sat.
+1014	Scanner un code de retrait
+1015	Ce n’est pas un code de retrait LNURL.
+1016	Ce LNURL sert à payer, pas à recevoir. Utilisez Envoyer.
+1017	Vérification du LNURL…
+1018	Ce LNURL ne sert ni à payer ni à retirer.
+1019	Retrait LNURL
+1020	Clé cachée à la mint (P2BK)
+1021	Cacher la clé à la mint (P2BK)
+1022	La mint ne peut pas relier ce paiement à sa clé. Son portefeuille doit prendre en charge NUT-28 : c’est le cas de blindsig et des portefeuilles basés sur Nutshell ou CDK.
+1023	clé cachée à la mint
+1024	Portefeuille Nostr
+1025	Synchroniser avec les apps Nostr
+1026	Conserve votre ecash sur vos relais, chiffré pour l’identité nostr ci-dessus, afin que les apps Nostr qui gèrent un portefeuille (NIP-60) utilisent le même solde. Toute personne ayant cette clé nostr peut le dépenser.
+1027	Dernière synchronisation : {0}
+1028	La dernière synchronisation a échoué : {0}
+1029	Pas encore synchronisé.
+1030	Synchroniser maintenant
+1031	Pour partager le portefeuille avec une autre app, utilisez la même clé nostr dans les deux : collez votre nsec ou utilisez le même signataire.
+1032	Portefeuille Nostr : +{0} reçus, {1} dépensés ailleurs
+1033	Portefeuille Nostr : +{0} reçus
+1034	Portefeuille Nostr : {0} dépensés ailleurs
+1035	Synchronisé avec votre portefeuille Nostr
+1036	Synchronisation du portefeuille Nostr désactivée
+1037	À jour
+1038	Synchronisé, mais certaines mints étaient injoignables
+1039	Ce signataire ne peut pas chiffrer les données du portefeuille. Utilisez votre phrase de récupération, un nsec ou un signataire compatible NIP-44.
+1040	depuis votre portefeuille Nostr
+1041	dépensé dans une autre app Nostr

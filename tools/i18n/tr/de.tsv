@@ -995,3 +995,48 @@
 994	Klebe ihn auf die Theke: Ein Antippen öffnet das Lightning-Wallet der zahlenden Person.
 995	oder NFC-Karte antippen
 996	{0} insgesamt
+997	Signatur
+998	✓ Von dieser Mint signiert
+999	(offline geprüft)
+1000	Nur ein Teil trägt die Signatur der Mint
+1001	Passt nicht zu den Schlüsseln der Mint
+1002	Nicht enthalten. Die Mint prüft es beim Empfangen.
+1003	Ohne die Schlüssel dieser Mint nicht prüfbar
+1004	Die Signatur der Mint auf diesem Ecash stimmt nicht. Es könnte gefälscht sein. Nimm es nicht als Zahlung an.
+1005	Mint-Signaturen mitsenden
+1006	Legt die Signaturnachweise der Mint (NUT-12) in gesendetes Ecash, damit der Empfänger prüfen kann, dass es echt ist, auch offline. Tokens werden etwa doppelt so lang.
+1007	Abheben
+1008	{0} zahlt in {1} ein.
+1009	Hier gibt es nichts mehr abzuheben.
+1010	Diese Mint hat kein Sat-Guthaben. Wähle zuerst eine Mint mit Sats.
+1011	Warte auf Zahlung von {0}
+1012	Der Betrag muss {0} sat sein.
+1013	Der Betrag muss zwischen {0} und {1} sat liegen.
+1014	Abhebe-Code scannen
+1015	Das ist kein LNURL-Abhebe-Code.
+1016	Diese LNURL ist zum Bezahlen, nicht zum Empfangen. Nutze Senden.
+1017	LNURL wird geprüft…
+1018	Diese LNURL ist weder zum Bezahlen noch zum Abheben.
+1019	LNURL-Abhebung
+1020	Schlüssel vor der Mint verborgen (P2BK)
+1021	Schlüssel vor der Mint verbergen (P2BK)
+1022	Die Mint kann diese Zahlung nicht mit ihrem Schlüssel verknüpfen. Ihre Wallet muss NUT-28 unterstützen: blindsig und Wallets auf Basis von Nutshell oder CDK tun das.
+1023	Schlüssel vor der Mint verborgen
+1024	Nostr-Wallet
+1025	Mit Nostr-Apps synchronisieren
+1026	Bewahrt dein Ecash verschlüsselt für die Nostr-Identität oben auf deinen Relays auf, damit Nostr-Apps mit Wallet-Unterstützung (NIP-60) dasselbe Guthaben nutzen können. Wer diesen Nostr-Schlüssel hat, kann es ausgeben.
+1027	Zuletzt synchronisiert: {0}
+1028	Letzte Synchronisierung fehlgeschlagen: {0}
+1029	Noch nicht synchronisiert.
+1030	Jetzt synchronisieren
+1031	Um die Wallet mit einer anderen App zu teilen, nutze in beiden denselben Nostr-Schlüssel: Füge deinen nsec ein oder nutze denselben Signer.
+1032	Nostr-Wallet: +{0} eingegangen, {1} anderswo ausgegeben
+1033	Nostr-Wallet: +{0} eingegangen
+1034	Nostr-Wallet: {0} anderswo ausgegeben
+1035	Mit deiner Nostr-Wallet synchronisiert
+1036	Nostr-Wallet-Synchronisierung aus
+1037	Auf dem neuesten Stand
+1038	Synchronisiert, aber einige Mints waren nicht erreichbar
+1039	Dieser Signer kann Wallet-Daten nicht verschlüsseln. Nutze deinen Seed, einen nsec oder einen Signer mit NIP-44.
+1040	aus deiner Nostr-Wallet
+1041	in einer anderen Nostr-App ausgegeben

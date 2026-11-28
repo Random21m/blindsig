@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.12.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.12.0">
+  <img src="https://img.shields.io/badge/version-1.24.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.24.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -140,7 +140,9 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 **Receive**
 
 - Ecash: paste, scan (including animated QR), NFC, or auto-paste from the clipboard (not on iPhone, where Safari asks before every paste)
+- A check that the mint really signed the ecash (NUT-12 DLEQ), before you accept it. It works offline for mints you've used, and ecash that fails it can't be parked for later
 - Lightning invoices, BOLT12 offers you can reuse, and on-chain deposit addresses
+- LNURL-withdraw: scan a voucher, faucet or ATM code and the sats land in your mint
 - Tokens from other mints, either kept there or swapped into your mint
 - "Receive later" to park a token in your history and claim it when you're ready
 
@@ -148,10 +150,11 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 - Ecash as a static or animated QR (BC-UR), a link, NFC, or hidden inside an emoji
 - NFC cards and stickers (Android): load a card with ecash or a gift so any phone that taps it, iPhones included, opens the claim link; write your tip jar to a sticker; and the scanner reads cards too
-- Offline sending: exact-amount tokens made without contacting the mint
+- Offline sending: exact-amount tokens made without contacting the mint, even right after opening the app (the mint's keys are saved)
+- Tokens carry the mint's signature proofs, so whoever you pay can check them offline (can be turned off for shorter tokens)
 - Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, and bitcoin addresses (BIP21 aware)
-- Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey, npub or contact
-- Time vault: lock sats away until a date you choose. Nobody can spend them before then, not even you; on the day they come back to your wallet by themselves
+- Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey, npub or contact, optionally with the key hidden from the mint (P2BK, NUT-28)
+- Time vault: lock sats away until a date you choose. Nobody can spend them before then, not even you; on the day they come back to your wallet by themselves. Vault keys are blinded, so the mint can't tell your vaults belong together
 - Sends that come back: lock ecash to one person, and if they don't claim it in time (an hour, a day, a week or 30 days) it returns to your wallet on its own
 - Contacts: save people and places you pay often (Lightning address, LNURL, BOLT12 offer or npub) and pay them in two taps. After paying a new address, one tap saves it
 
@@ -161,6 +164,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - Lightning address via npub.cash, with automatic claiming, live updates, optional short usernames (price shown up front), and payments locked to your key so only your wallet can claim them
 - Payment requests (NUT-18) with a description, an optional lock to your key, and delete. Delivered over Nostr or HTTP, checked in full before they're claimed, and payable from any of your mints when the request allows it. Ecash in Nostr DMs is picked up automatically
 - Nostr Wallet Connect (NIP-47) with a spending allowance, so other apps can use your wallet
+- Nostr wallet sync (NIP-60): keep your ecash on your relays, encrypted to your nostr key, so Nostr apps that support it share the same balance. Ecash spent or received in another app shows up here, and nutzaps can be redeemed by either
 
 **Privacy and safety**
 

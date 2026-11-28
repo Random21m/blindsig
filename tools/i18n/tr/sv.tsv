@@ -995,3 +995,48 @@
 994	Sätt det på disken: ett tryck öppnar betalarens Lightning-plånbok.
 995	eller nudda ett NFC-kort
 996	{0} totalt
+997	Signatur
+998	✓ Signerad av denna mint
+999	(kontrollerad offline)
+1000	Bara en del har mintens signatur
+1001	Stämmer inte med mintens nycklar
+1002	Ingår inte. Minten kontrollerar det när du tar emot.
+1003	Kan inte kontrolleras utan mintens nycklar
+1004	Mintens signatur på denna ecash stämmer inte. Den kan vara falsk. Ta inte emot den som betalning.
+1005	Inkludera mintens signaturer
+1006	Lägger mintens signaturbevis (NUT-12) i ecash du skickar, så att mottagaren kan kontrollera att den är äkta, även offline. Token blir ungefär dubbelt så långa.
+1007	Ta ut
+1008	{0} betalar in till {1}.
+1009	Det finns inget kvar att ta ut här.
+1010	Denna mint har inget sat-saldo. Välj först en mint med sats.
+1011	Väntar på att {0} betalar
+1012	Beloppet måste vara {0} sat.
+1013	Beloppet måste vara mellan {0} och {1} sat.
+1014	Skanna en uttagskod
+1015	Det är ingen LNURL-uttagskod.
+1016	Den LNURL:en är för att betala, inte ta emot. Använd Skicka.
+1017	Kontrollerar LNURL:en…
+1018	Den här LNURL:en är varken för att betala eller ta ut.
+1019	LNURL-uttag
+1020	Nyckeln dold för minten (P2BK)
+1021	Dölj nyckeln för minten (P2BK)
+1022	Minten kan inte koppla betalningen till mottagarens nyckel. Mottagarens plånbok måste stödja NUT-28: blindsig och plånböcker byggda på Nutshell eller CDK gör det.
+1023	nyckeln dold för minten
+1024	Nostr-plånbok
+1025	Synka med Nostr-appar
+1026	Sparar din ecash på dina reläer, krypterad till nostr-identiteten ovan, så att Nostr-appar som stöder plånböcker (NIP-60) kan använda samma saldo. Den som har den nostr-nyckeln kan spendera den.
+1027	Senast synkad {0}
+1028	Senaste synkningen misslyckades: {0}
+1029	Inte synkad än.
+1030	Synka nu
+1031	För att dela plånboken med en annan app, använd samma nostr-nyckel i båda: klistra in din nsec eller använd samma signerare.
+1032	Nostr-plånbok: +{0} in, {1} spenderat någon annanstans
+1033	Nostr-plånbok: +{0} in
+1034	Nostr-plånbok: {0} spenderat någon annanstans
+1035	Synkad med din Nostr-plånbok
+1036	Synk av Nostr-plånbok av
+1037	Uppdaterad
+1038	Synkad, men vissa mints gick inte att nå
+1039	Den här signeraren kan inte kryptera plånboksdata. Använd din seed, en nsec eller en signerare som stöder NIP-44.
+1040	från din Nostr-plånbok
+1041	spenderat i en annan Nostr-app
