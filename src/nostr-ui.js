@@ -3,12 +3,25 @@ import { dateLocale } from './i18n.js';
 import { S, save, mintOf, mintLabel, host, esc, fmt, unitLabel, normUrl } from './store.js';
 import * as C from './core.js';
 import * as N from './nostr.js';
+import * as W60 from './nip60.js';
 
 export function nostrUI(x) {
   const { $, $$, sheet, closeSheet, toast, copy, withBusy, kv, toggle, qrSvg, render, niceErr, amountField, readAmt } = x;
   const qrInto = (el, text) => qrSvg(text).then((s) => { if (el && el.isConnected) el.innerHTML = `<div class="qr">${s}</div>`; });
   const stars = (r) => (r ? '★'.repeat(r) + '☆'.repeat(5 - r) : '');
   const short = (s, n = 10) => (s.length > n * 2 + 1 ? s.slice(0, n) + '…' + s.slice(-6) : s);
+  // Nostr wallet sync: show what came in or went out elsewhere
+  W60.onChange((r) => {
+    if (!r || r.error) return;
+    render();
+    const parts = [r.added && `+${fmt(r.added, 'sat')} in`, r.spent && `${fmt(r.spent, 'sat')} spent elsewhere`].filter(Boolean);
+    if (parts.length) toast(`Nostr wallet: ${parts.join(', ')}`);
+  });
+  const syncLine = () => {
+    const w = S.nip60;
+    if (w.lastError) return `<span class="warnt">Last sync failed: ${esc(w.lastError)}</span>`;
+    return w.lastSync ? `Last synced ${esc(new Date(w.lastSync).toLocaleString(dateLocale()))}` : 'Not synced yet.';
+  };
 
   /* ---------- settings: Lightning address ---------- */
   function lnaddr() {
@@ -100,6 +113,9 @@ export function nostrUI(x) {
       <form class="addm" id="ar"><input id="rl" class="field" placeholder="wss://relay.example" autocapitalize="off"><button class="btn">Add</button></form>
       <h3>Nutzaps</h3>
       ${toggle('t_nz', 'Receive nutzaps', 'People can send ecash to your npub from Nostr apps that support nutzaps (NIP-61). Publishes your mints and relays, with a key just for nutzaps. Works while blindsig is open.', N.nutzapsOn())}
+      <h3>Nostr wallet</h3>
+      ${toggle('t_n60', 'Sync with Nostr apps', 'Keep your ecash on your relays, encrypted to the nostr identity above, so Nostr apps that support wallets (NIP-60) can use the same balance. Anyone with that nostr key can spend it.', W60.isOn())}
+      ${W60.isOn() ? `<p class="dim small" id="n60s">${syncLine()}</p><button class="btn wide" id="n60n">Sync now</button>` : '<p class="dim small">To share the wallet with another app, use the same nostr key in both: paste your nsec or use the same signer.</p>'}
       <h3>Mint list backup</h3>
       ${toggle('t_bk', 'Back up mint list on nostr', 'Encrypted with a key from your seed, so a restore can find your mints.', nn.backup)}
       ${nn.backup ? `<p class="dim small">${nn.backupTs ? 'Last backup ' + new Date(nn.backupTs * 1000).toLocaleString(dateLocale()) : 'Not backed up yet.'}</p><button class="btn wide" id="bkn">Back up now</button>` : ''}
@@ -127,6 +143,16 @@ export function nostrUI(x) {
         S.nostr.relays = [...new Set([...N.relays(), r])]; save(); N.startAll(); nostr();
       };
       $('#t_nz', b).onchange = withBusy($('#t_nz', b), async () => { await N.nutzapEnable($('#t_nz', b).checked); toast(N.nutzapsOn() ? 'Nutzaps on' : 'Nutzaps off'); nostr(); });
+      $('#t_n60', b).onchange = withBusy($('#t_n60', b), async () => {
+        const on = $('#t_n60', b).checked;
+        try { await W60.enable(on); } catch (e) { $('#t_n60', b).checked = false; throw e; }
+        toast(on ? 'Synced with your Nostr wallet' : 'Nostr wallet sync off'); render(); nostr();
+      });
+      const n60n = $('#n60n', b);
+      if (n60n) n60n.onclick = withBusy(n60n, async () => {
+        try { const r = await W60.sync(); if (r && !r.added && !r.spent) toast(r.skipped.length ? 'Synced, but some mints couldn’t be reached' : 'Up to date'); }
+        finally { const el = $('#n60s', b); if (el) el.innerHTML = syncLine(); }
+      });
       $('#t_bk', b).onchange = withBusy($('#t_bk', b), async () => { nn.backup = $('#t_bk', b).checked; save(); if (nn.backup) { await N.backupMints(); toast('Mint list backed up'); } nostr(); });
       const bkn = $('#bkn', b); if (bkn) bkn.onclick = withBusy(bkn, async () => { await N.backupMints(); toast('Mint list backed up'); nostr(); });
       const wb = $('#wb', b);
