@@ -54,7 +54,7 @@
 
 <p align="center">
   <a href="assets/blindsig-demo.mp4"><img src="assets/demo-thumb.jpg" width="300" alt="Play the blindsig demo video"></a><br>
-  <sub>About two and a half minutes: a new wallet, receiving over Lightning with a note, sending ecash, a gift card, paying and saving a contact, the PIN lock with Face ID, what each payment was worth then and now, splitting a bill, the time vault, a tip jar card, hiding amounts, the live price chart and the themes. Tap to play.</sub>
+  <sub>About three minutes: a new wallet, receiving over Lightning with a private note, sending ecash, a gift card, paying a Lightning address and saving the contact, the PIN lock, what a payment was worth then and now, splitting a bill, the time vault, a tip jar card, hiding amounts, the live price chart, the themes and resetting settings. Tap to play.</sub>
 </p>
 
 ## Screenshots
@@ -108,7 +108,7 @@
   <tr>
     <td align="center"><img src="assets/screens/nutzap.png" width="250" alt="Nutzap"><br><sub><b>Nutzaps</b>: send ecash to anyone's npub over Nostr</sub></td>
     <td align="center"><img src="assets/screens/nfc.png" width="250" alt="Write to NFC card"><br><sub><b>NFC cards</b>: put a gift on a card any phone can tap (Android writes)</sub></td>
-    <td align="center"><img src="assets/screens/mint-details.png" width="250" alt="Mint details"><br><sub><b>Mint details</b>: what a mint supports, its keysets and auditor record</sub></td>
+    <td align="center"><img src="assets/screens/reset.png" width="250" alt="Reset settings"><br><sub><b>Reset settings</b>: see what you changed, put it all back in one tap</sub></td>
   </tr>
 </table>
 
@@ -195,6 +195,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - Gift cards: turn sats into a card with a message and a QR code to share, save or print. Whoever scans it can claim the gift, even without a wallet yet, and you can take it back if nobody does
 - Tap the bitcoin price at the top for a live chart (hour, day, week, month, year or all time); drag along it to read any point
 - Four themes: green, white, amber and burnt orange
+- Reset settings: put every setting back to its default in one tap. It lists what you changed first (old value → default), and leaves your seed, ecash, mints, contacts, history and PIN lock alone
 - Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off). Sound and vibration only when money arrives or leaves. On iPhone, sounds can play even with the phone on silent
 - Works offline once installed
 
