@@ -151,7 +151,7 @@ const RETURN_AFTER = [[0, 'Never'], [3600e3, '1 hour'], [864e5, '1 day'], [7 * 8
 const keyContacts = () => (S.contacts || []).map((c) => ({ ...c, npub: (String(c.to).match(/^(npub1[02-9ac-hj-np-z]+)(@|$)/i) || [])[1] })).filter((c) => c.npub);
 const whenShort = (ts) => new Date(ts).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const isGiftMemo = (m) => /^🎁/u.test(m || '');
-const kindOf = (h) => h.vault ? ['Locked', 'Time vault'] : (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
+const kindOf = (h) => h.vault ? ['Locked', 'Time vault'] : h.nutzap ? [KIND[h.kind][0], 'Nutzap'] : (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
 const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', returned: 'Came back', expired: 'Expired', failed: 'Failed' };
 let logFilter = 'all', logLimit = 100;
 function stamp(ts) {
@@ -726,6 +726,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       else if (N.isRequest(v)) { stage = 'creq'; label = 'payment request'; }
       else if (C.isInvoice(v)) { stage = 'invoice'; label = ''; }
       else if (C.isAddress(v) || C.isLnurl(v)) { stage = 'lnurl'; label = C.isAddress(v) ? v.toLowerCase() : 'LNURL'; }
+      else if (isNpub(v)) { stage = 'npub'; label = 'nutzap'; }
       pay.textContent = 'Continue'; pay.disabled = !stage;
     };
     const showQuote = () => {
@@ -740,6 +741,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
     };
     pay.onclick = withBusy(pay, async () => {
       const v = ln.value.trim().replace(/^lightning:/i, '');
+      if (isNpub(v)) return nutzapSheet(v);
       if (stage === 'offer' || stage === 'chain') {
         const kind = stage === 'offer' ? 'bolt12' : 'onchain';
         if (!C.supports(S.active, 'melt', kind)) return toast(kind === 'bolt12' ? 'This mint can’t pay BOLT12 offers.' : 'This mint can’t send on-chain.', 'err');
@@ -870,6 +872,41 @@ function tokenView(h, fromLog) {
 function lockName(pub) {
   const c = keyContacts().find((x) => { try { return C.parsePubkey(x.npub) === pub; } catch { return false; } });
   return c ? c.name : pub.slice(0, 12) + '…';
+}
+/* ================= nutzaps ================= */
+const isNpub = (t) => /^(nostr:)?(npub1[02-9ac-hj-np-z]{58}|nprofile1[02-9ac-hj-np-z]+)$/i.test(t.trim());
+const shortNpub = (t) => { const x = t.replace(/^nostr:/i, ''); return x.length > 24 ? x.slice(0, 12) + '…' + x.slice(-6) : x; };
+function nutzapSheet(target) {
+  if (needMint()) return;
+  target = target.trim().replace(/^nostr:/i, '');
+  sheet('Nutzap', `<p class="dim center">To <b dir="ltr">${esc(shortNpub(target))}</b></p><div id="nzb"><p class="dim center">Looking up their nutzap settings<span class="cur">_</span></p></div>`, async (b) => {
+    let info;
+    try { info = await N.nutzapInfo(target); } catch (e) { $('#nzb', b).innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`; return; }
+    if (!b.isConnected) return;
+    if (!info.ok) {
+      const npub = target.startsWith('npub1') ? target : N.npubOf(info.pk);
+      $('#nzb', b).innerHTML = `<p>They haven’t set up nutzaps yet.</p><p class="dim">You can pay their npub.cash Lightning address instead, if they use one.</p><button class="btn primary wide" id="nzl">Pay ${esc(shortNpub(npub))}@npub.cash</button>`;
+      I18N.translateTree($('#nzb', b));
+      $('#nzl', b).onclick = () => sendSheet('ln', npub + '@npub.cash');
+      return;
+    }
+    const shared = info.mints.filter((u) => mintOf(u));
+    $('#nzb', b).innerHTML = `${amountField('nzamt', `${I18N.t('They accept')}: ${esc(info.mints.map(host).join(', ') || '—')}`)}
+      <label class="lbl" for="nzc">Comment</label><input id="nzc" class="field" maxlength="140" placeholder="Optional" autocomplete="off" dir="auto">
+      ${shared.length ? '' : `<p class="warn small">${esc(I18N.t('None of the mints they accept is in your wallet. Add one of them to send a nutzap.'))}</p>`}
+      <p class="dim small">The ecash is locked to their key and sent over Nostr. If they don’t take it within a week, it comes back to you.</p>
+      <button class="btn primary wide" id="nzgo" ${shared.length ? '' : 'disabled'}>Send nutzap</button>`;
+    bindKeypads($('#nzb', b)); I18N.translateTree($('#nzb', b));
+    const go = $('#nzgo', b);
+    go.onclick = withBusy(go, async () => {
+      const a = readAmt(b, 'nzamt'); if (!a) return nope('Enter an amount.');
+      const url = N.nutzapMint(info, a);
+      if (!url) return nope(`Not enough at a mint they accept (${info.mints.map(host).join(', ')}).`);
+      if (!(await bigOk(a))) return;
+      const h = await N.sendNutzap(info, a, $('#nzc', b).value.trim(), url);
+      render(); FX.play('sent'); FX.buzz('sent'); done(h, 'Nutzapped');
+    });
+  });
 }
 /* ================= split the bill ================= */
 // one Lightning invoice per person; progress comes from which of them are paid
@@ -1379,7 +1416,7 @@ function mintsSheet(first = false) {
     $$('.info', b).forEach((x) => (x.onclick = () => mintDetails(x.dataset.u, () => mintsSheet(first))));
     const ab = $('#ab', b);
     const add = withBusy(ab, async (u) => {
-      const url = await C.addMint(u); C.selectMint(url); render(); toast('Mint added'); N.backupMints().catch(() => {});
+      const url = await C.addMint(u); C.selectMint(url); render(); toast('Mint added'); N.backupMints().catch(() => {}); if (N.nutzapsOn()) N.startNutzaps();
       if (first) mintsSheet(true); else closeSheet();
     });
     $('#add', b).onsubmit = (e) => { e.preventDefault(); const u = $('#mu', b).value.trim(); if (u) add(u); };
@@ -2094,6 +2131,7 @@ function route(txt) {
   if (/^(cashu:)?cashu[AB]/i.test(t) || /^web\+cashu:/i.test(t)) return receiveSheet('ecash', t);
   if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t) || N.isRequest(t) || C.isOffer(t) || C.parseBitcoin(t)) return sendSheet('ln', t);
   if (C.hasEmojiToken(t)) return receiveSheet('ecash', t);
+  if (isNpub(t)) return nutzapSheet(t);
   if (/[#?]token=/.test(t)) { const m = t.match(/token=([^&]+)/); if (m) return receiveSheet('ecash', decodeURIComponent(m[1])); }
   if (/^https?:\/\//i.test(t)) { mintsSheet(); later(() => { const f = $('#mu'); if (f) f.value = t; }); return; }
   toast('Didn’t recognise that code.', 'warn');
@@ -2130,6 +2168,7 @@ Object.assign(SECTIONS, NU.sections);
 N.on('incoming', (h) => { toast(h.warn ? `A payment of ${fmt(h.amount, h.unit)} doesn’t fully match your request. Check it in your history before claiming.` : `Incoming ecash: ${fmt(h.amount, h.unit)}. Tap it in your history to claim.`, 'warn'); render(); });
 N.on('received', (h) => { toast(`Received ${fmt(h.amount, h.unit)}`); FX.success('received'); render(); });
 N.on('nwc', () => render());
+N.on('nutzap', (h) => { toast(`⚡ ${I18N.t('Nutzap')}: +${fmt(h.amount, h.unit)}${h.memo ? ' · ' + h.memo : ''}`); FX.success('received'); render(); });
 $('#recvBtn').onclick = () => receiveSheet();
 $('#sendBtn').onclick = () => sendSheet();
 $('#scanBtn').onclick = () => (needMint() ? null : startScan(route));

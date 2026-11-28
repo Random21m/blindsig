@@ -97,6 +97,8 @@ export function nostrUI(x) {
       <h3>Relays</h3>
       <ul class="keys">${N.relays().map((r) => `<li><button data-r="${esc(r)}"><code>${esc(r)}</code><span class="dim">remove</span></button></li>`).join('')}</ul>
       <form class="addm" id="ar"><input id="rl" class="field" placeholder="wss://relay.example" autocapitalize="off"><button class="btn">Add</button></form>
+      <h3>Nutzaps</h3>
+      ${toggle('t_nz', 'Receive nutzaps', 'People can send ecash to your npub from Nostr apps that support nutzaps (NIP-61). Publishes your mints and relays, with a key just for nutzaps. Works while blindsig is open.', N.nutzapsOn())}
       <h3>Mint list backup</h3>
       ${toggle('t_bk', 'Back up mint list on nostr', 'Encrypted with a key from your seed, so a restore can find your mints.', nn.backup)}
       ${nn.backup ? `<p class="dim small">${nn.backupTs ? 'Last backup ' + new Date(nn.backupTs * 1000).toLocaleString() : 'Not backed up yet.'}</p><button class="btn wide" id="bkn">Back up now</button>` : ''}
@@ -123,6 +125,7 @@ export function nostrUI(x) {
         if (!/^wss?:\/\//.test(r)) r = 'wss://' + r;
         S.nostr.relays = [...new Set([...N.relays(), r])]; save(); N.startAll(); nostr();
       };
+      $('#t_nz', b).onchange = withBusy($('#t_nz', b), async () => { await N.nutzapEnable($('#t_nz', b).checked); toast(N.nutzapsOn() ? 'Nutzaps on' : 'Nutzaps off'); nostr(); });
       $('#t_bk', b).onchange = withBusy($('#t_bk', b), async () => { nn.backup = $('#t_bk', b).checked; save(); if (nn.backup) { await N.backupMints(); toast('Mint list backed up'); } nostr(); });
       const bkn = $('#bkn', b); if (bkn) bkn.onclick = withBusy(bkn, async () => { await N.backupMints(); toast('Mint list backed up'); nostr(); });
       const wb = $('#wb', b);

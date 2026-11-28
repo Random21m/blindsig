@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.21.0';
+export const VERSION = '1.22.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange

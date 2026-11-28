@@ -593,16 +593,116 @@ export async function findBackedUpMints(mnemonic = S.mnemonic) {
   return [...urls];
 }
 
+/* ---------------- nutzaps (NIP-61) ---------------- */
+// Receiving: we publish kind 10019 (our relays, mints, and a P2PK key just for nutzaps) and listen
+// for kind 9321 events tagged with our pubkey; their proofs are locked to that key, so we redeem them.
+// Sending: read their 10019, lock ecash to their key on a mint they accept, and publish a 9321.
+S.nutzap = Object.assign({ enabled: false, since: 0, seen: [] }, S.nutzap || {});
+const NZ = S.nutzap;
+const xonly = (pub) => (pub.length === 66 ? pub.slice(2) : pub);
+const lockKeyOf = (k) => (k.length === 64 ? '02' + k : k);
+export const nutzapsOn = () => !!NZ.enabled;
+function nutzapKey() {
+  let k = S.p2pk.find((x) => x.nutzap);
+  // a key with an even y, so the x-only key we publish and the 02-prefixed lock are the same key
+  while (!k) { const c = C.newP2pkKey(); if (c.pub.startsWith('02')) { c.nutzap = true; c.used = true; k = c; } else S.p2pk = S.p2pk.filter((x) => x !== c); }
+  save(); return k;
+}
+async function publishNutzapInfo(on) {
+  const sg = await signer();
+  const tags = on ? [
+    ...relays().map((r) => ['relay', r]),
+    ...S.mints.filter((m) => (m.units || ['sat']).includes('sat')).map((m) => ['mint', m.url, 'sat']),
+    ['pubkey', xonly(nutzapKey().pub)],
+  ] : [];
+  return publish(await sg.sign({ kind: 10019, created_at: now(), tags, content: '' }));
+}
+export async function nutzapEnable(on) {
+  if (on) { await publishNutzapInfo(true); NZ.enabled = true; NZ.pubHash = JSON.stringify([relays(), S.mints.map((m) => m.url)]); if (!NZ.since) NZ.since = now() - 3 * 86400; }
+  else { NZ.enabled = false; await publishNutzapInfo(false).catch(() => {}); }
+  save(); startNutzaps();
+}
+// keep the published mint list in step with ours
+export async function nutzapRefreshInfo() { if (NZ.enabled) await publishNutzapInfo(true); }
+let nzSub = null;
+export function stopNutzaps() { try { nzSub?.close(); } catch {} nzSub = null; }
+export async function startNutzaps() {
+  stopNutzaps();
+  if (!NZ.enabled || stopped) return;
+  let pk; try { pk = (await signer()).pubkey; } catch { return; }
+  // our mints or relays changed since we last published: publish again
+  const hash = JSON.stringify([relays(), S.mints.map((m) => m.url)]);
+  if (NZ.pubHash !== hash) { publishNutzapInfo(true).then(() => { NZ.pubHash = hash; save(); }).catch(() => {}); }
+  nzSub = pool.subscribeMany(relays(), { kinds: [9321], '#p': [pk], since: Math.max(0, (NZ.since || now()) - 600) }, {
+    onevent: (ev) => { redeemNutzap(ev).catch((e) => console.error('nutzap', e)); },
+  });
+}
+const nzBusy = new Set();
+async function redeemNutzap(ev) {
+  if (NZ.seen.includes(ev.id) || nzBusy.has(ev.id)) return;
+  nzBusy.add(ev.id);
+  try {
+    const tag = (k) => (ev.tags.find((t) => t[0] === k) || [])[1];
+    const url = normUrl(tag('u') || ''), unit = tag('unit') || 'sat';
+    const proofs = ev.tags.filter((t) => t[0] === 'proof').map((t) => { try { return JSON.parse(t[1]); } catch { return null; } }).filter(Boolean);
+    const done = () => { NZ.seen = [ev.id, ...NZ.seen].slice(0, 500); NZ.since = Math.max(NZ.since || 0, ev.created_at); save(); };
+    if (!url || !proofs.length || !mintOf(url)) return done(); // only from mints we listed
+    const t = C.parseToken(getEncodedToken({ mint: url, proofs, unit, memo: ev.content || undefined }));
+    let h;
+    // a network hiccup: try again next time; anything else (spent, not our key, bad proofs): give up on it
+    try { h = await C.receiveEcash(t); } catch (e) { if (!/fetch|network|timeout|offline/i.test(e.message || '')) done(); throw e; }
+    h.nutzap = { from: ev.pubkey, id: ev.id }; if (ev.content) h.memo = ev.content.slice(0, 140);
+    done(); emit('nutzap', h);
+  } finally { nzBusy.delete(ev.id); }
+}
+// someone's nutzap info: the key to lock to, the mints they accept, the relays they read
+export async function nutzapInfo(target) {
+  const d = nip19.decode(target.trim().replace(/^nostr:/i, ''));
+  const pk = d.type === 'npub' ? d.data : d.type === 'nprofile' ? d.data.pubkey : null;
+  if (!pk) throw new Error('not an npub');
+  const extra = d.type === 'nprofile' ? d.data.relays || [] : [];
+  const evs = await pool.querySync([...new Set([...relays(), ...extra])], { kinds: [10019], authors: [pk] }, { maxWait: 5000 });
+  const ev = evs.sort((a, b) => b.created_at - a.created_at)[0];
+  const key = ev && (ev.tags.find((t) => t[0] === 'pubkey') || [])[1];
+  if (!ev || !key) return { pk, ok: false };
+  return {
+    pk, ok: true, key: lockKeyOf(key),
+    mints: ev.tags.filter((t) => t[0] === 'mint' && (!t[2] || t.slice(2).includes('sat'))).map((t) => normUrl(t[1])),
+    relays: ev.tags.filter((t) => t[0] === 'relay').map((t) => t[1]),
+  };
+}
+// the mint to send from: one they accept where we have enough
+export function nutzapMint(info, amount) {
+  const ok = info.mints.filter((u) => mintOf(u) && bal(u, 'sat') >= amount);
+  return ok.includes(S.active) ? S.active : ok.sort((a, b) => bal(b, 'sat') - bal(a, 'sat'))[0] || null;
+}
+export async function sendNutzap(info, amount, comment, url) {
+  const prev = S.active, prevUnit = S.unit;
+  let h;
+  try {
+    C.selectMint(url); S.unit = 'sat';
+    // locked to their key; if they never redeem it, it comes back to us after a week
+    h = await C.sendEcash(amount, { lockTo: info.key, returnAfter: 7 * 864e5, memo: comment || undefined });
+  } finally { C.selectMint(prev); S.unit = prevUnit; save(); }
+  const proofs = (await C.tokenProofs(h.token, url, 'sat')).map((p) => ({ id: p.id, amount: Number(p.amount), secret: p.secret, C: p.C }));
+  const sg = await signer();
+  const ev = await sg.sign({ kind: 9321, created_at: now(), content: comment || '', tags: [...proofs.map((p) => ['proof', JSON.stringify(p)]), ['u', url], ['unit', 'sat'], ['p', info.pk]] });
+  await publish(ev, info.relays);
+  h.nutzap = { to: info.pk, id: ev.id }; save();
+  return h;
+}
+
 /* ---------------- lifecycle ---------------- */
 let npcTimer = null;
 export function stopAll() {
-  stopped = true; stopInbox(); stopNwc(); clearInterval(npcTimer); npcDisconnect();
+  stopped = true; stopInbox(); stopNwc(); stopNutzaps(); clearInterval(npcTimer); npcDisconnect();
 }
 export function startAll() {
   if (!S.mnemonic) return;
   stopped = false;
   if (S.pr.enabled) startInbox(); else stopInbox();
   if (S.nwc.enabled) startNwc(); else stopNwc();
+  startNutzaps();
   clearInterval(npcTimer);
   if (S.npc.enabled) { npcSync().catch(() => {}); npcConnect(); npcTimer = setInterval(() => { if (!document.hidden) npcSync().catch(() => {}); }, 120000); }
   else npcDisconnect();

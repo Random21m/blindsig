@@ -973,3 +973,20 @@
 972	Každý naskenuje nebo otevře svou vlastní žádost. Žádosti po čase vyprší; zaplacené se objeví ve vaší historii.
 973	Zaplatili všichni
 974	{0} zaplatil(a)
+975	Nutzap
+976	Nutzapy
+977	Přijímat nutzapy
+978	Kdokoli vám může poslat ecash na váš npub z Nostr aplikací s podporou nutzapů (NIP-61). Zveřejní vaše minty a relaye s klíčem jen pro nutzapy. Funguje, dokud je blindsig otevřený.
+979	Nutzapy zapnuty
+980	Nutzapy vypnuty
+981	Hledám nastavení nutzapů
+982	Tento člověk ještě nemá nutzapy nastavené.
+983	Můžete místo toho zaplatit na jeho Lightning adresu npub.cash, pokud ji používá.
+984	Přijímá
+985	Komentář
+986	Nepovinné
+987	Žádný z mintů, které přijímá, ve vaší peněžence není. Přidejte jeden z nich a pošlete nutzap.
+988	Ecash se zamkne na jeho klíč a pošle přes Nostr. Pokud si ho do týdne nevyzvedne, vrátí se vám.
+989	Poslat nutzap
+990	Nutzap odeslán
+991	Na mintu, který přijímá, nemáte dost ({0}).

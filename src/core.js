@@ -279,6 +279,11 @@ export async function sweepState(st) {
   }
   return got;
 }
+// the proofs inside a token (v4 tokens need the mint's keyset ids to decode)
+export async function tokenProofs(token, url, unit = 'sat') {
+  const w = await walletFor(url, unit);
+  return w.decodeToken(token).proofs;
+}
 export async function checkClaimed(h) {
   if (h.kind !== 'ecash-out' || h.status !== 'pending') return h.status;
   const w = await walletFor(h.mint, h.unit);

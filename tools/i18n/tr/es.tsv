@@ -973,3 +973,20 @@
 972	Cada persona escanea o abre su propia solicitud. Las solicitudes caducan pasado un tiempo; las pagadas llegan a tu historial.
 973	Todos han pagado
 974	{0} ha pagado
+975	Nutzap
+976	Nutzaps
+977	Recibir nutzaps
+978	Cualquiera puede enviar ecash a tu npub desde apps de Nostr compatibles con nutzaps (NIP-61). Publica tus mints y relays, con una clave solo para nutzaps. Funciona mientras blindsig está abierto.
+979	Nutzaps activados
+980	Nutzaps desactivados
+981	Buscando su configuración de nutzaps
+982	Aún no ha configurado los nutzaps.
+983	Puedes pagar a su dirección Lightning de npub.cash, si la usa.
+984	Acepta
+985	Comentario
+986	Opcional
+987	Ninguno de los mints que acepta está en tu monedero. Añade uno para enviar un nutzap.
+988	El ecash queda bloqueado a su clave y se envía por Nostr. Si no lo recoge en una semana, vuelve a ti.
+989	Enviar nutzap
+990	Nutzap enviado
+991	No tienes suficiente en un mint que acepte ({0}).

@@ -170,6 +170,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 - 14 languages: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right to left), ไทย, 日本語 and 中文
 - On-screen keypad, optional ₿ symbol, prices in 20 currencies
+- Nutzaps (NIP-61): send ecash to anyone's npub (type or scan it in Send), and turn on receiving so people can nutzap you from Nostr apps. Unclaimed nutzaps come back after a week
 - Split a bill: one Lightning request per person, shared one by one or all at once to a group chat, with live progress ("2 of 3 paid")
 - Tip jar card: your Lightning address as a big QR code on a printable card, for a counter, a stream or a market stall
 - Gift cards: turn sats into a card with a message and a QR code to share, save or print. Whoever scans it can claim the gift, even without a wallet yet, and you can take it back if nobody does

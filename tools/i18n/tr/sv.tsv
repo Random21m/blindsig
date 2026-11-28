@@ -973,3 +973,20 @@
 972	Varje person skannar eller öppnar sin egen förfrågan. Förfrågningar går ut efter ett tag; betalda hamnar i din historik.
 973	Alla har betalat
 974	{0} har betalat
+975	Nutzap
+976	Nutzaps
+977	Ta emot nutzaps
+978	Vem som helst kan skicka ecash till din npub från Nostr-appar som stöder nutzaps (NIP-61). Publicerar dina mintar och reläer, med en nyckel bara för nutzaps. Fungerar medan blindsig är öppen.
+979	Nutzaps på
+980	Nutzaps av
+981	Söker deras nutzap-inställningar
+982	De har inte ställt in nutzaps än.
+983	Du kan betala deras npub.cash-Lightning-adress i stället, om de använder en.
+984	Tar emot
+985	Kommentar
+986	Valfritt
+987	Ingen av mintarna de tar emot finns i din plånbok. Lägg till en av dem för att skicka en nutzap.
+988	Ecashen låses till deras nyckel och skickas över Nostr. Om de inte tar den inom en vecka kommer den tillbaka till dig.
+989	Skicka nutzap
+990	Nutzap skickad
+991	Inte nog hos en mint de tar emot ({0}).

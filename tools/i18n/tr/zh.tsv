@@ -973,3 +973,20 @@
 972	每个人扫描或打开自己的收款请求。请求会在一段时间后过期；已付款的会进入你的记录。
 973	大家都付了
 974	{0} 已付款
+975	Nutzap
+976	Nutzaps
+977	接收 nutzaps
+978	任何人都能通过支持 nutzaps（NIP-61）的 Nostr 应用把 ecash 发到你的 npub。会公开你的 mint 和中继，以及一个只用于 nutzaps 的密钥。blindsig 打开时有效。
+979	已开启 nutzaps
+980	已关闭 nutzaps
+981	正在查找对方的 nutzap 设置
+982	对方还没有设置 nutzaps。
+983	如果对方在用 npub.cash，你可以改为付款到其 Lightning 地址。
+984	对方接受
+985	留言
+986	可选
+987	对方接受的 mint 都不在你的钱包里。添加其中一个才能发送 nutzap。
+988	ecash 会锁定到对方的密钥并通过 Nostr 发送。如果对方一周内没领取，会退回给你。
+989	发送 nutzap
+990	nutzap 已发送
+991	在对方接受的 mint 上余额不足（{0}）。

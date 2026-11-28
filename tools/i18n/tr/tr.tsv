@@ -973,3 +973,20 @@
 972	Herkes kendi talebini tarar ya da açar. Talepler bir süre sonra sona erer; ödenenler geçmişine düşer.
 973	Herkes ödedi
 974	{0} ödedi
+975	Nutzap
+976	Nutzap'ler
+977	Nutzap al
+978	Nutzap destekleyen Nostr uygulamalarından herkes npub'ına ecash gönderebilir (NIP-61). Mint'lerini ve relay'lerini, yalnızca nutzap'ler için bir anahtarla yayınlar. blindsig açıkken çalışır.
+979	Nutzap'ler açık
+980	Nutzap'ler kapalı
+981	Nutzap ayarları aranıyor
+982	Henüz nutzap ayarlamamış.
+983	Kullanıyorsa onun npub.cash Lightning adresine ödeme yapabilirsin.
+984	Kabul ettiği
+985	Yorum
+986	İsteğe bağlı
+987	Kabul ettiği mint'lerin hiçbiri cüzdanında yok. Nutzap göndermek için birini ekle.
+988	Ecash onun anahtarına kilitlenir ve Nostr üzerinden gönderilir. Bir hafta içinde almazsa sana geri döner.
+989	Nutzap gönder
+990	Nutzap gönderildi
+991	Kabul ettiği bir mint'te yeterli bakiyen yok ({0}).

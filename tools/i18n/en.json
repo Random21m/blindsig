@@ -973,5 +973,22 @@
 "Copy all for a group chat",
 "Each person scans or opens their own request. Requests expire after a while; paid ones land in your history.",
 "Everyone paid",
-"{0} paid"
+"{0} paid",
+"Nutzap",
+"Nutzaps",
+"Receive nutzaps",
+"People can send ecash to your npub from Nostr apps that support nutzaps (NIP-61). Publishes your mints and relays, with a key just for nutzaps. Works while blindsig is open.",
+"Nutzaps on",
+"Nutzaps off",
+"Looking up their nutzap settings",
+"They haven’t set up nutzaps yet.",
+"You can pay their npub.cash Lightning address instead, if they use one.",
+"They accept",
+"Comment",
+"Optional",
+"None of the mints they accept is in your wallet. Add one of them to send a nutzap.",
+"The ecash is locked to their key and sent over Nostr. If they don’t take it within a week, it comes back to you.",
+"Send nutzap",
+"Nutzapped",
+"Not enough at a mint they accept ({0})."
 ]
