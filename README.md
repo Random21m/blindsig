@@ -137,6 +137,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 **Send**
 
 - Ecash as a static or animated QR (BC-UR), a link, NFC, or hidden inside an emoji
+- NFC cards and stickers (Android): load a card with ecash or a gift so any phone that taps it, iPhones included, opens the claim link; write your tip jar to a sticker; and the scanner reads cards too
 - Offline sending: exact-amount tokens made without contacting the mint
 - Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, and bitcoin addresses (BIP21 aware)
 - Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey, npub or contact

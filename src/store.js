@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.22.0';
+export const VERSION = '1.23.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -30,7 +30,7 @@ export const DEFAULT_SETTINGS = {
   auditorApi: 'https://api.audit.8333.space',
   auditorUrl: 'https://audit.8333.space',
   multinut: false,
-  nfcEncoding: 'text', // text | url | binary
+  nfcEncoding: 'url', // text | url | binary (url: any phone that taps the card opens the wallet)
   nfcQuick: true,
   p2pkQuick: false,
 };

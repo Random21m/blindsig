@@ -1115,7 +1115,8 @@ function tipSheet() {
     <label class="lbl" for="tjn">Name</label><input id="tjn" class="field" maxlength="30" placeholder="Your name or shop (optional)" autocomplete="off" dir="auto" value="${esc(t.name)}">
     ${designPicker(t.design)}
     <div class="btnrow"><button class="btn primary" id="gSh">Share</button><button class="btn" id="gSv">Save image</button></div>
-    <div class="btnrow"><button class="btn" id="gCl">Copy address</button>${typeof window.print === 'function' ? '<button class="btn" id="gPr">Print</button>' : ''}</div>`, (b) => {
+    <div class="btnrow"><button class="btn" id="gCl">Copy address</button>${typeof window.print === 'function' ? '<button class="btn" id="gPr">Print</button>' : ''}</div>
+    ${hasNfc() ? '<button class="btn wide" id="gNfc">Write to NFC sticker</button><p class="dim small center">Stick it on the counter: a tap opens the payer’s Lightning wallet.</p>' : ''}`, (b) => {
     const img = $('#gImg', b), A = $('#tja', b);
     const ok = () => LNADDR.test(A.value.trim());
     const paint = async () => {
@@ -1129,7 +1130,7 @@ function tipSheet() {
       if (url) URL.revokeObjectURL(url);
       url = URL.createObjectURL(blob); img.src = url;
       img.alt = `${I18N.t('Tip jar card')}: ${address}`;
-      $$('#gSh, #gSv, #gCl, #gPr', b).forEach((x) => (x.disabled = !ok()));
+      $$('#gSh, #gSv, #gCl, #gPr, #gNfc', b).forEach((x) => (x.disabled = !ok()));
     };
     const later_ = () => { clearTimeout(timer); timer = setTimeout(paint, 250); };
     $$('#tja, #tjt, #tjn', b).forEach((x) => (x.oninput = later_));
@@ -1139,6 +1140,7 @@ function tipSheet() {
     onClose = () => { clearTimeout(timer); setTimeout(() => url && URL.revokeObjectURL(url), 1000); };
     cardTools(b, () => ({ blob, url }), { name: 'blindsig-tip-jar.png', text: `⚡ ${t.address}`, link: '' });
     $('#gCl', b).onclick = () => copy(A.value.trim(), 'Address copied');
+    const gn = $('#gNfc', b); if (gn) gn.onclick = withBusy(gn, async () => { if (!ok()) return nope('Add your Lightning address'); await nfcWriteUrl('lightning:' + A.value.trim().toLowerCase()); });
   });
 }
 /* ================= gift cards ================= */
@@ -1178,6 +1180,7 @@ function giftView(h, fromLog) {
     <div class="gds" role="radiogroup" aria-label="Design">${GIFT.DESIGNS.map(([k, l]) => `<button role="radio" class="gd gd-${k}" data-d="${k}" aria-checked="${(h.gift?.design || 'winter') === k}"><i aria-hidden="true"></i>${l}</button>`).join('')}</div>
     <div class="btnrow"><button class="btn primary" id="gSh">Share</button><button class="btn" id="gSv">Save image</button></div>
     <div class="btnrow"><button class="btn" id="gCl">Copy link</button>${typeof window.print === 'function' ? '<button class="btn" id="gPr">Print</button>' : ''}</div>
+    ${hasNfc() ? '<button class="btn wide" id="gNfc">Write to NFC card</button><p class="dim small center">Any phone that taps the card opens the gift, iPhones too.</p>' : ''}
     ${fromLog ? '<div class="btnrow"><button class="btn" id="chk">Check status</button><button class="btn" id="rc">Reclaim</button></div>' : ''}
     <p class="dim small center">Whoever scans the code gets the ecash. If nobody claims it, you can take it back from your history.</p>`, (b) => {
     addNote(b, h);
@@ -1200,6 +1203,7 @@ function giftView(h, fromLog) {
       h.gift = { ...(h.gift || {}), design: x.dataset.d }; save(); paint();
     }));
     cardTools(b, () => ({ blob, url }), { name: 'blindsig-gift.png', text: `${g.msg ? g.msg + ' ' : ''}🎁 ${link}`, link });
+    const gn = $('#gNfc', b); if (gn) gn.onclick = withBusy(gn, () => nfcWriteUrl(link));
     if (fromLog) {
       const chk = $('#chk', b), rc = $('#rc', b);
       chk.onclick = withBusy(chk, async () => { const s = await C.checkClaimed(h); toast(s === 'claimed' ? 'The gift was claimed.' : 'Not claimed yet.', s === 'claimed' ? 'ok' : 'warn'); if (s === 'claimed') detail(h); });
@@ -2052,43 +2056,61 @@ function wipeSheet() {
 }
 
 /* ================= NFC ================= */
+const hasNfc = () => 'NDEFReader' in window;
 async function nfcWrite(token) {
-  const w = new window.NDEFReader();
   let rec;
   if (st.nfcEncoding === 'url') rec = { recordType: 'url', data: location.origin + location.pathname + '#token=' + token };
   else if (st.nfcEncoding === 'binary') rec = { recordType: 'mime', mediaType: 'application/octet-stream', data: getEncodedTokenBinary(await decodeForBinary(token)) };
   else rec = { recordType: 'text', data: token };
+  return nfcWriteRec(rec);
+}
+// a link on the card: any phone that taps it opens the link, iPhones included
+const nfcWriteUrl = (url) => nfcWriteRec({ recordType: 'url', data: url });
+async function nfcWriteRec(rec) {
+  const w = new window.NDEFReader();
   toast('Hold the card to your phone…', 'warn');
   await w.write({ records: [rec] });
   toast('Written to NFC card');
+  FX.buzz('sent');
 }
 async function decodeForBinary(token) {
   const t = C.parseToken(token);
   const w = await C.walletFor(t.mint, t.unit);
   return w.decodeToken(t.str);
 }
-async function nfcRead(cb) {
+// read a card: ecash (as text, a link with #token= or binary) or, with `any`, whatever text or link
+// is on it (an invoice, an address, an npub). Returns the AbortController, to stop listening.
+async function nfcRead(cb, { quiet, any } = {}) {
+  const ctrl = new AbortController();
   try {
-    const r = new window.NDEFReader(); const ctrl = new AbortController();
+    const r = new window.NDEFReader();
     await r.scan({ signal: ctrl.signal });
-    toast('Hold an NFC card to your phone…', 'warn');
+    if (!quiet) toast('Hold an NFC card to your phone…', 'warn');
     r.onreading = (ev) => {
+      let first = '';
       for (const rec of ev.message.records) {
         let txt = '';
-        if (rec.recordType === 'text' || rec.recordType === 'url') txt = new TextDecoder(rec.encoding || 'utf-8').decode(rec.data);
+        if (rec.recordType === 'text' || rec.recordType === 'url' || rec.recordType === 'absolute-url') txt = new TextDecoder(rec.encoding || 'utf-8').decode(rec.data);
         else if (rec.recordType === 'mime') { try { txt = C.getEncodedToken(getDecodedTokenBinary(new Uint8Array(rec.data.buffer))); } catch {} }
         const m = txt.match(/cashu[AB][A-Za-z0-9_\-=+/]+/);
-        if (m) { ctrl.abort(); cb(m[0]); return; }
+        if (m) { ctrl.abort(); FX.buzz('received'); cb(m[0]); return; }
+        first = first || txt.trim();
       }
+      if (any && first) { ctrl.abort(); cb(first); return; }
       toast('No token on that card.', 'warn');
     };
-  } catch (e) { toast('NFC: ' + niceErr(e), 'err'); }
+  } catch (e) { if (!quiet) toast('NFC: ' + niceErr(e), 'err'); }
+  return ctrl;
 }
 
 /* ================= scanner ================= */
 let stream = null, raf = 0, onScan = null, urDec = null;
+let scanNfc = null;
 async function startScan(cb) {
   onScan = cb; urDec = null;
+  // Android: tapping an NFC card works too while the scanner is open
+  if (hasNfc()) nfcRead((t) => { const f = onScan; stopScan(); f && f(t); }, { quiet: true, any: true }).then((c) => { if (onScan) scanNfc = c; else c.abort(); });
+  $('#scanNfc').hidden = !hasNfc();
   const sc = $('#scanner'), v = $('video', sc);
   try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }); }
   catch { toast('Camera unavailable. Paste instead.', 'warn'); return; }
@@ -2123,6 +2145,7 @@ async function startScan(cb) {
 }
 function stopScan() {
   cancelAnimationFrame(raf); onScan = null;
+  try { scanNfc?.abort(); } catch {} scanNfc = null;
   stream?.getTracks().forEach((t) => t.stop()); stream = null;
   $('#scanner').hidden = true;
 }
