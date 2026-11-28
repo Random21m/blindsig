@@ -927,3 +927,26 @@
 926	Seu nome ou loja (opcional)
 927	Escaneie com qualquer carteira Lightning
 928	Adicione seu endereço Lightning
+929	Cofre com prazo
+930	Guarde sats trancados até uma data
+931	Destrancado
+932	no cofre com prazo
+933	destrancando agora
+934	em 1 hora
+935	em {0} horas
+936	em {0} dias
+937	Uma semana
+938	Um mês
+939	Três meses
+940	Seis meses
+941	Um ano
+942	Escolher uma data…
+943	Tranque sats até a data que você escolher. Até lá ninguém pode gastá-los, nem você. No dia, eles voltam sozinhos para sua carteira.
+944	Trancar sats
+945	Trancar por
+946	Destranca em {0}
+947	Entendo que não posso recuperar estes sats antes de {0}.
+948	Escolha uma data.
+949	O mint {0} guarda esses sats até lá, como todo o seu ecash. Sua frase-semente não recupera um cofre se você perder este celular, então mantenha um arquivo de backup.
+950	{0} trancados até {1}
+951	{0} do seu cofre com prazo voltaram para sua carteira.

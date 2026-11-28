@@ -927,3 +927,26 @@
 926	Dein Name oder Laden (optional)
 927	Mit jedem Lightning-Wallet scannen
 928	Füge deine Lightning-Adresse hinzu
+929	Zeittresor
+930	Sats bis zu einem Datum wegschließen
+931	Entsperrt
+932	im Zeittresor
+933	wird gerade entsperrt
+934	in 1 Stunde
+935	in {0} Stunden
+936	in {0} Tagen
+937	Eine Woche
+938	Ein Monat
+939	Drei Monate
+940	Sechs Monate
+941	Ein Jahr
+942	Datum wählen…
+943	Schließ Sats bis zu einem Datum deiner Wahl weg. Bis dahin kann niemand sie ausgeben, nicht einmal du. Am Stichtag kommen sie von selbst in dein Wallet zurück.
+944	Sats wegschließen
+945	Sperren für
+946	Wird am {0} entsperrt
+947	Mir ist klar, dass ich diese Sats vor dem {0} nicht zurückbekomme.
+948	Wähle ein Datum.
+949	Die Mint {0} verwahrt sie bis dahin, wie dein gesamtes Ecash. Deine Seed-Phrase kann einen Tresor nicht wiederherstellen, wenn du dieses Handy verlierst. Bewahre also eine Backup-Datei auf.
+950	{0} bis {1} gesperrt
+951	{0} aus deinem Zeittresor sind zurück in deinem Wallet.

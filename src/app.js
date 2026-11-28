@@ -151,7 +151,7 @@ const RETURN_AFTER = [[0, 'Never'], [3600e3, '1 hour'], [864e5, '1 day'], [7 * 8
 const keyContacts = () => (S.contacts || []).map((c) => ({ ...c, npub: (String(c.to).match(/^(npub1[02-9ac-hj-np-z]+)(@|$)/i) || [])[1] })).filter((c) => c.npub);
 const whenShort = (ts) => new Date(ts).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const isGiftMemo = (m) => /^🎁/u.test(m || '');
-const kindOf = (h) => (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
+const kindOf = (h) => h.vault ? ['Locked', 'Time vault'] : (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
 const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', returned: 'Came back', expired: 'Expired', failed: 'Failed' };
 let logFilter = 'all', logLimit = 100;
 function stamp(ts) {
@@ -344,15 +344,18 @@ function render() {
       <span class="rt"><b>${title}</b><small><span>${stamp(h.ts)}</span>${h.note ? ' · <span dir="auto">✎ ' + esc(h.note) + '</span>' : h.memo ? ' · <span dir="auto">' + esc(h.memo) + '</span>' : ''}</small></span>
       <span class="ra"><span class="amtv in">${st.hideAmounts ? HIDDEN : '+' + esc(fmt(h.received || 0, h.unit || 'sat'))}</span><em class="pill p-live">Reusable</em></span></button></li>`;
     }
-    const stx = open ? 'Unclaimed' : claim ? 'Tap to claim' : STATUS[h.status] ?? '';
+    const stx = h.vault ? (h.status === 'pending' ? `🔒 ${vaultDay(h.refundAt)}` : h.status === 'returned' ? I18N.t('Unlocked') : STATUS[h.status] ?? '') : open ? 'Unclaimed' : claim ? 'Tap to claim' : STATUS[h.status] ?? '';
     const sub = h.note ? '✎ ' + h.note : h.kind === 'chain-out' && h.memo === h.request ? '' : h.memo;
     return `<li><button class="row s-${esc(h.status)}" data-id="${esc(h.id)}">
       <span class="ri ${out ? 'out' : 'in'}" aria-hidden="true">${out ? '↑' : '↓'}</span>
       <span class="rt"><b>${verb} · ${via}</b><small><span>${stamp(h.ts)}</span>${sub ? ' · <span dir="auto">' + esc(sub) + '</span>' : ''}</small></span>
-      <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${st.hideAmounts ? HIDDEN : (out ? '−' : '+') + esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${open || claim ? 'open' : esc(h.status)}">${stx}</em>` : ''}</span></button></li>`;
+      <span class="ra"><span class="amtv ${out ? 'out' : 'in'}">${st.hideAmounts ? HIDDEN : (out ? '−' : '+') + esc(fmt(h.amount, h.unit || 'sat'))}</span>${stx ? `<em class="pill p-${h.vault && h.status === 'pending' ? 'vault' : open || claim ? 'open' : esc(h.status)}">${esc(stx)}</em>` : ''}</span></button></li>`;
   }).join('');
   $('#empty').hidden = list.length > 0;
   $('#sumBtn').hidden = !S.history.some(counted);
+  const vs = vaults(), vc = $('#vaultChip');
+  vc.hidden = !vs.length;
+  if (vs.length) vc.textContent = `🔒 ${st.hideAmounts ? HIDDEN : fmt(vs.reduce((t, h) => t + h.amount, 0), 'sat')} ${I18N.t('in the time vault')}`;
   $('#chkAll').hidden = !(logFilter === 'pending' && list.length);
   $('#empty').textContent = q ? 'No matches.' : S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
 }
@@ -866,6 +869,65 @@ function lockName(pub) {
   const c = keyContacts().find((x) => { try { return C.parsePubkey(x.npub) === pub; } catch { return false; } });
   return c ? c.name : pub.slice(0, 12) + '…';
 }
+/* ================= time vault ================= */
+const vaults = () => S.history.filter((h) => h.vault && h.status === 'pending' && (h.unit || 'sat') === 'sat');
+const vaultDay = (ts) => new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric', year: new Date(ts).getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined });
+function vaultLeft(ts) {
+  const d = Math.ceil((ts - Date.now()) / 864e5);
+  if (ts <= Date.now()) return I18N.t('unlocking now');
+  if (d <= 1) { const h = Math.max(1, Math.round((ts - Date.now()) / 36e5)); return I18N.t(h === 1 ? 'in 1 hour' : 'in {0} hours').replace('{0}', h); }
+  return I18N.t('in {0} days').replace('{0}', d);
+}
+const VAULT_FOR = [[7, 'One week'], [30, 'One month'], [91, 'Three months'], [182, 'Six months'], [365, 'One year']];
+function vaultSheet(opts = {}) {
+  const vs = vaults();
+  sheet('Time vault', `<p>Lock sats away until a date you choose. Until then nobody can spend them, not even you. On the day, they come back to your wallet by themselves.</p>
+    ${vs.length ? `<ul class="spl">${vs.map((h) => `<li><span><b class="vt">🔒 ${esc(fmt(h.amount, 'sat'))}</b><small class="dim">${esc(mintLabel(mintOf(h.mint) || { url: h.mint }))}</small></span><span class="vr"><b>${esc(vaultDay(h.refundAt))}</b><small class="dim">${esc(vaultLeft(h.refundAt))}</small></span></li>`).join('')}</ul>` : ''}
+    <button class="btn primary wide" id="vNew">Lock sats</button>`, (b) => {
+    $('#vNew', b).onclick = () => vaultNew();
+  }, opts);
+}
+function vaultNew() {
+  if (needMint()) return;
+  if (mintOf(S.active)?.info?.nut11 === false) return toast('This mint doesn’t support locked ecash.', 'warn');
+  if (S.unit !== 'sat') { S.unit = 'sat'; save(); render(); }
+  const minDay = new Date(Date.now() + 864e5).toISOString().slice(0, 10), maxDay = new Date(Date.now() + 5 * 365 * 864e5).toISOString().slice(0, 10);
+  sheet('Lock sats', `${amountField('vamt', `Available: ${esc(fmt(bal(S.active, 'sat'), 'sat'))}`)}
+    <label class="lbl" for="vfor">Lock for</label>
+    <select id="vfor" class="field">${VAULT_FOR.map(([d, l]) => `<option value="${d}" ${d === 30 ? 'selected' : ''}>${l}</option>`).join('')}<option value="date">Pick a date…</option></select>
+    <input id="vday" class="field" type="date" min="${minDay}" max="${maxDay}" hidden>
+    <p class="okline small center" id="vwhen"></p>
+    <label class="check"><input type="checkbox" id="vok"> <span id="vokT"></span></label>
+    <p class="dim small">The mint ${esc(mintLabel(mintOf(S.active) || { url: S.active }))} holds them until then, like all your ecash. Your seed phrase can’t bring a vault back if you lose this phone, so keep a backup file.</p>
+    <button class="btn primary wide" id="vGo" disabled>Lock</button>`, (b) => {
+    const until = () => {
+      const v = $('#vfor', b).value;
+      if (v === 'date') { const d = $('#vday', b).value; if (!d) return 0; const t = new Date(d + 'T09:00'); return isNaN(t) ? 0 : t.getTime(); }
+      return Date.now() + +v * 864e5;
+    };
+    const upd = () => {
+      $('#vday', b).hidden = $('#vfor', b).value !== 'date';
+      const u = until();
+      $('#vwhen', b).textContent = u ? I18N.t('Unlocks {0}').replace('{0}', whenShort(u)) : '';
+      $('#vokT', b).textContent = u ? I18N.t('I understand I can’t get these sats back before {0}.').replace('{0}', vaultDay(u)) : I18N.t('Pick a date.');
+      $('#vGo', b).disabled = !u || !$('#vok', b).checked;
+    };
+    $('#vfor', b).onchange = () => { $('#vok', b).checked = false; upd(); };
+    $('#vday', b).oninput = () => { $('#vok', b).checked = false; upd(); };
+    $('#vok', b).onchange = upd;
+    upd();
+    const go = $('#vGo', b);
+    go.onclick = withBusy(go, async () => {
+      const a = readAmt(b, 'vamt'); if (!a) return nope('Enter an amount.');
+      const u = until(); if (!u || u <= Date.now()) return nope('Pick a date.');
+      if (!(await bigOk(a))) return;
+      await C.lockVault(a, u);
+      render(); FX.play('sent'); FX.buzz('sent');
+      toast(`${fmt(a, 'sat')} locked until ${vaultDay(u)}`);
+      vaultSheet();
+    });
+  }, { back: () => vaultSheet() });
+}
 /* ================= cards: gift cards and the tip jar ================= */
 // share, save, copy link and print for a card picture. get() returns the current { blob, url }
 function cardTools(b, get, { name, text, link }) {
@@ -1043,7 +1105,7 @@ function done(h, verb, saveTo) {
 
 const sentClaimed = () => { render(); };
 // a locked send nobody claimed in time is back in the wallet
-const cameBack = (h) => { toast(`${fmt(h.amount, h.unit)} came back to you. It wasn’t claimed in time.`); FX.play('received'); render(); };
+const cameBack = (h) => { toast(h.vault ? `${fmt(h.amount, h.unit)} from your time vault is back in your wallet.` : `${fmt(h.amount, h.unit)} came back to you. It wasn’t claimed in time.`); FX.play('received'); render(); };
 
 /* ================= history detail ================= */
 // a private note on any transaction: kept with your history on this device (encrypted with the
@@ -1158,6 +1220,7 @@ let shownDetail = null; // the entry whose details are on screen (to refresh the
 function detail(h) {
   if (h.live) return liveView(h);
   if (h.kind === 'ln-in' && h.status === 'pending') return invoiceView(h);
+  if (h.vault && h.status === 'pending') return vaultSheet();
   if (h.kind === 'ecash-out' && h.status === 'pending') return h.gift ? giftView(h, true) : tokenView(h, true);
   if (h.kind === 'ecash-in' && h.status === 'pending' && h.token) {
     receiveSheet('ecash', h.token);
@@ -1340,6 +1403,7 @@ function moveSheet() {
 /* ================= settings ================= */
 const MENU = [
   ['backup', 'Backup & restore', 'Seed phrase and ecash recovery'],
+  ['vault', 'Time vault', 'Lock sats away until a date'],
   ['security', 'PIN lock', 'Lock and encrypt the app with a PIN'],
   ['contacts', 'Contacts', 'People and places you pay often'],
   ['p2pk', 'P2PK', 'Receive ecash locked to your keys'],
@@ -1366,6 +1430,7 @@ function bindToggles(b, keys, after) {
   });
 }
 const SECTIONS = {
+  vault() { vaultSheet({ back: settingsSheet }); },
   backup() {
     sheet('Backup & restore', `<h3>Seed phrase</h3><p class="dim">Your seed phrase restores your wallet. Keep it private.</p>
       <button class="btn wide" id="seed">Show seed phrase</button>
@@ -1963,6 +2028,7 @@ $('#mintChip').onclick = () => mintsSheet();
 $('#unitChip').onclick = () => { const m = mintOf(S.active); const u = m?.units || ['sat']; S.unit = u[(u.indexOf(S.unit) + 1) % u.length]; save(); render(); };
 $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
 $('#sumBtn').onclick = () => summarySheet();
+$('#vaultChip').onclick = () => vaultSheet();
 $('#btcPrice').onclick = () => { if (S.price[st.fiatCur]) priceChart(); };
 $('#instBtn').onclick = installHelp;
 $('#bkHow').onclick = () => backupCreateSheet();

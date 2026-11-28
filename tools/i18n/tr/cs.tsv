@@ -927,3 +927,26 @@
 926	Vaše jméno nebo obchod (nepovinné)
 927	Naskenujte jakoukoli Lightning peněženkou
 928	Přidejte svou Lightning adresu
+929	Časový trezor
+930	Uzamkněte saty do zvoleného data
+931	Odemčeno
+932	v časovém trezoru
+933	odemyká se
+934	za 1 hodinu
+935	za {0} h
+936	za {0} dní
+937	Jeden týden
+938	Jeden měsíc
+939	Tři měsíce
+940	Šest měsíců
+941	Jeden rok
+942	Zvolit datum…
+943	Uzamkněte saty do data, které si zvolíte. Do té doby je nikdo nemůže utratit, ani vy. V ten den se samy vrátí do vaší peněženky.
+944	Uzamknout saty
+945	Uzamknout na
+946	Odemkne se {0}
+947	Rozumím, že tyto saty nemůžu získat zpět před {0}.
+948	Zvolte datum.
+949	Mint {0} je do té doby drží, stejně jako všechen váš ecash. Seed fráze trezor neobnoví, pokud tento telefon ztratíte, takže si uchovejte záložní soubor.
+950	{0} uzamčeno do {1}
+951	{0} z vašeho časového trezoru je zpět v peněžence.

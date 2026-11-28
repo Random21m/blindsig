@@ -927,3 +927,26 @@
 926	Il tuo nome o negozio (facoltativo)
 927	Scansiona con qualsiasi wallet Lightning
 928	Aggiungi il tuo indirizzo Lightning
+929	Cassaforte a tempo
+930	Metti dei sat sotto chiave fino a una data
+931	Sbloccati
+932	nella cassaforte a tempo
+933	sblocco in corso
+934	tra 1 ora
+935	tra {0} ore
+936	tra {0} giorni
+937	Una settimana
+938	Un mese
+939	Tre mesi
+940	Sei mesi
+941	Un anno
+942	Scegli una data…
+943	Metti dei sat sotto chiave fino alla data che scegli. Fino ad allora nessuno può spenderli, nemmeno tu. Quel giorno tornano da soli nel tuo wallet.
+944	Blocca sat
+945	Blocca per
+946	Si sblocca il {0}
+947	Capisco che non posso riavere questi sat prima del {0}.
+948	Scegli una data.
+949	Il mint {0} li custodisce fino ad allora, come tutti i tuoi ecash. La tua frase seed non può recuperare una cassaforte se perdi questo telefono, quindi tieni un file di backup.
+950	{0} bloccati fino al {1}
+951	{0} della tua cassaforte a tempo sono tornati nel tuo wallet.

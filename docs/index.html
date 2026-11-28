@@ -292,6 +292,8 @@ details.more[open]{padding-bottom:14px}
 .pcnow{animation:livep 2.4s ease-in-out infinite}
 .pcmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 20px}.pcmsg p{margin:0}
 #pcK:empty{display:none}
+.vchip{display:inline-flex;margin-top:10px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--dim);font:500 13px var(--mono)}
+.p-vault{color:var(--ac);border-color:var(--ac-soft)}.spl .vt{font:600 15px var(--mono)}.spl li>span{display:flex;flex-direction:column;gap:2px;min-width:0}.spl .vr{align-items:flex-end;text-align:end}.check{display:flex;gap:10px;align-items:flex-start;margin:12px 0}
 .spl{list-style:none;padding:0;margin:14px 0;border-radius:var(--r);background:var(--card)}.spl li{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}.spl li:last-child{border:0}.spl b{font:600 15px var(--mono);white-space:nowrap}
 .smbtn{display:inline-flex;align-items:center;gap:6px;color:var(--dim)}.smbtn .ic{width:16px;height:16px}.loghead .tabs{flex-basis:100%}
 .smbars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end;margin:18px 0 6px}
@@ -367,6 +369,7 @@ details.more[open]{padding-bottom:14px}
     <div class="lab">Balance</div>
     <div class="balrow" role="button" tabindex="0" aria-label="Show or hide amounts" aria-pressed="false"><span id="balPre"></span><span class="bal" id="bal">0</span><span id="balPost">sat</span></div>
     <div class="sub"><span id="fiat"></span><span id="mintBal"></span></div>
+    <button class="vchip" id="vaultChip" hidden></button>
   </section>
 
   <div class="actions">

@@ -927,3 +927,26 @@
 926	Tu nombre o tienda (opcional)
 927	Escanéalo con cualquier monedero Lightning
 928	Añade tu dirección Lightning
+929	Bóveda temporal
+930	Guarda sats bajo llave hasta una fecha
+931	Desbloqueado
+932	en la bóveda temporal
+933	desbloqueando ahora
+934	en 1 hora
+935	en {0} horas
+936	en {0} días
+937	Una semana
+938	Un mes
+939	Tres meses
+940	Seis meses
+941	Un año
+942	Elegir una fecha…
+943	Guarda sats bajo llave hasta la fecha que elijas. Hasta entonces nadie puede gastarlos, ni siquiera tú. Ese día vuelven solos a tu monedero.
+944	Bloquear sats
+945	Bloquear durante
+946	Se desbloquea el {0}
+947	Entiendo que no puedo recuperar estos sats antes del {0}.
+948	Elige una fecha.
+949	El mint {0} los guarda hasta entonces, como todo tu ecash. Tu frase semilla no puede recuperar una bóveda si pierdes este teléfono, así que guarda un archivo de copia.
+950	{0} bloqueados hasta el {1}
+951	{0} de tu bóveda temporal ya están en tu monedero.

@@ -490,6 +490,15 @@ export async function moveFunds(to, amount, unit = S.unit, from = S.active, maxF
   for (let i = 0; i < 8 && inv.status === 'pending'; i++) { await checkInvoice(inv).catch(() => {}); if (inv.status === 'pending') await new Promise((r) => setTimeout(r, 1500)); }
   return { inv, out };
 }
+// time vault: lock sats to a key nobody holds (its private half is thrown away), with our refund
+// key allowed after `until`. Before then no one can spend them, us included; afterwards returnDue
+// takes them back like any unclaimed locked send.
+export async function lockVault(amount, until) {
+  const burn = newKey().pub; // the private key is never kept
+  const h = await sendEcash(amount, { lockTo: burn, returnAfter: until - Date.now() });
+  h.vault = true; save();
+  return h;
+}
 // spreading your risk: moves that bring the fullest mint over `limit` down to 90% of it,
 // filling your other mints (each kept under that too), fullest room first
 export function spreadPlan(limit) {

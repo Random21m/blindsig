@@ -927,3 +927,26 @@
 926	Ditt namn eller din butik (valfritt)
 927	Skanna med valfri Lightning-plånbok
 928	Lägg till din Lightning-adress
+929	Tidsvalv
+930	Lås undan sats till ett datum
+931	Upplåst
+932	i tidsvalvet
+933	låses upp nu
+934	om 1 timme
+935	om {0} timmar
+936	om {0} dagar
+937	En vecka
+938	En månad
+939	Tre månader
+940	Sex månader
+941	Ett år
+942	Välj ett datum…
+943	Lås undan sats till ett datum du väljer. Fram till dess kan ingen spendera dem, inte ens du. På dagen kommer de tillbaka till plånboken av sig själva.
+944	Lås sats
+945	Lås i
+946	Låses upp {0}
+947	Jag förstår att jag inte kan få tillbaka de här sats före {0}.
+948	Välj ett datum.
+949	Minten {0} förvarar dem fram till dess, som all din ecash. Din seedfras kan inte återställa ett valv om du tappar den här telefonen, så spara en backupfil.
+950	{0} låsta till {1}
+951	{0} från ditt tidsvalv är tillbaka i plånboken.

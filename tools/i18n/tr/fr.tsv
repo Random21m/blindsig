@@ -927,3 +927,26 @@
 926	Votre nom ou boutique (facultatif)
 927	Scannez avec n’importe quel portefeuille Lightning
 928	Ajoutez votre adresse Lightning
+929	Coffre à terme
+930	Mettre des sats sous clé jusqu’à une date
+931	Déverrouillé
+932	dans le coffre à terme
+933	déverrouillage en cours
+934	dans 1 heure
+935	dans {0} heures
+936	dans {0} jours
+937	Une semaine
+938	Un mois
+939	Trois mois
+940	Six mois
+941	Un an
+942	Choisir une date…
+943	Mettez des sats sous clé jusqu’à la date de votre choix. D’ici là, personne ne peut les dépenser, pas même vous. Le jour venu, ils reviennent tout seuls dans votre portefeuille.
+944	Verrouiller des sats
+945	Verrouiller pour
+946	Se déverrouille le {0}
+947	Je comprends que je ne pourrai pas récupérer ces sats avant le {0}.
+948	Choisissez une date.
+949	Le mint {0} les détient jusque-là, comme tout votre ecash. Votre phrase de récupération ne peut pas restaurer un coffre si vous perdez ce téléphone : gardez un fichier de sauvegarde.
+950	{0} verrouillés jusqu’au {1}
+951	{0} de votre coffre à terme sont de retour dans votre portefeuille.

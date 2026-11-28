@@ -140,6 +140,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - Offline sending: exact-amount tokens made without contacting the mint
 - Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, and bitcoin addresses (BIP21 aware)
 - Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey, npub or contact
+- Time vault: lock sats away until a date you choose. Nobody can spend them before then, not even you; on the day they come back to your wallet by themselves
 - Sends that come back: lock ecash to one person, and if they don't claim it in time (an hour, a day, a week or 30 days) it returns to your wallet on its own
 - Contacts: save people and places you pay often (Lightning address, LNURL, BOLT12 offer or npub) and pay them in two taps. After paying a new address, one tap saves it
 

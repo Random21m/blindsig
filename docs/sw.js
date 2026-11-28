@@ -1,6 +1,6 @@
 // blindsig service worker: caches the app shell so it opens offline.
 // Mint API calls are never cached. Fonts are served from this site, so no third party sees app loads.
-const VERSION = 'mwzw9gee';
+const VERSION = 'mwzwj6xl';
 const SHELL = ['./', './index.html', './app.js', './manifest.webmanifest', './fonts/fonts.css', './icons/icon.svg', './icons/icon-192.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
