@@ -1110,3 +1110,10 @@
 1109	Todas as configurações já estão no padrão.
 1110	As configurações voltaram ao padrão
 1111	Idioma do celular
+1112	Isso dá menos de 1 sat por pessoa. Digite um valor maior ou divida entre menos pessoas.
+1113	{0} voltaram, mas uma mint não respondeu. O PIN de fachada continua ativo por enquanto. Tente de novo quando estiver online.
+1114	Uma mint não respondeu, então o ecash da carteira de fachada não pôde voltar. O PIN de fachada continua ativo por enquanto. Tente de novo quando estiver online.
+1115	O pagamento da troca ainda está em andamento. Ele se resolve sozinho; confira seu histórico daqui a pouco.
+1116	{0} enviou uma fatura com um valor diferente do que você digitou. Nada foi pago.
+1117	Seu ecash está seguro. Toque de novo em “Mudar para a semente nova” quando suas mints responderem, para que tudo passe para a semente nova.
+1118	não foi possível acessar {0}

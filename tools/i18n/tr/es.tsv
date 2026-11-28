@@ -1110,3 +1110,10 @@
 1109	Todos los ajustes ya están en su valor predeterminado.
 1110	Los ajustes volvieron a sus valores predeterminados
 1111	Idioma del teléfono
+1112	Eso es menos de 1 sat por persona. Pon un importe mayor o divídelo entre menos.
+1113	{0} devueltos, pero una mint no respondió. El PIN señuelo sigue activo por ahora. Vuelve a intentarlo cuando tengas conexión.
+1114	Una mint no respondió, así que el ecash del señuelo no pudo volver. El PIN señuelo sigue activo por ahora. Vuelve a intentarlo cuando tengas conexión.
+1115	El pago del intercambio aún está en curso. Se resolverá solo; revisa tu historial en un rato.
+1116	{0} envió una factura por un importe distinto del que pusiste. No se pagó nada.
+1117	Tu ecash está a salvo. Toca de nuevo «Cambiar a la semilla nueva» cuando tus mints respondan, para que todo pase a la nueva semilla.
+1118	no se pudo conectar con {0}

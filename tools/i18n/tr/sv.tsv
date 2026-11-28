@@ -1110,3 +1110,10 @@
 1109	Alla inställningar är redan standard.
 1110	Inställningarna är återställda
 1111	Telefonens språk
+1112	Det blir mindre än 1 sat per person. Ange ett större belopp eller dela på färre.
+1113	{0} flyttades tillbaka, men en mint svarade inte. Lock-PIN:en är kvar tills vidare. Försök igen när du är online.
+1114	En mint svarade inte, så lockplånbokens ecash kunde inte flyttas tillbaka. Lock-PIN:en är kvar tills vidare. Försök igen när du är online.
+1115	Betalningen för bytet pågår fortfarande. Den blir klar av sig själv; titta i historiken om en stund.
+1116	{0} skickade en faktura på ett annat belopp än du angav. Inget betalades.
+1117	Din ecash är säker. Tryck på ”Byt till ny seed” igen när dina mints går att nå, så flyttas allt till den nya seeden.
+1118	kunde inte nå {0}

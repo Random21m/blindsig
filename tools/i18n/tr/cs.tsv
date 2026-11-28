@@ -1110,3 +1110,10 @@
 1109	Všechna nastavení už jsou výchozí.
 1110	Nastavení jsou zpět na výchozích hodnotách
 1111	Jazyk telefonu
+1112	To je méně než 1 sat na osobu. Zadejte vyšší částku nebo dělte mezi méně lidí.
+1113	{0} se vrátilo, ale jedna minta neodpověděla. Klamný PIN zatím zůstává zapnutý. Zkuste to znovu, až budete online.
+1114	Jedna minta neodpověděla, takže ecash z klamné peněženky se nemohl vrátit. Klamný PIN zatím zůstává zapnutý. Zkuste to znovu, až budete online.
+1115	Platba za výměnu ještě probíhá. Vyřeší se sama; podívejte se za chvíli do historie.
+1116	{0} poslal fakturu na jinou částku, než jste zadali. Nic nebylo zaplaceno.
+1117	Váš ecash je v bezpečí. Až budou minty dostupné, klepněte znovu na „Přepnout na nový seed“, aby se vše přesunulo na nový seed.
+1118	nelze se spojit s {0}

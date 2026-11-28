@@ -7,6 +7,7 @@ import {
 import { sha256 } from '@noble/hashes/sha2.js';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
+import { decode as decodeBolt11 } from 'light-bolt11-decoder';
 import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils.js';
 import {
   S, save, getProofs, setProofs, addProofs, sum, bal, mintOf, host, uid, normUrl, fmt,
@@ -423,9 +424,12 @@ export async function receiveFee(t) {
   const w = await walletFor(t.mint, t.unit);
   return w.getFeesForProofs(w.decodeToken(t.str).proofs).toNumber();
 }
-// take all the ecash out of another wallet's state (the decoy) into this one; returns the sats moved
+// take all the ecash out of another wallet's state (the decoy) into this one. What moved is taken
+// out of `st` as it goes, so a second try picks up only what's left. Returns { got, left }: the sats
+// moved, and how many lots couldn't be (a mint offline): those are still in `st`, nothing is lost.
+const spentErr = (e) => /already spent|token already|proofs? (are|is) spent|already (been )?(claimed|redeemed)/i.test(String(e?.message || e));
 export async function sweepState(st) {
-  let got = 0;
+  let got = 0, left = 0;
   for (const [k, arr] of Object.entries(st.proofs || {})) {
     if (!arr || !arr.length) continue;
     const i = k.lastIndexOf('|'), url = k.slice(0, i), unit = k.slice(i + 1);
@@ -434,13 +438,16 @@ export async function sweepState(st) {
       const w = await walletFor(url, unit);
       const p = await w.receive(getEncodedToken({ mint: url, proofs: deserializeProofs(arr), unit }));
       addProofs(url, p, unit); if (unit === 'sat') got += sum(p);
-    } catch (e) { console.error('sweep', e); }
+      st.proofs[k] = [];
+    } catch (e) { console.error('sweep', e); if (spentErr(e)) st.proofs[k] = []; else left++; }
   }
   for (const h of st.history || []) {
     if (h.kind !== 'ecash-in' || h.status !== 'pending' || !h.token) continue;
-    try { const t = parseToken(h.token); const w = await walletFor(t.mint, t.unit); const p = await w.receive(t.str); addProofs(t.mint, p, t.unit); if (t.unit === 'sat') got += sum(p); } catch {}
+    try { const t = parseToken(h.token); const w = await walletFor(t.mint, t.unit); const p = await w.receive(t.str); addProofs(t.mint, p, t.unit); if (t.unit === 'sat') got += sum(p); h.status = 'done'; }
+    // already spent: the decoy claimed it (its proofs are swept above) or we took it back ourselves
+    catch (e) { if (spentErr(e)) h.status = 'done'; else left++; }
   }
-  return got;
+  return { got, left };
 }
 // the proofs inside a token (v4 tokens need the mint's keyset ids to decode)
 export async function tokenProofs(token, url, unit = 'sat') {
@@ -500,10 +507,10 @@ export async function swapIncoming(t, dst = S.active) {
   await addMint(t.mint); addProofs(t.mint, proofs, unit);
   const secrets = new Set(proofs.map((p) => p.secret));
   const drop = () => setProofs(t.mint, getProofs(t.mint, unit).filter((p) => !secrets.has(p.secret)), unit);
-  const rescue = async () => {};
+  let inv;
   try {
     const inFee = ws.getFeesForProofs(proofs).toNumber();
-    let target = amt - inFee, inv, q;
+    let target = amt - inFee, q;
     for (let i = 0; i < 4; i++) {
       if (target <= 0) throw new Error('amount too small to cover swap fees');
       inv = await createInvoice(target, dst, unit, 'swap from ' + host(t.mint));
@@ -515,10 +522,22 @@ export async function swapIncoming(t, dst = S.active) {
     }
     if (!q) throw new Error('could not fit swap fees');
     drop();
+    // the payment may still be going through: keep it as a Lightning payment in flight, which
+    // settles like any other (the ecash comes back if it fails, the invoice fills if it lands)
+    const inFlight = () => {
+      H({ kind: 'ln-out', method: 'bolt11', amount: q.amount.toNumber(), unit, mint: t.mint, status: 'pending', quote: q.quote, request: inv.request, memo: 'swap to ' + host(dst), inflight: serializeProofs(proofs), reserve: amt - q.amount.toNumber(), internal: true });
+      inv.internal = true; save();
+      return Object.assign(new Error('The swap payment is still going through. It settles by itself; check your history in a while.'), { inFlight: true });
+    };
     let res;
     try { res = await ws.meltProofsBolt11(q, proofs); }
-    catch (e) { const g = await ws.groupProofsByState(proofs).catch(() => ({ unspent: proofs })); addProofs(t.mint, [...g.unspent], unit); throw e; }
-    if (res.quote.state !== 'PAID') throw new Error('swap payment pending');
+    catch (e) {
+      let g = null; try { g = await ws.groupProofsByState(proofs); } catch {}
+      // the mint never took them: back in the wallet, and the invoice won't be paid
+      if (g && g.unspent.length === proofs.length) { addProofs(t.mint, proofs, unit); throw e; }
+      throw inFlight();
+    }
+    if (res.quote.state !== 'PAID') throw inFlight();
     if (res.change?.length) addProofs(t.mint, res.change, unit);
     for (let i = 0; i < 8 && inv.status === 'pending'; i++) { await checkInvoice(inv).catch(() => {}); if (inv.status === 'pending') await new Promise((r) => setTimeout(r, 1200)); }
     inv.fee = Math.max(0, t.amount - inv.amount);
@@ -527,7 +546,9 @@ export async function swapIncoming(t, dst = S.active) {
     save();
     return inv;
   } catch (e) {
-    await rescue().catch(() => {});
+    if (e.inFlight) throw e;
+    // nothing was paid: drop the invoice we made at the other mint, so it doesn't sit in history
+    if (inv && inv.status === 'pending') { S.history = S.history.filter((x) => x !== inv); save(); }
     throw new Error(`${e.message || e} // ecash kept at ${host(t.mint)}`);
   }
 }
@@ -585,8 +606,13 @@ export async function lnurlInvoice(meta, sats, comment) {
   const cb = new URL(meta.callback);
   cb.searchParams.set('amount', String(msat));
   if (comment && meta.commentAllowed) cb.searchParams.set('comment', comment.slice(0, meta.commentAllowed));
-  const r = await (await fetch(cb)).json();
+  let r;
+  try { r = await (await fetch(cb)).json(); } catch { throw new Error('could not reach ' + cb.host); }
   if (r.status === 'ERROR' || !r.pr) throw new Error(r.reason || 'no invoice returned');
+  // LUD-06: the invoice must be for exactly the amount asked for, so a service can't charge more
+  let got = null;
+  try { got = decodeBolt11(r.pr).sections.find((s) => s.name === 'amount')?.value ?? null; } catch {}
+  if (got == null || Number(got) !== msat) throw new Error(`${new URL(meta.callback).host} sent an invoice for a different amount than you entered. Nothing was paid.`);
   return r.pr;
 }
 export async function quoteInvoice(inv, url = S.active, unit = S.unit, mppMsat) {

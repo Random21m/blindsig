@@ -425,7 +425,9 @@ export async function startNwc() {
   const seen = new Set(S.nwc.seen);
   nwcSub = pool.subscribeMany(relays(), { kinds: [23194], authors: [c.clientPk], '#p': [c.walletPk], since: now() - 3600 }, {
     onevent: async (ev) => {
-      if (!S.nwc.enabled || seen.has(ev.id)) return;
+      // only the app this connection was made for may give orders: a relay that ignores the
+      // `authors` filter mustn't let anyone else spend the allowance
+      if (!S.nwc.enabled || seen.has(ev.id) || ev.pubkey !== S.nwc.conn?.clientPk || ev.pubkey !== c.clientPk) return;
       seen.add(ev.id); S.nwc.seen = [...seen].slice(-300); save();
       const enc = (ev.tags.find((t) => t[0] === 'encryption') || [])[1] === 'nip44_v2' ? 'nip44' : 'nip04';
       let cmd;
@@ -463,9 +465,14 @@ async function nwcHandle(cmd) {
     const need = q.amount.toNumber() + q.fee_reserve.toNumber();
     if (need > c.allowanceLeft) return err('QUOTA_EXCEEDED', `allowance left: ${c.allowanceLeft} sat`);
     if (need > bal(S.active, 'sat')) return err('INSUFFICIENT_BALANCE', 'not enough balance at the active mint');
-    const h = await C.payInvoice(q, 'Nostr Wallet Connect', S.active, 'sat');
+    // take it off the allowance before paying, so requests that arrive together can't each spend it
+    c.allowanceLeft -= need; save();
+    let h;
+    try { h = await C.payInvoice(q, 'Nostr Wallet Connect', S.active, 'sat'); }
+    catch (e) { c.allowanceLeft += need; save(); throw e; } // nothing was paid
+    // still in flight: keep it reserved until we know
     if (h.status !== 'done') return err('INTERNAL', 'payment pending');
-    c.allowanceLeft = Math.max(0, c.allowanceLeft - h.amount - (h.fee || 0)); save();
+    c.allowanceLeft = Math.max(0, c.allowanceLeft + need - h.amount - (h.fee || 0)); save();
     return { result_type: m, result: { preimage: h.preimage || '', fees_paid: (h.fee || 0) * 1000 } };
   }
   if (m === 'make_invoice') {
