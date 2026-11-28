@@ -547,7 +547,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <input id="desc" class="field" placeholder="Description (optional)" maxlength="80">
       ${b12 ? '<label class="chk"><input type="checkbox" id="b12"> <span>Reusable offer (BOLT12)</span></label>' : ''}
       <button class="btn primary wide" id="inv">Create invoice</button>
-      <p class="center small lnks"><button class="lnk" id="spl">Split a bill</button><button class="lnk" id="tjl">Make a tip jar card</button></p>
+      <p class="center small lnks"><button class="lnk" id="spl">Split a bill</button><button class="lnk" id="tjl">Make a tip jar card</button><button class="lnk" id="wdl">Scan a withdraw code</button></p>
     </div>
     ${chain ? `<div class="pane" data-p="btc" ${tab !== 'btc' ? 'hidden' : ''}>
       <p class="dim">Deposit bitcoin on-chain. The mint credits ecash after the transaction confirms.</p>
@@ -570,6 +570,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     ta.oninput = async () => {
       parsed = null; rcv.disabled = true; $('#swpbox', b).hidden = true; $('#later', b).hidden = true; $('#prev', b).innerHTML = '';
       if (!ta.value.trim()) return;
+      const raw = ta.value.trim().replace(/^lightning:/i, '');
+      if (C.isLnurl(raw)) { $('#prev', b).innerHTML = '<p class="dim">Checking the LNURL…</p>'; return C.lnurlResolve(raw).then((m) => (m.tag === 'withdrawRequest' ? withdrawSheet(m) : ($('#prev', b).innerHTML = '<p class="warn">That LNURL is for paying, not receiving. Use Send.</p>'))).catch((e) => ($('#prev', b).innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`)); }
       try { parsed = C.parseToken(ta.value); } catch { $('#prev', b).innerHTML = '<p class="warn">That isn’t a valid cashu token.</p>'; return; }
       const known = mintOf(parsed.mint), me = ++seq;
       let lock = null, sig = null;
@@ -621,6 +623,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     const tjb = $('#tjb', b); if (tjb) tjb.onclick = () => tipSheet();
     $('#tjl', b).onclick = () => tipSheet();
     $('#spl', b).onclick = () => splitHome();
+    // LNURL-withdraw vouchers, faucets and ATMs
+    $('#wdl', b).onclick = () => startScan((t) => { const v = t.trim().replace(/^lightning:/i, ''); if (!C.isLnurl(v)) return toast('That isn’t an LNURL withdraw code.', 'warn'); C.lnurlResolve(v).then((m) => (m.tag === 'withdrawRequest' ? withdrawSheet(m) : toast('That LNURL is for paying, not receiving. Use Send.', 'warn'))).catch((e) => toast(niceErr(e), 'err')); });
     const cpa = $('#cpa', b); if (cpa) { cpa.onclick = () => copy(S.npc.address, 'Address copied'); $('#qra', b).onclick = () => qrSvg('lightning:' + S.npc.address).then((s) => { $('#aq', b).innerHTML = `<div class="qr">${s}</div>`; }); N.npcSync().then((n) => n && render()).catch(() => {}); }
     $('#nreq', b).onclick = () => NU.newRequest(() => receiveSheet('req'));
     const lreq = $('#lreq', b); if (lreq) lreq.onclick = () => NU.showRequest(S.pr.requests[0], () => receiveSheet('req'));
@@ -628,15 +632,16 @@ function receiveSheet(tab = 'ecash', prefill = '') {
   });
 }
 function invoiceView(h) {
-  sheet('Invoice', `<div class="qr" id="iq"></div>
+  // an LNURL withdrawal: the service pays our invoice itself, so there's no code to show
+  const wd = h.withdraw;
+  sheet(wd ? 'Withdraw' : 'Invoice', `${wd ? '' : '<div class="qr" id="iq"></div>'}
     <p class="big">${bigAmt(h.amount, h.unit)}</p>
-    <p class="wait" id="ws">Waiting for payment<span class="cur">_</span></p>
-    <button class="btn wide" id="cp">Copy invoice</button>
+    <p class="wait" id="ws">${wd ? `Waiting for ${esc(wd)} to pay` : 'Waiting for payment'}<span class="cur">_</span></p>
+    ${wd ? '' : '<button class="btn wide" id="cp">Copy invoice</button>'}
     <button class="btn wide" id="ck">Check now</button>
     <p class="dim small center">Safe to close. Pending invoices are checked again later.</p>`, (b) => {
     addNote(b, h);
-    qrInvoice($('#iq', b), h.request);
-    $('#cp', b).onclick = () => copy(h.request, 'Invoice copied');
+    if (!wd) { qrInvoice($('#iq', b), h.request); $('#cp', b).onclick = () => copy(h.request, 'Invoice copied'); }
     let timer, dead = false;
     const ctrl = new AbortController();
     const finish = (s) => { if (dead) return; if (s === 'done') { dead = true; done(h, 'Received'); } else if (s === 'expired') $('#ws', b).textContent = 'Invoice expired.'; };
@@ -680,6 +685,28 @@ function liveView(h) {
     const tick = async () => { if (dead || !h.live) return; try { await C.checkInvoice(h); update(); } catch {} timer = setTimeout(tick, chain ? 15000 : 4000); };
     if (st.checkIncoming) timer = setTimeout(tick, 3000);
     onClose = () => { dead = true; clearTimeout(timer); };
+  });
+}
+
+// LNURL-withdraw (LUD-03): a voucher, faucet or ATM pays sats into the active mint
+async function withdrawSheet(meta) {
+  if (needMint()) return;
+  const min = Math.ceil(meta.minWithdrawable / 1000), max = Math.floor(meta.maxWithdrawable / 1000);
+  const canSat = (mintOf(S.active)?.units || ['sat']).includes('sat');
+  const from = new URL(meta.callback).host;
+  sheet('Withdraw', `<p class="dim">${esc(from)} will pay into ${esc(mintLabel(mintOf(S.active)))}.</p>
+    ${meta.defaultDescription ? `<p dir="auto">${esc(meta.defaultDescription)}</p>` : ''}
+    ${max < 1 ? '<p class="warn">Nothing left to withdraw here.</p>' : amountField('wamt', min === max ? `${min.toLocaleString()} sat` : `${min.toLocaleString()}–${max.toLocaleString()} sat`, 'sat')}
+    ${canSat ? '' : '<p class="warn">This mint has no sat balance. Pick a mint that holds sats first.</p>'}
+    <button class="btn primary wide" id="wd" ${max < 1 || !canSat ? 'disabled' : ''}>Withdraw</button>`, (b) => {
+    const f = $('#wamt', b); if (f) { f.value = String(max); f.dispatchEvent(new Event('input', { bubbles: true })); }
+    const wd = $('#wd', b);
+    wd.onclick = withBusy(wd, async () => {
+      const a = readAmt(b, 'wamt'); if (!a) return nope('Enter an amount.');
+      if (a < min || a > max) return nope(min === max ? `The amount must be ${min} sat.` : `The amount must be between ${min} and ${max} sat.`);
+      const h = await C.lnurlWithdraw(meta, a, S.active);
+      render(); invoiceView(h);
+    });
   });
 }
 
@@ -799,7 +826,9 @@ function sendSheet(tab = 'ecash', prefill = '') {
       }
       if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
       if (stage === 'lnurl') {
-        meta = await C.lnurlMeta(v);
+        meta = await C.lnurlResolve(v);
+        if (meta.tag === 'withdrawRequest') return withdrawSheet(meta);
+        if (meta.tag !== 'payRequest') throw new Error('This LNURL isn’t for paying or withdrawing.');
         let desc = ''; try { desc = (JSON.parse(meta.metadata).find((e) => e[0] === 'text/plain') || [])[1] || ''; } catch {}
         x.innerHTML = `${desc ? `<p class="dim">${esc(desc)}</p>` : ''}${amountField('lamt', `${Math.ceil(meta.minSendable / 1000).toLocaleString()}–${Math.floor(meta.maxSendable / 1000).toLocaleString()} sat · have ${esc(fmt(bal(S.active), 'sat'))}`, 'sat')}
           ${meta.commentAllowed ? `<input id="cmt" class="field" placeholder="Comment (optional)" maxlength="${meta.commentAllowed}">` : ''}`;
@@ -1259,7 +1288,7 @@ function claimPending() {
   return true;
 }
 // an address worth saving as a contact: Lightning address, LNURL or BOLT12 offer (not one-time invoices)
-const reusableTarget = (v) => (C.isAddress(v) ? v.toLowerCase() : C.isLnurl(v) || C.isOffer(v) ? v : '');
+const reusableTarget = (v) => (C.isAddress(v) ? v.toLowerCase() : (C.isLnurl(v) && !/^(lnurlw|keyauth):/i.test(v)) || C.isOffer(v) ? v : '');
 function done(h, verb, saveTo) {
   const out = h.kind.endsWith('out');
   sheet(verb, `<div class="okb" aria-hidden="true"><svg viewBox="0 0 84 84"><circle class="ring" cx="42" cy="42" r="38"/><circle class="disc" cx="42" cy="42" r="38"/><path class="tick" d="M26 43.5l10.5 10.5L58.5 31"/></svg></div>

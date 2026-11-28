@@ -417,15 +417,49 @@ export async function swapIncoming(t, dst = S.active) {
 /* ---------------- lightning out ---------------- */
 export const isInvoice = (s) => /^ln(bc|tb|bcrt|tbs)[0-9]/i.test(s);
 export const isAddress = (s) => /^[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s);
-export const isLnurl = (s) => /^lnurl1[02-9ac-hj-np-z]+$/i.test(s);
-function decodeLnurl(s) { const { words } = bech32.decode(s.toLowerCase(), 2000); return new TextDecoder().decode(bech32.fromWords(words)); }
-export async function lnurlMeta(target) {
+// bech32 LNURLs, and the LUD-17 forms (lnurlw://, lnurlp://, keyauth://) that are plain URLs
+export const isLnurl = (s) => /^lnurl1[02-9ac-hj-np-z]+$/i.test(s) || /^(lnurl[cwp]|keyauth):\/\/[^\s]+$/i.test(s);
+function decodeLnurl(s) {
+  const m = s.match(/^(lnurl[cwp]|keyauth):\/\/(.+)$/i);
+  if (m) return (/\.onion(?:[:/]|$)/i.test(m[2].split('/')[0]) ? 'http://' : 'https://') + m[2];
+  const { words } = bech32.decode(s.toLowerCase(), 2000); return new TextDecoder().decode(bech32.fromWords(words));
+}
+// what an LNURL or Lightning address points at: a pay endpoint (payRequest) or a withdraw voucher
+// (withdrawRequest, LUD-03). Some services put the whole withdraw request in the link itself.
+export async function lnurlResolve(target) {
   const url = isLnurl(target) ? decodeLnurl(target) : (() => { const [u, d] = target.split('@'); return `https://${d}/.well-known/lnurlp/${u}`; })();
+  const q = new URL(url).searchParams;
+  if (q.get('tag') === 'withdrawRequest' && q.get('callback') && q.get('k1')) {
+    return { tag: 'withdrawRequest', callback: q.get('callback'), k1: q.get('k1'), minWithdrawable: +q.get('minWithdrawable') || 1000, maxWithdrawable: +q.get('maxWithdrawable') || 0, defaultDescription: q.get('defaultDescription') || '' };
+  }
   let meta;
   try { meta = await (await fetch(url)).json(); } catch { throw new Error('could not reach ' + host(url)); }
   if (meta.status === 'ERROR') throw new Error(meta.reason || 'lnurl error');
+  return meta;
+}
+export async function lnurlMeta(target) {
+  const meta = await lnurlResolve(target);
   if (meta.tag !== 'payRequest') throw new Error('not a lightning pay endpoint');
   return meta;
+}
+// LNURL-withdraw: make an invoice at our mint and hand it to the service, which pays it.
+// Returns the invoice's history entry; it completes like any invoice once the payment lands.
+export async function lnurlWithdraw(meta, sats, url = S.active) {
+  const min = Math.ceil(meta.minWithdrawable / 1000), max = Math.floor(meta.maxWithdrawable / 1000);
+  if (sats < min || sats > max) throw new Error(min === max ? `amount must be ${min} sat` : `amount must be ${min}–${max} sat`);
+  const h = await createInvoice(sats, url, 'sat', meta.defaultDescription || 'LNURL withdraw');
+  h.withdraw = new URL(meta.callback).host; save();
+  const cb = new URL(meta.callback);
+  cb.searchParams.set('k1', meta.k1);
+  cb.searchParams.set('pr', h.request);
+  let r;
+  try { r = await (await fetch(cb)).json(); } catch { r = { status: 'ERROR', reason: 'could not reach ' + host(meta.callback) }; }
+  if (r.status === 'ERROR') {
+    // nothing will pay this invoice: don't leave it waiting in the history
+    S.history = S.history.filter((x) => x !== h); save();
+    throw new Error(r.reason || 'the service refused the withdrawal');
+  }
+  return h;
 }
 export async function lnurlInvoice(meta, sats, comment) {
   const msat = sats * 1000;
