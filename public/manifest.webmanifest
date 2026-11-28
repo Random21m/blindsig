@@ -91,5 +91,14 @@
       "form_factor": "narrow",
       "label": "Send ecash"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "./",
+    "method": "GET",
+    "params": {
+      "title": "share_title",
+      "text": "share_text",
+      "url": "share_url"
+    }
+  }
 }

@@ -2353,6 +2353,25 @@ addEventListener('hashchange', () => {
   if (!t || !S.mnemonic) return;
   history.replaceState(null, '', location.pathname); route(decodeURIComponent(t));
 });
+// shared to blindsig from another app (Android share sheet): pick out the ecash, invoice or
+// address from whatever text came with it
+function fromShared(txt) {
+  const tok = txt.match(/cashu[AB][A-Za-z0-9_\-=+/]+/);
+  if (tok) return tok[0];
+  if (C.hasEmojiToken(txt)) return txt;
+  const words = txt.split(/\s+/).map((w) => w.replace(/^[<("']+|[>)"'.,;]+$/g, '')).filter(Boolean);
+  return words.find((w) => /^(lightning:|bitcoin:|lnbc|lntb|lnbcrt|lno1|lnurl|creq[ab]|npub1|nprofile1|₿)/i.test(w) || /[#?]token=/.test(w) || C.isAddress(w)) || txt.trim();
+}
+{
+  const q = new URLSearchParams(location.search);
+  const shared = [q.get('share_text'), q.get('share_url'), q.get('share_title')].filter(Boolean).join(' ');
+  if (shared) {
+    history.replaceState(null, '', location.pathname);
+    const v = fromShared(shared);
+    if (S.mnemonic) setTimeout(() => { if (!needMint()) route(v); }, 500);
+    else if (/^cashu[AB]/.test(v)) pendingToken = v;
+  }
+}
 // home-screen shortcuts (long-press the app icon on Android): Receive, Send, Scan
 const action = new URLSearchParams(location.search).get('action');
 if (action && S.mnemonic) {
