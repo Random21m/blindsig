@@ -536,6 +536,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <textarea id="tok" rows="4" placeholder="Paste a cashu token" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button>${st.nfcQuick && 'NDEFReader' in window ? '<button class="btn" id="nfc">NFC</button>' : ''}</div>
       <div id="prev"></div>
+      <input id="hcode" class="field" placeholder="Code to unlock it" autocomplete="off" autocapitalize="characters" spellcheck="false" hidden>
       <button class="btn primary wide" id="rcv" disabled>Receive</button>
       <div id="swpbox" hidden><label class="lbl" for="swto">Swap to mint</label><select id="swto" class="field"></select>
       <p class="dim small">This swap will incur Lightning network fees.</p><button class="btn wide" id="swp">Swap</button></div>
@@ -568,7 +569,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     const ta = $('#tok', b), rcv = $('#rcv', b), swp = $('#swp', b);
     let parsed = null, seq = 0;
     ta.oninput = async () => {
-      parsed = null; rcv.disabled = true; $('#swpbox', b).hidden = true; $('#later', b).hidden = true; $('#prev', b).innerHTML = '';
+      parsed = null; rcv.disabled = true; $('#swpbox', b).hidden = true; $('#later', b).hidden = true; $('#prev', b).innerHTML = ''; $('#hcode', b).hidden = true;
       if (!ta.value.trim()) return;
       const raw = ta.value.trim().replace(/^lightning:/i, '');
       if (C.isLnurl(raw)) { $('#prev', b).innerHTML = '<p class="dim">Checking the LNURL…</p>'; return C.lnurlResolve(raw).then((m) => (m.tag === 'withdrawRequest' ? withdrawSheet(m) : ($('#prev', b).innerHTML = '<p class="warn">That LNURL is for paying, not receiving. Use Send.</p>'))).catch((e) => ($('#prev', b).innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`)); }
@@ -577,13 +578,14 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       let lock = null, sig = null;
       const draw = () => {
         $('#prev', b).innerHTML = (isGiftMemo(parsed.memo) ? giftBanner(parsed) : '') + kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && !isGiftMemo(parsed.memo) && ['Memo', esc(parsed.memo)],
-          lock && lock.locked && ['Lock', (lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>') + (lock.blinded ? '<br><small class="dim">Key hidden from the mint (P2BK)</small>' : '')],
+          lock && lock.htlc && ['Lock', 'Needs a code'],
+          lock && lock.locked && !lock.htlc && ['Lock', (lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>') + (lock.blinded ? '<br><small class="dim">Key hidden from the mint (P2BK)</small>' : '')],
           lock && lock.until && ['Claim by', `${esc(whenShort(lock.until))}<br><small class="dim">After that it goes back to the sender.</small>`],
           sig && ['Signature', sigLine(sig)]])
           + (sig && sig.state === 'bad' ? '<p class="warn">The mint’s signature on this ecash doesn’t check out. It may be fake. Don’t accept it as payment.</p>' : '')
           + (known ? '' : '<p class="warn">Unknown mint. Receiving adds it to your wallet. Only accept ecash from mints you trust.</p>');
         // ecash that fails the signature check can't be parked for later: there'd be nothing to claim
-        $('#later', b).hidden = !!(sig && sig.state === 'bad');
+        $('#later', b).hidden = !!(sig && sig.state === 'bad') || !!(lock && lock.htlc);
       };
       draw();
       rcv.textContent = known ? 'Receive' : 'Trust mint and receive';
@@ -591,13 +593,17 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       $('#later', b).hidden = false;
       const targets = S.mints.filter((m) => m.url !== parsed.mint && (m.units || ['sat']).includes(parsed.unit));
       if (st.receiveSwaps && targets.length) { $('#swpbox', b).hidden = false; $('#swto', b).innerHTML = targets.map((m) => `<option value="${esc(m.url)}" ${m.url === S.active ? 'selected' : ''}>${esc(mintLabel(m))}</option>`).join(''); }
-      C.tokenLockInfo(parsed).then((l) => { if (me === seq) { parsed.lockKeys = l.keys; lock = l; draw(); } }).catch(() => {});
+      C.tokenLockInfo(parsed).then((l) => { if (me === seq) { parsed.lockKeys = l.keys; lock = l; $('#hcode', b).hidden = !l.htlc; if (l.htlc) $('#swpbox', b).hidden = true; draw(); } }).catch(() => {});
       C.checkSignatures(parsed).then((s) => { if (me === seq) { sig = s; draw(); } }).catch(() => {});
     };
     $('#pst', b).onclick = () => pasteInto(ta);
     $('#scn', b).onclick = () => startScan((t) => { ta.value = t; ta.oninput(); });
     const nfc = $('#nfc', b); if (nfc) nfc.onclick = () => nfcRead((t) => { ta.value = t; ta.oninput(); });
-    rcv.onclick = withBusy(rcv, async () => done(await C.receiveEcash(parsed), 'Received'));
+    rcv.onclick = withBusy(rcv, async () => {
+      const hc = $('#hcode', b);
+      if (!hc.hidden && !hc.value.trim()) return nope('Enter the code.');
+      done(await C.receiveEcash(parsed, hc.hidden ? {} : { code: hc.value }), 'Received');
+    });
     swp.onclick = withBusy(swp, async () => done(await C.swapIncoming(parsed, $('#swto', b).value), 'Swapped in'));
     $('#later', b).onclick = () => {
       if (S.history.some((h) => h.kind === 'ecash-in' && h.token === parsed.str)) return toast('Ecash already in history', 'warn');
@@ -725,7 +731,10 @@ function sendSheet(tab = 'ecash', prefill = '') {
       ${amountField('amt', `Available: ${esc(fmt(have))}`)}
       <input id="memo" class="field" placeholder="Memo (optional)" maxlength="80" autocomplete="off">
       <label class="chk"><input type="checkbox" id="off"> <span>Send offline (exact amount only, no mint contact)</span></label>
-      <details class="more" id="lockBox"><summary>Lock to one person (P2PK)</summary>
+      <details class="more" id="lockBox"><summary>Lock it (to a person or with a code)</summary>
+        <label class="chk"><input type="checkbox" id="hlc"> <span>Lock with a code (HTLC)</span></label>
+        <p class="hint" id="hlcH">Whoever gets the token also needs a code, which you share another way. You can take it back any time until it’s claimed.</p>
+        <input id="hhash" class="field" placeholder="Or a hash to lock to (for swaps)" autocomplete="off" autocapitalize="off" spellcheck="false" hidden>
         ${keyContacts().length ? `<div class="cts" role="list" aria-label="Contacts">${keyContacts().map((c) => `<button type="button" role="listitem" class="ctc" data-k="${esc(c.npub)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}</div>` : ''}
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
         <p class="hint">Only the holder of the matching private key can redeem it.</p>
@@ -751,18 +760,25 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const lockRaw = $('#lock', b).value.trim();
       const lockTo = lockRaw ? C.parsePubkey(lockRaw) : undefined;
       const offline = $('#off', b).checked;
+      const withCode = $('#hlc', b).checked, hashRaw = $('#hhash', b).value.trim();
+      if (withCode && hashRaw && !/^[0-9a-f]{64}$/i.test(hashRaw)) return nope('A hash is 64 hexadecimal characters.');
+      if (withCode && lockTo) return nope('Lock to a person or with a code, not both.');
+      if (withCode && offline) return nope('Locked ecash can’t be sent offline. Turn off offline mode.');
+      if (withCode && !(mintOf(S.active)?.info?.nuts || []).includes('14')) return nope('This mint doesn’t support locking with a code.');
       if (lockTo && offline) return nope('Locked ecash can’t be sent offline. Turn off offline mode.');
       if (lockTo && mintOf(S.active)?.info?.nut11 === false) return nope('This mint doesn’t support locked ecash.');
       if (!(await bigOk(a))) return;
-      const returnAfter = lockTo ? +($('#ret', b)?.value || 0) : 0;
+      const returnAfter = lockTo || withCode ? +($('#ret', b)?.value || 0) : 0;
+      const code = withCode && !hashRaw ? C.newHtlcCode() : undefined, hash = withCode && hashRaw ? hashRaw : undefined;
       let h;
       const blind = !!(lockTo && $('#blk', b).checked);
-      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline, blind }); }
+      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline, blind, code, hash }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
       render(); tokenView(h); C.watchSent(sentClaimed);
       FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
     $('#blk', b).onchange = (e) => { st.p2bk = e.target.checked; save(); };
+    $('#hlc', b).onchange = (e) => { $('#hhash', b).hidden = !e.target.checked; };
     $$('#lockBox .ctc', b).forEach((x) => (x.onclick = () => { $('#lock', b).value = x.dataset.k; $$('#lockBox .ctc', b).forEach((y) => y.classList.toggle('on', y === x)); }));
     $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
@@ -922,12 +938,15 @@ function tokenView(h, fromLog) {
     <p class="big">${bigAmt(h.amount, h.unit)}</p>
     ${h.fee ? `<p class="dim small center">Includes ${esc(fmt(h.fee, h.unit))} mint fee</p>` : ''}
     ${h.lockTo ? `<p class="dim small center">Locked to ${esc(lockName(h.lockTo))}${h.blind ? ' · key hidden from the mint' : ''}</p>` : ''}
+    ${h.htlc?.code ? `<div class="addrcard"><small class="dim">Code to unlock it</small><b data-notr>${esc(h.htlc.code)}</b><div class="btnrow"><button class="btn" id="cpc">Copy code</button></div><small class="dim">Send the code another way than the token. For other wallets, the preimage is <code data-notr style="word-break:break-all">${esc(h.htlc.preimage)}</code></small></div>` : ''}
+    ${h.htlc && !h.htlc.code ? `<p class="dim small center">Locked to hash <code data-notr>${esc(h.htlc.hash.slice(0, 16))}…</code></p>` : ''}
     ${h.refundAt && h.status === 'pending' ? `<p class="okline small center">If it isn’t claimed by ${esc(whenShort(h.refundAt))}, it comes back to you.</p>` : ''}
     ${armor(h.token)}
     <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji" title="Copy as emoji"><span aria-hidden="true">🥜</span> Emoji</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
     ${'NDEFReader' in window ? '<button class="btn wide" id="nfw">Write to NFC card</button>' : ''}
     ${fromLog ? `<div class="btnrow"><button class="btn" id="chk">Check status</button>${!h.lockTo || (h.refundAt && h.refundAt <= Date.now()) ? '<button class="btn" id="rc">Reclaim</button>' : ''}</div>` : ''}
-    <p class="dim small center">${h.lockTo ? 'Only the person it’s locked to can claim it.' : 'Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.'}</p>`, (b) => {
+    <p class="dim small center">${h.lockTo ? 'Only the person it’s locked to can claim it.' : h.htlc ? 'It can only be claimed with the code. Until then you can reclaim it from your history.' : 'Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.'}</p>`, (b) => {
+    const cpc = $('#cpc', b); if (cpc) cpc.onclick = () => copy(h.htlc.code, 'Code copied');
     addNote(b, h);
     stop = qrToken($('#tq', b), h.token);
     onClose = () => stop();

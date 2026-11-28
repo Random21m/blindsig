@@ -2,8 +2,9 @@
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
   getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount, setGlobalRequestOptions,
-  verifyMintSignatures, maybeDeriveP2BKPrivateKeys,
+  verifyMintSignatures, maybeDeriveP2BKPrivateKeys, createHTLCHash,
 } from '@cashu/cashu-ts';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
 import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils.js';
@@ -237,18 +238,34 @@ export async function tokenLockInfo(t) {
   const mineBlinded = new Set();
   for (const p of proofs) {
     try { getP2PKExpectedWitnessPubkeys(p.secret).forEach((k) => locks.add(k)); } catch {}
-    try { const [kind, d] = JSON.parse(p.secret); const lt = kind === 'P2PK' && (d.tags || []).find((t) => t[0] === 'locktime'); if (lt) until = Math.max(until, +lt[1] * 1000); } catch {}
+    try { const [kind, d] = JSON.parse(p.secret); const lt = (kind === 'P2PK' || kind === 'HTLC') && (d.tags || []).find((t) => t[0] === 'locktime'); if (lt) until = Math.max(until, +lt[1] * 1000); } catch {}
     // P2BK (NUT-28): the lock shows only a blinded key; ours if we can derive its private half
     if (p.p2pk_e) {
       blinded = true;
       for (const k of S.p2pk) { try { if (maybeDeriveP2BKPrivateKeys([k.priv], p).length) mineBlinded.add(k.pub); } catch {} }
     }
   }
+  const hash = htlcHashOf(proofs);
+  if (hash) return { locked: true, htlc: hash, mine: false, keys: [...locks], until: until > Date.now() ? until : 0 };
   if (!locks.size) return { locked: false };
   const mine = S.p2pk.filter((k) => mineBlinded.has(k.pub) || locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
   return { locked: true, mine: mine.length > 0, blinded, keys: [...locks, ...mineBlinded], until: until > Date.now() ? until : 0 };
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
+
+// codes for hash-locked ecash (HTLC, NUT-14): 12 characters (60 bits) that are easy to read out.
+// The lock's preimage is derived from the code; a 64-hex preimage is accepted as-is (other wallets,
+// atomic swaps).
+const CODE_ABC = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+export const newHtlcCode = () => Array.from(randomBytes(12), (x) => CODE_ABC[x & 31]).join('').match(/.{4}/g).join('-');
+const normCode = (s) => s.toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+export function htlcPreimage(input) {
+  const s = String(input || '').trim();
+  if (/^[0-9a-f]{64}$/i.test(s)) return s.toLowerCase();
+  return bytesToHex(sha256(new TextEncoder().encode('blindsig-htlc:' + normCode(s))));
+}
+const htlcHashOf = (proofs) => { for (const p of proofs) { try { const [k, d] = JSON.parse(p.secret); if (k === 'HTLC') return d.data; } catch {} } return null; };
+const withPreimage = (proofs, preimage) => proofs.map((p) => ({ ...p, witness: JSON.stringify({ preimage, signatures: [] }) }));
 
 // NUT-12: did the mint really sign this ecash? Checked against the mint's public keys, which works
 // offline for mints whose keys we've saved. Only the mint can say whether it's already spent.
@@ -278,14 +295,20 @@ export async function compactToken(token) {
 }
 
 // blind: hide the lock's keys from the mint (P2BK, NUT-28). The receiver's wallet must support it.
-export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId, blind } = {}) {
+// code: lock with a code instead (HTLC); hash: lock to someone else's hash (their preimage claims it)
+export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId, blind, code, hash } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
   if (amount > before) throw new Error('insufficient balance at this mint');
   let res;
   // locked to someone, optionally with a way back: after the locktime our refund key can take it
-  const refundAt = lockTo && returnAfter > 0 ? Date.now() + returnAfter : 0;
+  const htlc = code ? { code, preimage: htlcPreimage(code) } : hash ? { hash: hash.toLowerCase() } : null;
+  if (htlc && !htlc.hash) htlc.hash = createHTLCHash(htlc.preimage).hash;
+  if (htlc && lockTo) throw new Error('lock to a person or with a code, not both');
+  if (htlc && !mintOf(url)?.info?.nuts?.includes('14')) throw new Error('this mint doesn’t support locking with a code');
+  const refundAt = (lockTo || htlc) && returnAfter > 0 ? Date.now() + returnAfter : 0;
   if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
+  else if (htlc) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: [], hashlock: htlc.hash, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}) }).includeFees(true).run();
   else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}), ...(blind ? { blindKeys: true } : {}) }).includeFees(true).run();
   else res = await w.send(amount, getProofs(url, unit), { includeFees: true, ...(keysetId ? { keysetId } : {}) });
   // never record a send unless the token really carries the amount
@@ -293,13 +316,20 @@ export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, ke
   setProofs(url, res.keep, unit);
   // with the mint's signature proofs (NUT-12) the receiver can check the ecash is real, even offline
   const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: !S.settings.dleq });
-  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(lockTo && blind ? { blind: true } : {}), ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
+  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(htlc ? { htlc } : {}), ...(lockTo && blind ? { blind: true } : {}), ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
 }
-export async function receiveEcash(t) {
+export async function receiveEcash(t, { code } = {}) {
   await addMint(t.mint);
   const w = await walletFor(t.mint, t.unit);
   const pks = privkeys();
-  const proofs = await w.receive(t.str, pks.length ? { privkey: pks } : undefined);
+  let src = t.str;
+  if (code) {
+    // hash-locked: check the code before asking the mint, then add it as the witness
+    const tp = w.decodeToken(t.str), preimage = htlcPreimage(code), hash = htlcHashOf(tp.proofs);
+    if (!hash || createHTLCHash(preimage).hash !== hash) throw new Error('That code doesn’t unlock this ecash.');
+    src = getEncodedToken({ ...tp, proofs: withPreimage(tp.proofs, preimage) });
+  }
+  const proofs = await w.receive(src, pks.length ? { privkey: pks } : undefined);
   addProofs(t.mint, proofs, t.unit);
   markP2pkUsed(t);
   const got = sum(proofs);
@@ -377,7 +407,10 @@ export function unwatchAll() { for (const ac of watching.values()) ac.abort(); w
 export async function reclaim(h) {
   const w = await walletFor(h.mint, h.unit);
   const pks = privkeys();
-  const proofs = await w.receive(h.token, pks.length ? { privkey: pks } : undefined);
+  let src = h.token;
+  // our own code lock: we know the code, so we can take it back before the deadline too
+  if (h.htlc?.preimage && !(h.refundAt && h.refundAt <= Date.now())) { const tp = w.decodeToken(h.token); src = getEncodedToken({ ...tp, proofs: withPreimage(tp.proofs, h.htlc.preimage) }); }
+  const proofs = await w.receive(src, pks.length ? { privkey: pks } : undefined);
   addProofs(h.mint, proofs, h.unit);
   h.status = 'reclaimed'; save();
 }
