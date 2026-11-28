@@ -768,3 +768,28 @@
 767	Über {0}
 768	Große Zahlungen brauchen deine PIN: über {0}
 769	Große Zahlungen brauchen keine PIN
+770	Verteile dein Risiko:
+771	{0} hält {1}. Eine Mint verwahrt das Bitcoin hinter deinem Ecash, also verteile große Beträge auf ein paar Mints, denen du vertraust.
+772	Etwas verschieben
+773	Warnen, wenn eine Mint mehr hält als
+774	Nicht warnen
+775	Du wirst über {0} bei einer Mint gewarnt
+776	Mint-Warnungen aus
+777	Kontakte
+778	Leute und Orte, die du oft bezahlst
+779	Alle Kontakte
+780	Als Kontakt speichern
+781	Noch keine Kontakte. Speichere hier jemanden oder tippe nach einer Zahlung an eine Lightning-Adresse auf „Als Kontakt speichern“.
+782	Kontakt hinzufügen
+783	Kontakt
+784	Name
+785	Lightning-Adresse, LNURL, Angebot oder npub
+786	Kontakt speichern
+787	Änderungen speichern
+788	Kontakt löschen
+789	Gib dem Kontakt einen Namen.
+790	Das ist keine Lightning-Adresse, LNURL, kein Angebot und kein npub.
+791	Du hast schon einen Kontakt mit dieser Adresse.
+792	Kontakt gespeichert
+793	Kontakt aktualisiert
+794	Kontakt gelöscht

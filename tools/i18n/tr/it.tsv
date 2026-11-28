@@ -768,3 +768,28 @@
 767	Oltre {0}
 768	Gli invii grandi chiedono il PIN: oltre {0}
 769	Gli invii grandi non chiedono il PIN
+770	Distribuisci il rischio:
+771	{0} detiene {1}. Un mint custodisce il bitcoin dietro il tuo ecash, quindi distribuisci gli importi grandi su alcuni mint di fiducia.
+772	Sposta una parte
+773	Avvisami quando un mint detiene più di
+774	Non avvisarmi
+775	Riceverai un avviso oltre {0} su un mint
+776	Avvisi mint disattivati
+777	Contatti
+778	Persone e posti che paghi spesso
+779	Tutti i contatti
+780	Salva come contatto
+781	Ancora nessun contatto. Salvane uno qui, oppure tocca “Salva come contatto” dopo aver pagato un indirizzo Lightning.
+782	Aggiungi contatto
+783	Contatto
+784	Nome
+785	Indirizzo Lightning, LNURL, offerta o npub
+786	Salva contatto
+787	Salva modifiche
+788	Elimina contatto
+789	Dai un nome al contatto.
+790	Non è un indirizzo Lightning, un LNURL, un’offerta né un npub.
+791	Hai già un contatto con questo indirizzo.
+792	Contatto salvato
+793	Contatto aggiornato
+794	Contatto eliminato

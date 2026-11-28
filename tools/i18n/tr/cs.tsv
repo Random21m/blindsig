@@ -768,3 +768,28 @@
 767	Nad {0}
 768	Velké platby vyžadují PIN: nad {0}
 769	Velké platby PIN nevyžadují
+770	Rozložte riziko:
+771	{0} drží {1}. Mint drží bitcoin za vaším ecashem, proto velké částky rozložte mezi několik důvěryhodných mintů.
+772	Přesunout část
+773	Upozornit, když jeden mint drží víc než
+774	Neupozorňovat
+775	Upozorníme vás nad {0} v jednom mintu
+776	Upozornění na minty vypnuta
+777	Kontakty
+778	Lidé a místa, kterým často platíte
+779	Všechny kontakty
+780	Uložit jako kontakt
+781	Zatím žádné kontakty. Uložte někoho tady, nebo po platbě na Lightning adresu klepněte na „Uložit jako kontakt“.
+782	Přidat kontakt
+783	Kontakt
+784	Jméno
+785	Lightning adresa, LNURL, nabídka nebo npub
+786	Uložit kontakt
+787	Uložit změny
+788	Smazat kontakt
+789	Pojmenujte kontakt.
+790	To není Lightning adresa, LNURL, nabídka ani npub.
+791	Kontakt s touto adresou už máte.
+792	Kontakt uložen
+793	Kontakt upraven
+794	Kontakt smazán

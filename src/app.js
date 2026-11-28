@@ -199,7 +199,11 @@ function render() {
   // backup reminder: never backed up (or not for a month) once there's money and some history;
   // dismissing it waits a month. Not shown together with the Safari-tab warning.
   const MONTH = 30 * 864e5, now = Date.now();
-  $('#bkWarn').hidden = !(S.mnemonic && $('#tabWarn').hidden && (total('sat') >= 1000 || S.history.length >= 3) && total('sat') > 0
+  // mint risk: one mint holding more than the limit (sats). Dismissing waits until it grows by half again.
+  const risky = st.mintWarn ? S.mints.find((x) => { const v = bal(x.url, 'sat'); return v > st.mintWarn && v > (x.riskAck || 0) * 1.5; }) : null;
+  $('#riskWarn').hidden = !(risky && $('#tabWarn').hidden);
+  if (risky) { $('#riskText').textContent = `${mintLabel(risky)} holds ${st.hideAmounts ? HIDDEN : fmt(bal(risky.url, 'sat'), 'sat')}. A mint holds the bitcoin behind your ecash, so keep large amounts across a few mints you trust.`; $('#riskWarn').dataset.u = risky.url; }
+  $('#bkWarn').hidden = !(S.mnemonic && $('#tabWarn').hidden && $('#riskWarn').hidden && (total('sat') >= 1000 || S.history.length >= 3) && total('sat') > 0
     && (!S.lastBackup || now - S.lastBackup > MONTH) && now - (st.backupNagged || 0) > MONTH);
   // motd
   const motd = m?.info?.motd;
@@ -557,6 +561,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       <button class="btn primary wide" id="mk">Create token</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
+      ${S.contacts?.length ? `<div class="cts" role="list" aria-label="Contacts">${[...S.contacts].sort((p, q) => (q.last || 0) - (p.last || 0)).slice(0, 8).map((c) => `<button role="listitem" class="ctc" data-id="${esc(c.id)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}${S.contacts.length > 8 ? '<button class="ctc more" id="ctAll">All contacts</button>' : ''}</div>` : ''}
       <textarea id="ln" rows="3" placeholder="Invoice, address, LNURL, offer, request or bitcoin address" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button></div>
       <div id="lnx"></div>
@@ -661,11 +666,16 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const qa = Number(quote?.amount?.toNumber?.() ?? quote?.amount ?? 0) + Number(quote?.fee_reserve?.toNumber?.() ?? quote?.fee_reserve ?? 0);
         if (!(await bigOk(qa))) return;
         const h = await C.payInvoice(quote, label || undefined, S.active, S.unit, method, feeIndex);
-        if (h.status === 'done') done(h, 'Paid'); else { toast(method === 'onchain' ? 'Transaction submitted. It confirms on-chain.' : 'Payment in flight. It will settle.', 'warn'); render(); closeSheet(); }
+        const target = reusableTarget(ln.value.trim().replace(/^lightning:/i, ''));
+        const known = target && S.contacts.find((c) => c.to.toLowerCase() === target.toLowerCase());
+        if (known) { known.last = Date.now(); save(); }
+        if (h.status === 'done') done(h, 'Paid', target && !known ? target : undefined); else { toast(method === 'onchain' ? 'Transaction submitted. It confirms on-chain.' : 'Payment in flight. It will settle.', 'warn'); render(); closeSheet(); }
       }
     });
     $('#pst', b).onclick = () => pasteInto(ln);
     $('#scn', b).onclick = () => startScan((t) => { ln.value = t; ln.oninput(); later(() => pay.click()); });
+    $$('.ctc[data-id]', b).forEach((x) => (x.onclick = () => { const c = S.contacts.find((y) => y.id === x.dataset.id); if (!c) return; ln.value = c.to; ln.oninput(); later(() => pay.click()); }));
+    const cta = $('#ctAll', b); if (cta) cta.onclick = () => contactsSheet(() => sendSheet('ln'));
     if (prefill) { ln.value = prefill; ln.oninput(); later(() => pay.click()); }
   });
 }
@@ -723,7 +733,9 @@ function tokenView(h, fromLog) {
     }
   });
 }
-function done(h, verb) {
+// an address worth saving as a contact: Lightning address, LNURL or BOLT12 offer (not one-time invoices)
+const reusableTarget = (v) => (C.isAddress(v) ? v.toLowerCase() : C.isLnurl(v) || C.isOffer(v) ? v : '');
+function done(h, verb, saveTo) {
   const out = h.kind.endsWith('out');
   sheet(verb, `<div class="okb" aria-hidden="true"><svg viewBox="0 0 84 84"><circle class="ring" cx="42" cy="42" r="38"/><circle class="disc" cx="42" cy="42" r="38"/><path class="tick" d="M26 43.5l10.5 10.5L58.5 31"/></svg></div>
     <p class="big" id="dnAmt">${bigAmt(h.amount, h.unit, out ? '−' : '+')}</p>
@@ -731,6 +743,7 @@ function done(h, verb) {
     <button class="btn primary wide" id="dn">Done</button>`, (b) => {
     $('#dn', b).onclick = () => closeSheet();
     addNote(b, h, $('#dn', b));
+    if (saveTo) { $('#dn', b).insertAdjacentHTML('beforebegin', '<button class="btn wide" id="svc">Save as contact</button>'); I18N.translateTree($('#svc', b)); $('#svc', b).onclick = () => contactEdit({ to: saveTo }, () => closeSheet()); }
     if (h.amount) FX.countUp($('#dnAmt', b), h.amount, (n) => bigAmt(n, h.unit, out ? '−' : '+'));
     setTimeout(() => FX.success(out ? 'sent' : 'received', $('.okb', b)), 120);
   });
@@ -798,6 +811,7 @@ function mintsSheet(first = false) {
     ${restoring ? '<button class="btn wide" id="fnm">Find my mints on nostr</button>' : ''}
     <button class="btn wide" id="dsc">Discover mints</button>
     ${S.mints.length > 1 && !first ? '<button class="btn wide" id="mv">Move funds between mints</button>' : ''}
+    ${!first ? `<label class="lbl" for="mw">Warn me when one mint holds more than</label><select id="mw" class="field">${[0, 50000, 100000, 500000, 1000000].map((v) => `<option value="${v}" ${(st.mintWarn ?? 100000) === v ? 'selected' : ''}>${v ? esc(fmt(v, 'sat')) : 'Don’t warn me'}</option>`).join('')}</select>` : ''}
     ${first && S.mints.length ? `<button class="btn primary wide" id="fin">${restoring ? 'Scan these mints' : 'Done'}</button>` : ''}`, (b) => {
     $$('.pick', b).forEach((x) => (x.onclick = () => { C.selectMint(x.dataset.u); render(); if (first) mintsSheet(true); else closeSheet(); }));
     $$('.info', b).forEach((x) => (x.onclick = () => mintDetails(x.dataset.u, () => mintsSheet(first))));
@@ -809,6 +823,7 @@ function mintsSheet(first = false) {
     $('#add', b).onsubmit = (e) => { e.preventDefault(); const u = $('#mu', b).value.trim(); if (u) add(u); };
     $$('.sug', b).forEach((x) => (x.onclick = () => add(x.dataset.u)));
     const mv = $('#mv', b); if (mv) mv.onclick = moveSheet;
+    const mw = $('#mw', b); if (mw) mw.onchange = () => { st.mintWarn = +mw.value; save(); render(); toast(+mw.value ? `You’ll be warned above ${fmt(+mw.value, 'sat')} at one mint` : 'Mint warnings off'); };
     $('#dsc', b).onclick = () => NU.discover(() => mintsSheet(first));
     const fnm = $('#fnm', b); if (fnm) fnm.onclick = () => NU.findMints(S.mnemonic, () => mintsSheet(true));
     const fin = $('#fin', b);
@@ -895,6 +910,7 @@ function moveSheet() {
 const MENU = [
   ['backup', 'Backup & restore', 'Seed phrase and ecash recovery'],
   ['security', 'PIN lock', 'Lock and encrypt the app with a PIN'],
+  ['contacts', 'Contacts', 'People and places you pay often'],
   ['p2pk', 'P2PK', 'Receive ecash locked to your keys'],
   ['privacy', 'Privacy', 'Network checks and Bitcoin price'],
   ['appearance', 'Appearance', 'Theme, sound, vibration and keypad'],
@@ -940,6 +956,7 @@ const SECTIONS = {
       $('#exp', b).onclick = () => exportSheet(false);
     }, { back });
   },
+  contacts() { contactsSheet(back); },
   security() {
     const info = pinInfo();
     if (!info) {
@@ -1212,6 +1229,40 @@ function backupRestoreSheet(onboarding) {
     });
   }, { locked: onboarding, back: onboarding ? () => welcome(SLIDES.length) : SECTIONS.backup });
 }
+/* ---------- contacts ---------- */
+// people and places you pay often: a name and a Lightning address, LNURL or BOLT12 offer.
+// Kept with the wallet on this device (encrypted with the PIN lock, included in backup files).
+function contactsSheet(backTo) {
+  const list = [...(S.contacts || [])].sort((a, b) => a.name.localeCompare(b.name));
+  sheet('Contacts', `${list.length ? `<ul class="menu">${list.map((c) => `<li><button data-id="${esc(c.id)}"><span class="mt"><b dir="auto">${esc(c.name)}</b><small dir="ltr">${esc(c.to.length > 42 ? c.to.slice(0, 26) + '…' + c.to.slice(-10) : c.to)}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ul>` : '<p class="dim">No contacts yet. Save someone here, or tap “Save as contact” after paying a Lightning address.</p>'}
+    <button class="btn primary wide" id="ctAdd">Add contact</button>`, (b) => {
+    $$('.menu button', b).forEach((x) => (x.onclick = () => { const c = S.contacts.find((y) => y.id === x.dataset.id); if (c) contactEdit(c, () => contactsSheet(backTo)); }));
+    $('#ctAdd', b).onclick = () => contactEdit({}, () => contactsSheet(backTo));
+  }, { back: backTo });
+}
+function contactEdit(c, after) {
+  const isNew = !c.id;
+  sheet(isNew ? 'Add contact' : 'Contact', `<label class="lbl" for="cn">Name</label><input id="cn" class="field" maxlength="40" autocomplete="off" dir="auto" value="${esc(c.name || '')}">
+    <label class="lbl" for="ct">Lightning address, LNURL, offer or npub</label><textarea id="ct" rows="2" spellcheck="false" autocapitalize="off" autocomplete="off">${esc(c.to || '')}</textarea>
+    <button class="btn primary wide" id="csv">${isNew ? 'Save contact' : 'Save changes'}</button>
+    ${isNew ? '' : '<button class="btn wide" id="cpay">Pay</button><button class="btn wide danger" id="cdel">Delete contact</button>'}`, (b) => {
+    $('#csv', b).onclick = () => {
+      const name = $('#cn', b).value.trim();
+      let to = $('#ct', b).value.trim().replace(/^lightning:/i, '');
+      if (/^npub1[0-9a-z]{58}$/i.test(to)) to = to.toLowerCase() + '@npub.cash'; // an npub's Lightning address
+      if (!name) return nope('Give the contact a name.');
+      if (!reusableTarget(to)) return nope('That isn’t a Lightning address, LNURL, offer or npub.');
+      to = reusableTarget(to);
+      if (S.contacts.some((y) => y.id !== c.id && y.to.toLowerCase() === to.toLowerCase())) return nope('You already have a contact with that address.');
+      if (isNew) S.contacts.push({ id: Math.random().toString(36).slice(2, 10), name, to, last: Date.now() });
+      else Object.assign(S.contacts.find((y) => y.id === c.id), { name, to });
+      save(); toast(isNew ? 'Contact saved' : 'Contact updated'); after();
+    };
+    const cp = $('#cpay', b); if (cp) cp.onclick = () => sendSheet('ln', c.to);
+    const cd = $('#cdel', b); if (cd) cd.onclick = () => { S.contacts = S.contacts.filter((y) => y.id !== c.id); save(); toast('Contact deleted'); after(); };
+    if (isNew && !c.to) later(() => $('#cn', b)?.focus());
+  }, { back: after });
+}
 function importNsecSheet() {
   sheet('Import nsec', `<p class="dim">Use a nostr private key as a P2PK key, so ecash locked to your npub can be redeemed here.</p>
     <input id="ns" class="field" placeholder="nsec1…" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -1385,6 +1436,8 @@ $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
 $('#btcPrice').onclick = () => { if (S.mnemonic) SECTIONS.privacy(); };
 $('#instBtn').onclick = installHelp;
 $('#bkHow').onclick = () => backupCreateSheet();
+$('#riskMove').onclick = () => { const u = $('#riskWarn').dataset.u; if (u) { C.selectMint(u); S.unit = 'sat'; save(); render(); } if (S.mints.length > 1) moveSheet(); else mintsSheet(); };
+$('#riskX').onclick = () => { const m = mintOf($('#riskWarn').dataset.u); if (m) { m.riskAck = bal(m.url, 'sat'); save(); } render(); };
 $('#bkWarnX').onclick = () => { st.backupNagged = Date.now(); save(); render(); };
 $('#lockBtn').onclick = () => L.relock();
 // ask for the PIN again after time in the background ("Right away" also hides the app-switcher snapshot)

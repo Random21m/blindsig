@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.11.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.11.0">
+  <img src="https://img.shields.io/badge/version-1.12.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.12.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -109,6 +109,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - 12-word seed (NUT-13) with full restore (NUT-09), including restoring from another seed
 - Backup file: the whole wallet (seed, ecash, history, notes, keys and settings) in one file locked with a password. Restoring it checks your mints so spent ecash is dropped and anything newer is picked up. Handy for moving to a new phone, or from Safari to the Home Screen app
 - Multiple mints and units (sat, usd, eur…), mint messages, nicknames, and moving funds between mints
+- A warning when one mint holds more than an amount you choose (100,000 sat by default), with a shortcut to move some to another mint
 - Mint discovery and reviews over Nostr (NIP-87), auditor results, and mint-list backup (compatible with cashu.me)
 
 **Receive**
@@ -124,6 +125,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - Offline sending: exact-amount tokens made without contacting the mint
 - Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, and bitcoin addresses (BIP21 aware)
 - Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey or npub
+- Contacts: save people and places you pay often (Lightning address, LNURL, BOLT12 offer or npub) and pay them in two taps. After paying a new address, one tap saves it
 
 **Nostr**
 

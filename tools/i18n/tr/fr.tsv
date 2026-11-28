@@ -768,3 +768,28 @@
 767	Plus de {0}
 768	Les gros envois demandent votre code : plus de {0}
 769	Les gros envois ne demandent pas votre code
+770	Répartissez le risque :
+771	{0} détient {1}. Un mint garde le bitcoin derrière votre ecash : répartissez les gros montants entre quelques mints de confiance.
+772	En déplacer une partie
+773	M’avertir quand un mint détient plus de
+774	Ne pas m’avertir
+775	Vous serez averti au-delà de {0} sur un mint
+776	Avertissements de mint désactivés
+777	Contacts
+778	Les personnes et lieux que vous payez souvent
+779	Tous les contacts
+780	Enregistrer comme contact
+781	Pas encore de contacts. Ajoutez-en un ici, ou touchez « Enregistrer comme contact » après avoir payé une adresse Lightning.
+782	Ajouter un contact
+783	Contact
+784	Nom
+785	Adresse Lightning, LNURL, offre ou npub
+786	Enregistrer le contact
+787	Enregistrer les modifications
+788	Supprimer le contact
+789	Donnez un nom au contact.
+790	Ce n’est pas une adresse Lightning, un LNURL, une offre ni un npub.
+791	Vous avez déjà un contact avec cette adresse.
+792	Contact enregistré
+793	Contact mis à jour
+794	Contact supprimé

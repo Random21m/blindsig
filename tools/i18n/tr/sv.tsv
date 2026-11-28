@@ -768,3 +768,28 @@
 767	Över {0}
 768	Stora betalningar kräver PIN-kod: över {0}
 769	Stora betalningar kräver ingen PIN-kod
+770	Sprid risken:
+771	{0} har {1}. En mint förvarar bitcoinen bakom din ecash, så sprid stora belopp över några mintar du litar på.
+772	Flytta en del
+773	Varna när en mint har mer än
+774	Varna inte
+775	Du varnas över {0} hos en mint
+776	Mint-varningar av
+777	Kontakter
+778	Personer och ställen du ofta betalar
+779	Alla kontakter
+780	Spara som kontakt
+781	Inga kontakter ännu. Spara någon här, eller tryck på ”Spara som kontakt” efter att ha betalat en Lightning-adress.
+782	Lägg till kontakt
+783	Kontakt
+784	Namn
+785	Lightning-adress, LNURL, erbjudande eller npub
+786	Spara kontakt
+787	Spara ändringar
+788	Ta bort kontakt
+789	Ge kontakten ett namn.
+790	Det är ingen Lightning-adress, LNURL, erbjudande eller npub.
+791	Du har redan en kontakt med den adressen.
+792	Kontakt sparad
+793	Kontakt uppdaterad
+794	Kontakt borttagen

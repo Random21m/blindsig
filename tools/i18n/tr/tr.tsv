@@ -768,3 +768,28 @@
 767	{0} üzeri
 768	Büyük gönderimler PIN ister: {0} üzeri
 769	Büyük gönderimler PIN istemez
+770	Riski dağıtın:
+771	{0} {1} tutuyor. Mint, ecash’inizin arkasındaki bitcoin’i saklar; büyük tutarları güvendiğiniz birkaç mint’e dağıtın.
+772	Bir kısmını taşı
+773	Bir mint şundan fazlasını tuttuğunda uyar
+774	Uyarma
+775	Bir mint’te {0} üzerinde uyarılacaksınız
+776	Mint uyarıları kapalı
+777	Kişiler
+778	Sık ödeme yaptığınız kişiler ve yerler
+779	Tüm kişiler
+780	Kişi olarak kaydet
+781	Henüz kişi yok. Buraya birini kaydedin veya bir Lightning adresine ödeme yaptıktan sonra “Kişi olarak kaydet”e dokunun.
+782	Kişi ekle
+783	Kişi
+784	Ad
+785	Lightning adresi, LNURL, teklif veya npub
+786	Kişiyi kaydet
+787	Değişiklikleri kaydet
+788	Kişiyi sil
+789	Kişiye bir ad verin.
+790	Bu bir Lightning adresi, LNURL, teklif veya npub değil.
+791	Bu adresle zaten bir kişiniz var.
+792	Kişi kaydedildi
+793	Kişi güncellendi
+794	Kişi silindi
