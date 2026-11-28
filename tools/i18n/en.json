@@ -916,5 +916,16 @@
 "When a mint goes over that, move the extra to your other mints by itself, while blindsig is open. Skips any move whose fee could be over 2%.",
 "Moved {0}. Your sats are spread across your mints.",
 "Nothing was moved.",
-"Spread {0} from {1} to your other mints."
+"Spread {0} from {1} to your other mints.",
+"Tip jar",
+"Tip jar card",
+"Make a tip jar card",
+"A card with your Lightning address and a big QR code, for a counter, a stream or a market stall. Anyone can tip you with any Lightning wallet.",
+"No address yet?",
+"Set up a free one",
+"Headline",
+"Tips welcome",
+"Your name or shop (optional)",
+"Scan with any Lightning wallet",
+"Add your Lightning address"
 ]

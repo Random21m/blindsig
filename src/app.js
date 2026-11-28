@@ -529,11 +529,12 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <button class="btn wide" id="later" hidden>Receive later</button>
     </div>
     <div class="pane" data-p="ln" ${tab !== 'ln' ? 'hidden' : ''}>
-      ${S.npc.enabled && S.npc.showOnReceive && S.npc.address ? `<div class="addrcard"><small class="dim">Your Lightning address</small><b>${esc(S.npc.address)}</b><div class="btnrow"><button class="btn" id="cpa">Copy</button><button class="btn" id="qra">QR code</button></div><div id="aq"></div></div><p class="dim small center">Or create a one-time invoice:</p>` : ''}
+      ${S.npc.enabled && S.npc.showOnReceive && S.npc.address ? `<div class="addrcard"><small class="dim">Your Lightning address</small><b>${esc(S.npc.address)}</b><div class="btnrow"><button class="btn" id="cpa">Copy</button><button class="btn" id="qra">QR code</button><button class="btn" id="tjb">Tip jar</button></div><div id="aq"></div></div><p class="dim small center">Or create a one-time invoice:</p>` : ''}
       ${amountField('amt', `Into ${esc(mintLabel(mintOf(S.active)))}`)}
       <input id="desc" class="field" placeholder="Description (optional)" maxlength="80">
       ${b12 ? '<label class="chk"><input type="checkbox" id="b12"> <span>Reusable offer (BOLT12)</span></label>' : ''}
       <button class="btn primary wide" id="inv">Create invoice</button>
+      <p class="center small"><button class="lnk" id="tjl">Make a tip jar card</button></p>
     </div>
     ${chain ? `<div class="pane" data-p="btc" ${tab !== 'btc' ? 'hidden' : ''}>
       <p class="dim">Deposit bitcoin on-chain. The mint credits ecash after the transaction confirms.</p>
@@ -598,6 +599,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     });
     const ad = $('#addr', b);
     if (ad) ad.onclick = withBusy(ad, async () => liveView(await C.createDepositAddress(S.active, S.unit, readAmt(b, 'camt'))));
+    const tjb = $('#tjb', b); if (tjb) tjb.onclick = () => tipSheet();
+    $('#tjl', b).onclick = () => tipSheet();
     const cpa = $('#cpa', b); if (cpa) { cpa.onclick = () => copy(S.npc.address, 'Address copied'); $('#qra', b).onclick = () => qrSvg('lightning:' + S.npc.address).then((s) => { $('#aq', b).innerHTML = `<div class="qr">${s}</div>`; }); N.npcSync().then((n) => n && render()).catch(() => {}); }
     $('#nreq', b).onclick = () => NU.newRequest(() => receiveSheet('req'));
     const lreq = $('#lreq', b); if (lreq) lreq.onclick = () => NU.showRequest(S.pr.requests[0], () => receiveSheet('req'));
@@ -863,6 +866,73 @@ function lockName(pub) {
   const c = keyContacts().find((x) => { try { return C.parsePubkey(x.npub) === pub; } catch { return false; } });
   return c ? c.name : pub.slice(0, 12) + '…';
 }
+/* ================= cards: gift cards and the tip jar ================= */
+// share, save, copy link and print for a card picture. get() returns the current { blob, url }
+function cardTools(b, get, { name, text, link }) {
+  const file = () => new File([get().blob], name, { type: 'image/png' });
+  const canFiles = () => get().blob && typeof File === 'function' && navigator.canShare?.({ files: [file()] });
+  const download = () => { const a = document.createElement('a'); a.href = get().url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  $('#gSh', b).onclick = async () => {
+    if (!get().blob) return;
+    try {
+      if (canFiles()) await navigator.share({ files: [file()], text });
+      else if (navigator.share) await navigator.share({ text });
+      else return copy(link, 'Link copied');
+    } catch (e) { if (e?.name !== 'AbortError') copy(link, 'Link copied'); }
+  };
+  // phones: the share sheet has "Save Image"; computers: a normal download
+  $('#gSv', b).onclick = async () => { if (!get().blob) return; if (canFiles()) { try { await navigator.share({ files: [file()] }); } catch (e) { if (e?.name !== 'AbortError') download(); } } else download(); };
+  const cl = $('#gCl', b); if (cl) cl.onclick = () => copy(link, 'Link copied');
+  const pr = $('#gPr', b); if (pr) pr.onclick = () => {
+    const url = get().url; if (!url) return;
+    const area = document.createElement('div'); area.id = 'printArea'; area.innerHTML = `<img src="${url}" alt="">`;
+    document.body.appendChild(area); document.documentElement.classList.add('printing');
+    const end = () => { area.remove(); document.documentElement.classList.remove('printing'); removeEventListener('afterprint', end); };
+    addEventListener('afterprint', end);
+    $('img', area).decode().catch(() => {}).then(() => { window.print(); setTimeout(() => { if (area.isConnected && !matchMedia('print').matches) end(); }, 1500); });
+  };
+}
+const designPicker = (cur) => `<div class="gds" role="radiogroup" aria-label="Design">${GIFT.DESIGNS.map(([k, l]) => `<button role="radio" class="gd gd-${k}" data-d="${k}" aria-checked="${cur === k}"><i aria-hidden="true"></i>${l}</button>`).join('')}</div>`;
+// a card for a counter, a stream or a stall: your Lightning address as a big QR code
+const LNADDR = /^[a-z0-9._+-]+@[a-z0-9-]+(\.[a-z0-9-]+)+$/i;
+function tipSheet() {
+  const t = { address: S.npc?.address || '', title: '', name: '', design: 'classic', ...(S.tipJar || {}) };
+  const canvas = document.createElement('canvas');
+  let blob = null, url = '', timer = 0;
+  sheet('Tip jar card', `<p class="dim">A card with your Lightning address and a big QR code, for a counter, a stream or a market stall. Anyone can tip you with any Lightning wallet.</p>
+    <div class="gcard"><img id="gImg" alt=""></div>
+    <label class="lbl" for="tja">Lightning address</label><input id="tja" class="field" placeholder="you@npub.cash" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(t.address)}">
+    ${!S.npc?.address ? '<p class="hint">No address yet? <button class="lnk" id="tjs">Set up a free one</button></p>' : ''}
+    <label class="lbl" for="tjt">Headline</label><input id="tjt" class="field" maxlength="30" placeholder="Tips welcome" autocomplete="off" dir="auto" value="${esc(t.title)}">
+    <label class="lbl" for="tjn">Name</label><input id="tjn" class="field" maxlength="30" placeholder="Your name or shop (optional)" autocomplete="off" dir="auto" value="${esc(t.name)}">
+    ${designPicker(t.design)}
+    <div class="btnrow"><button class="btn primary" id="gSh">Share</button><button class="btn" id="gSv">Save image</button></div>
+    <div class="btnrow"><button class="btn" id="gCl">Copy address</button>${typeof window.print === 'function' ? '<button class="btn" id="gPr">Print</button>' : ''}</div>`, (b) => {
+    const img = $('#gImg', b), A = $('#tja', b);
+    const ok = () => LNADDR.test(A.value.trim());
+    const paint = async () => {
+      const address = A.value.trim().toLowerCase();
+      t.address = address; t.title = $('#tjt', b).value.trim(); t.name = $('#tjn', b).value.trim();
+      S.tipJar = { address: t.address, title: t.title, name: t.name, design: t.design }; save();
+      A.classList.toggle('bad', !!address && !ok());
+      await GIFT.drawTip(canvas, { design: t.design, address: ok() ? address : '', name: t.name,
+        words: { title: t.title || I18N.t('Tips welcome'), scan: I18N.t('Scan with any Lightning wallet'), none: I18N.t('Add your Lightning address') } });
+      blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+      if (url) URL.revokeObjectURL(url);
+      url = URL.createObjectURL(blob); img.src = url;
+      img.alt = `${I18N.t('Tip jar card')}: ${address}`;
+      $$('#gSh, #gSv, #gCl, #gPr', b).forEach((x) => (x.disabled = !ok()));
+    };
+    const later_ = () => { clearTimeout(timer); timer = setTimeout(paint, 250); };
+    $$('#tja, #tjt, #tjn', b).forEach((x) => (x.oninput = later_));
+    $$('.gd', b).forEach((x) => (x.onclick = () => { $$('.gd', b).forEach((y) => y.setAttribute('aria-checked', y === x)); t.design = x.dataset.d; paint(); }));
+    const tjs = $('#tjs', b); if (tjs) tjs.onclick = () => SECTIONS.lnaddr();
+    paint();
+    onClose = () => { clearTimeout(timer); setTimeout(() => url && URL.revokeObjectURL(url), 1000); };
+    cardTools(b, () => ({ blob, url }), { name: 'blindsig-tip-jar.png', text: `⚡ ${t.address}`, link: '' });
+    $('#gCl', b).onclick = () => copy(A.value.trim(), 'Address copied');
+  });
+}
 /* ================= gift cards ================= */
 // the message rides in the token's memo ("🎁 Happy holidays! — Sam"), so any Cashu wallet shows it
 const giftMemo = (msg, from) => '🎁 ' + [msg || I18N.t('A gift for you'), from && '— ' + from].filter(Boolean).join(' ');
@@ -921,29 +991,7 @@ function giftView(h, fromLog) {
       $$('.gd', b).forEach((y) => y.setAttribute('aria-checked', y === x));
       h.gift = { ...(h.gift || {}), design: x.dataset.d }; save(); paint();
     }));
-    const file = () => new File([blob], 'blindsig-gift.png', { type: 'image/png' });
-    const canFiles = () => blob && typeof File === 'function' && navigator.canShare?.({ files: [file()] });
-    const download = () => { const a = document.createElement('a'); a.href = url; a.download = 'blindsig-gift.png'; document.body.appendChild(a); a.click(); a.remove(); };
-    const text = `${g.msg ? g.msg + ' ' : ''}🎁 ${link}`;
-    $('#gSh', b).onclick = async () => {
-      if (!blob) return;
-      try {
-        if (canFiles()) await navigator.share({ files: [file()], text });
-        else if (navigator.share) await navigator.share({ text });
-        else return copy(link, 'Link copied');
-      } catch (e) { if (e?.name !== 'AbortError') copy(link, 'Link copied'); }
-    };
-    // phones: the share sheet has "Save Image"; computers: a normal download
-    $('#gSv', b).onclick = async () => { if (!blob) return; if (canFiles()) { try { await navigator.share({ files: [file()] }); } catch (e) { if (e?.name !== 'AbortError') download(); } } else download(); };
-    $('#gCl', b).onclick = () => copy(link, 'Link copied');
-    const pr = $('#gPr', b); if (pr) pr.onclick = () => {
-      if (!url) return;
-      const area = document.createElement('div'); area.id = 'printArea'; area.innerHTML = `<img src="${url}" alt="">`;
-      document.body.appendChild(area); document.documentElement.classList.add('printing');
-      const end = () => { area.remove(); document.documentElement.classList.remove('printing'); removeEventListener('afterprint', end); };
-      addEventListener('afterprint', end);
-      $('img', area).decode().catch(() => {}).then(() => { window.print(); setTimeout(() => { if (area.isConnected && !matchMedia('print').matches) end(); }, 1500); });
-    };
+    cardTools(b, () => ({ blob, url }), { name: 'blindsig-gift.png', text: `${g.msg ? g.msg + ' ' : ''}🎁 ${link}`, link });
     if (fromLog) {
       const chk = $('#chk', b), rc = $('#rc', b);
       chk.onclick = withBusy(chk, async () => { const s = await C.checkClaimed(h); toast(s === 'claimed' ? 'The gift was claimed.' : 'Not claimed yet.', s === 'claimed' ? 'ok' : 'warn'); if (s === 'claimed') detail(h); });

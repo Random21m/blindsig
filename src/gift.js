@@ -40,7 +40,7 @@ function snowflake(g, x, y, r) {
   }
   g.restore();
 }
-function decor(g, d, L) {
+function decor(g, d, L, prompt = '$ gift_') {
   const r = rng(d.length * 977 + 5);
   if (d === 'winter') {
     g.fillStyle = 'rgba(255,255,255,.5)';
@@ -66,7 +66,7 @@ function decor(g, d, L) {
     g.strokeStyle = 'rgba(116,217,154,.06)'; g.lineWidth = 1;
     for (let x = 0; x <= W; x += 54) { g.beginPath(); g.moveTo(x + 0.5, 0); g.lineTo(x + 0.5, H); g.stroke(); }
     for (let y = 0; y <= H; y += 54) { g.beginPath(); g.moveTo(0, y + 0.5); g.lineTo(W, y + 0.5); g.stroke(); }
-    g.fillStyle = L.ac; g.font = `600 34px ${MONO}`; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillText('$ gift_', 70, 110);
+    g.fillStyle = L.ac; g.font = `600 34px ${MONO}`; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillText(prompt, 70, 110);
   }
 }
 
@@ -119,4 +119,49 @@ export async function draw(canvas, o) {
   g.font = `500 40px ${SANS}`; g.fillStyle = L.ink; g.fillText(qr ? o.words.scan : o.words.link, W / 2, 1720);
   g.font = `400 28px ${MONO}`; g.fillStyle = L.dim; g.fillText('bitcoin ecash · blindsig', W / 2, 1768);
   return !!qr;
+}
+
+// the tip jar: headline, name, a big QR of your Lightning address and the address written out
+// o: { design, address, name, words: { title, scan, none } }
+export async function drawTip(canvas, o) {
+  canvas.width = W; canvas.height = H;
+  try { await Promise.all([document.fonts.load(`600 60px "Inter"`), document.fonts.load(`600 60px "JetBrains Mono"`)]); } catch {}
+  const g = canvas.getContext('2d'), L = LOOK[o.design] || LOOK.classic;
+  const bg = g.createLinearGradient(0, 0, W * 0.3, H); bg.addColorStop(0, L.bg[0]); bg.addColorStop(1, L.bg[1]);
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  decor(g, o.design, L, '$ tips_');
+  g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  // a lightning bolt over the headline
+  g.save(); g.translate(W / 2, 150); g.scale(2.2, 2.2); g.fillStyle = L.ac;
+  g.beginPath(); g.moveTo(4, -26); g.lineTo(-14, 4); g.lineTo(-1, 4); g.lineTo(-5, 26); g.lineTo(14, -6); g.lineTo(1, -6); g.closePath(); g.fill(); g.restore();
+  // headline: as big as fits, up to two lines
+  let size = 104; g.fillStyle = L.ink;
+  let lines;
+  for (;;) { g.font = `700 ${size}px ${SANS}`; lines = wrap(g, o.words.title, W - 160, 2); if (lines.every((l) => g.measureText(l).width <= W - 160) && (lines.length === 1 || size <= 84)) break; size -= 6; if (size < 60) break; }
+  let y = 340; lines.forEach((l, i) => g.fillText(l, W / 2, y + i * (size * 1.1))); y += (lines.length - 1) * size * 1.1;
+  if (o.name) { g.font = `500 48px ${SANS}`; g.fillStyle = L.ac; wrap(g, o.name, W - 180, 1).forEach((l) => g.fillText(l, W / 2, y + 90)); }
+  // the code
+  const box = 860, bx = (W - box) / 2, by = 610;
+  g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 40; g.shadowOffsetY = 12; g.fillStyle = '#f7f3ea'; round(g, bx, by, box, box, 40); g.fill(); g.restore();
+  if (o.address) {
+    const qr = QRCode.create('lightning:' + o.address, { errorCorrectionLevel: 'M' }), n = qr.modules.size;
+    const m = Math.floor((box - 120) / n), q = m * n, qx = Math.round(bx + (box - q) / 2), qy = Math.round(by + (box - q) / 2);
+    g.fillStyle = '#121212';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.modules.get(r, c)) g.fillRect(qx + c * m, qy + r * m, m, m);
+  } else {
+    g.fillStyle = '#5b5b5b'; g.font = `500 44px ${SANS}`; g.fillText(o.words.none, W / 2, by + box / 2 + 15);
+  }
+  // the address, written out, and how to pay
+  if (o.address) {
+    let s2 = 56; g.font = `600 ${s2}px ${MONO}`;
+    while (g.measureText(o.address).width > W - 120 && s2 > 34) { s2 -= 2; g.font = `600 ${s2}px ${MONO}`; }
+    // still too long (an npub address): break it over up to three lines
+    const lines = []; let cur = '';
+    for (const ch of o.address) { if (g.measureText(cur + ch).width > W - 120) { lines.push(cur); cur = ch; } else cur += ch; }
+    lines.push(cur);
+    if (lines.length > 3) { lines.length = 3; lines[2] = lines[2].slice(0, -1) + '…'; }
+    g.fillStyle = L.ink; lines.forEach((l, i) => g.fillText(l, W / 2, 1600 - (lines.length - 1 - i) * (s2 * 1.15)));
+  }
+  g.font = `400 40px ${SANS}`; g.fillStyle = L.dim; g.fillText(o.words.scan, W / 2, 1680);
+  g.font = `400 28px ${MONO}`; g.fillText('bitcoin · lightning ⚡', W / 2, 1750);
 }
