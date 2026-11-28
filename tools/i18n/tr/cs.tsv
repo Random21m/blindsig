@@ -1041,7 +1041,7 @@
 1040	z vaší Nostr peněženky
 1041	utraceno v jiné Nostr aplikaci
 1042	Kód k odemčení
-1043	Nebo hash, ke kterému zamknout (pro swapy)
+1043	Nebo hash (pro swapy)
 1044	Zpět do terminálu (NFC)
 1045	Kód zkopírován
 1046	Kopírovat kód
@@ -1100,3 +1100,4 @@
 1099	tato doména není chráněna DNSSEC
 1100	DNS podpisy tohoto jména nesedí
 1101	příliš mnoho přesměrování pro toto jméno
+1102	Vyberte, kdy se vám vrátí, pokud ho nikdo nepřevezme.

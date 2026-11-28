@@ -97,9 +97,15 @@ async function authFor(url) {
     const cfg = authCfg(url) || {};
     const am = new AuthManager(url, { desiredPoolSize: 10, maxPerMint: 10 });
     if (cfg.discovery) {
-      const oidc = new OIDCAuth(cfg.discovery, { clientId: cfg.client || 'cashu-client', onTokens: (t) => { if (t.refresh_token) rec.refresh = t.refresh_token; delete rec.expired; save(); } });
+      // the record is looked up each time: logging out deletes it, and a new login starts a fresh one
+      const recNow = () => ((S.mintAuth ||= {})[url] ||= {});
+      const oidc = new OIDCAuth(cfg.discovery, { clientId: cfg.client || 'cashu-client', requestTimeout: 15000, onTokens: (t) => { const r = recNow(); if (t.refresh_token) r.refresh = t.refresh_token; delete r.expired; save(); } });
       am.attachOIDC(oidc); am.oidc = oidc;
-      if (rec.refresh) { try { await oidc.refresh(rec.refresh); } catch (e) { console.warn('mint login refresh', e); rec.expired = true; save(); } }
+      // a login provider that doesn't answer mustn't hold up the wallet: spare tokens still work
+      if (rec.refresh) {
+        try { await Promise.race([oidc.refresh(rec.refresh), new Promise((_, no) => setTimeout(() => no(new Error('login provider timed out')), 15000))]); }
+        catch (e) { console.warn('mint login refresh', e); if (!/timed out|fetch|network/i.test(String(e?.message))) { recNow().expired = true; save(); } }
+      }
     }
     if (rec.pool && rec.pool.length) { try { am.importPool(deserializeProofs(rec.pool), 'replace'); } catch {} }
     return am;
@@ -371,6 +377,8 @@ export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, ke
   if (htlc && !htlc.hash) htlc.hash = createHTLCHash(htlc.preimage).hash;
   if (htlc && lockTo) throw new Error('lock to a person or with a code, not both');
   if (htlc && !mintOf(url)?.info?.nuts?.includes('14')) throw new Error('this mint doesn’t support locking with a code');
+  // locked to someone else's hash, only they can claim it: without a way back it could be stuck forever
+  if (htlc && !htlc.code && !(returnAfter > 0)) throw new Error('Pick when it comes back to you if they don’t claim it.');
   const refundAt = (lockTo || htlc) && returnAfter > 0 ? Date.now() + returnAfter : 0;
   if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
   else if (htlc) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: [], hashlock: htlc.hash, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}) }).includeFees(true).run();
@@ -450,7 +458,7 @@ export async function checkClaimed(h) {
 // live updates for unclaimed tokens over the mint's WebSocket (NUT-17)
 const watching = new Map();
 export function watchSent(onChange) {
-  if (!S.settings.websockets) return;
+  if (!S.settings.websockets || navigator.onLine === false) return;
   for (const h of S.history) {
     if (h.kind !== 'ecash-out' || h.status !== 'pending' || watching.has(h.id) || !mintOf(h.mint)?.info?.nut17) continue;
     const ac = new AbortController(); watching.set(h.id, ac);
@@ -792,19 +800,27 @@ export async function sweepSpent(onlyActive = false) {
 // pays that mint's input fee once.
 const popcount = (n) => { let c = 0; while (n > 0) { c += n & 1; n = Math.floor(n / 2); } return c; };
 export async function tidyPlan() {
-  const out = [];
-  for (const m of S.mints) for (const unit of m.units || ['sat']) {
-    const p = getProofs(m.url, unit); if (p.length < 3) continue;
-    let fee; try { fee = (await walletFor(m.url, unit)).getFeesForProofs(p).toNumber(); } catch { continue; }
+  const pairs = S.mints.flatMap((m) => (m.units || ['sat']).map((unit) => [m.url, unit])).filter(([u, n]) => getProofs(u, n).length >= 3);
+  // every mint at once, so one slow mint doesn't hold up the list
+  const rows = await Promise.all(pairs.map(async ([url, unit]) => {
+    let p, fee;
+    // count only notes the mint still honours, so the numbers match what the swap will do
+    try { const w = await walletFor(url, unit); p = (await w.groupProofsByState(getProofs(url, unit))).unspent; fee = w.getFeesForProofs(p).toNumber(); } catch { return null; }
+    if (p.length < 3) return null;
     const amount = sum(p), after = popcount(amount - fee);
     // only worth it when it removes a good share of the notes
-    if (amount - fee <= 0 || p.length - after < Math.max(3, p.length / 3)) continue;
-    out.push({ url: m.url, unit, count: p.length, after, fee, amount });
-  }
-  return out;
+    if (amount - fee <= 0 || p.length - after < Math.max(3, p.length / 3)) return null;
+    return { url, unit, count: p.length, after, fee, amount };
+  }));
+  return rows.filter(Boolean);
 }
 export async function tidy(url, unit) {
-  const w = await walletFor(url, unit), old = getProofs(url, unit);
+  const w = await walletFor(url, unit);
+  // notes already spent (elsewhere, or a payment that went through) would make the whole swap fail
+  const g = await w.groupProofsByState(getProofs(url, unit));
+  if (g.spent.length) { const sp = new Set(g.spent.map((p) => p.secret)); setProofs(url, getProofs(url, unit).filter((p) => !sp.has(p.secret)), unit); }
+  const old = g.unspent;
+  if (old.length < 2) return { before: old.length, after: old.length, fee: 0 };
   const fresh = await w.receive(old);
   // ecash that arrived while the swap ran stays; only the swapped notes are replaced
   const gone = new Set(old.map((p) => p.secret));

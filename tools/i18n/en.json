@@ -1042,7 +1042,7 @@
 "from your Nostr wallet",
 "spent in another Nostr app",
 "Code to unlock it",
-"Or a hash to lock to (for swaps)",
+"Or a hash (for swaps)",
 "Back to the terminal (NFC)",
 "Code copied",
 "Copy code",
@@ -1100,5 +1100,6 @@
 "no payment instructions for this name",
 "this domain isn’t protected by DNSSEC",
 "the DNS signatures for this name don’t check out",
-"too many redirects for this name"
+"too many redirects for this name",
+"Pick when it comes back to you if they don’t claim it."
 ]

@@ -1041,7 +1041,7 @@
 1040	depuis votre portefeuille Nostr
 1041	dépensé dans une autre app Nostr
 1042	Code pour le déverrouiller
-1043	Ou un hash auquel le verrouiller (pour les swaps)
+1043	Ou un hash (pour swaps)
 1044	Retour au terminal (NFC)
 1045	Code copié
 1046	Copier le code
@@ -1100,3 +1100,4 @@
 1099	ce domaine n’est pas protégé par DNSSEC
 1100	les signatures DNS de ce nom ne sont pas valides
 1101	trop de redirections pour ce nom
+1102	Choisissez quand il vous revient s’il n’est pas réclamé.

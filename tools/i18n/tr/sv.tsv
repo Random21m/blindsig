@@ -1041,7 +1041,7 @@
 1040	från din Nostr-plånbok
 1041	spenderat i en annan Nostr-app
 1042	Kod för att låsa upp
-1043	Eller en hash att låsa till (för swappar)
+1043	Eller en hash (för swappar)
 1044	Tillbaka till terminalen (NFC)
 1045	Koden kopierad
 1046	Kopiera kod
@@ -1100,3 +1100,4 @@
 1099	domänen skyddas inte av DNSSEC
 1100	DNS-signaturerna för namnet stämmer inte
 1101	för många omdirigeringar för namnet
+1102	Välj när den kommer tillbaka till dig om den inte löses in.
