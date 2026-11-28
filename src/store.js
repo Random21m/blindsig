@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.17.0';
+export const VERSION = '1.18.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS = {
   btcSymbol: false,
   hideAmounts: false,
   hideHistory: false,
-  mintWarn: 100000, // warn when one mint holds more than this many sats; 0 = never
+  mintWarn: 100000, autoSpread: false, // warn when one mint holds more than this many sats; 0 = never
   confirmOver: 0, // with a PIN set: ask for it (or Face ID) before sending more than this many sats; 0 = never // fold the history away on the main screen, for a clean screen (tap History) // show •••• instead of balances and amounts on the main screen (tap the balance)
   fiat: true,
   fiatCur: 'USD',

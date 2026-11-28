@@ -313,6 +313,7 @@ function render() {
   // mint risk: one mint holding more than the limit (sats). Dismissing waits until it grows by half again.
   const risky = st.mintWarn ? S.mints.find((x) => { const v = bal(x.url, 'sat'); return v > st.mintWarn && v > (x.riskAck || 0) * 1.5; }) : null;
   $('#riskWarn').hidden = !(risky && $('#tabWarn').hidden);
+  if (risky && st.autoSpread) later(autoSpread);
   if (risky) { $('#riskText').textContent = `${mintLabel(risky)} holds ${st.hideAmounts ? HIDDEN : fmt(bal(risky.url, 'sat'), 'sat')}. A mint holds the bitcoin behind your ecash, so keep large amounts across a few mints you trust.`; $('#riskWarn').dataset.u = risky.url; }
   $('#bkWarn').hidden = !(S.mnemonic && $('#tabWarn').hidden && $('#riskWarn').hidden && (total('sat') >= 1000 || S.history.length >= 3) && total('sat') > 0
     && (!S.lastBackup || now - S.lastBackup > MONTH) && now - (st.backupNagged || 0) > MONTH);
@@ -1049,7 +1050,7 @@ async function fillFx(list) {
   return n;
 }
 // what counts: money that really moved (not pending, failed, expired, or sent and taken back)
-const counted = (h) => (h.unit || 'sat') === 'sat' && amountOf(h) > 0 && (h.live || ['done', 'claimed'].includes(h.status));
+const counted = (h) => (h.unit || 'sat') === 'sat' && amountOf(h) > 0 && !h.internal && (h.live || ['done', 'claimed'].includes(h.status));
 const monthKey = (ts) => { const d = new Date(ts); return d.getFullYear() * 100 + d.getMonth(); };
 const monthName = (k, long) => new Date(Math.floor(k / 100), k % 100, 1).toLocaleDateString([], { month: long ? 'long' : 'short', year: long ? 'numeric' : undefined });
 function monthTotals(k) {
@@ -1151,7 +1152,8 @@ function mintsSheet(first = false) {
     ${restoring ? '<button class="btn wide" id="fnm">Find my mints on nostr</button>' : ''}
     <button class="btn wide" id="dsc">Discover mints</button>
     ${S.mints.length > 1 && !first ? '<button class="btn wide" id="mv">Move funds between mints</button>' : ''}
-    ${!first ? `<label class="lbl" for="mw">Warn me when one mint holds more than</label><select id="mw" class="field">${[0, 50000, 100000, 500000, 1000000].map((v) => `<option value="${v}" ${(st.mintWarn ?? 100000) === v ? 'selected' : ''}>${v ? esc(fmt(v, 'sat')) : 'Don’t warn me'}</option>`).join('')}</select>` : ''}
+    ${!first ? `<label class="lbl" for="mw">Warn me when one mint holds more than</label><select id="mw" class="field">${[0, 50000, 100000, 500000, 1000000].map((v) => `<option value="${v}" ${(st.mintWarn ?? 100000) === v ? 'selected' : ''}>${v ? esc(fmt(v, 'sat')) : 'Don’t warn me'}</option>`).join('')}</select>
+    ${S.mints.length > 1 ? toggle('t_autoSpread', 'Spread automatically', 'When a mint goes over that, move the extra to your other mints by itself, while blindsig is open. Skips any move whose fee could be over 2%.', st.autoSpread) : ''}` : ''}
     ${first && S.mints.length ? `<button class="btn primary wide" id="fin">${restoring ? 'Scan these mints' : 'Done'}</button>` : ''}`, (b) => {
     $$('.pick', b).forEach((x) => (x.onclick = () => { C.selectMint(x.dataset.u); render(); if (first) mintsSheet(true); else closeSheet(); }));
     $$('.info', b).forEach((x) => (x.onclick = () => mintDetails(x.dataset.u, () => mintsSheet(first))));
@@ -1163,6 +1165,7 @@ function mintsSheet(first = false) {
     $('#add', b).onsubmit = (e) => { e.preventDefault(); const u = $('#mu', b).value.trim(); if (u) add(u); };
     $$('.sug', b).forEach((x) => (x.onclick = () => add(x.dataset.u)));
     const mv = $('#mv', b); if (mv) mv.onclick = moveSheet;
+    bindToggles(b, ['autoSpread'], () => { if (st.autoSpread) autoSpread(); });
     const mw = $('#mw', b); if (mw) mw.onchange = () => { st.mintWarn = +mw.value; save(); render(); toast(+mw.value ? `You’ll be warned above ${fmt(+mw.value, 'sat')} at one mint` : 'Mint warnings off'); };
     $('#dsc', b).onclick = () => NU.discover(() => mintsSheet(first));
     const fnm = $('#fnm', b); if (fnm) fnm.onclick = () => NU.findMints(S.mnemonic, () => mintsSheet(true));
@@ -1227,6 +1230,46 @@ function removeMint(url, back) {
       save(); render(); N.backupMints().catch(() => {}); mintsSheet();
     };
   }, { back: () => mintDetails(url, back) });
+}
+/* ================= spreading your risk across mints ================= */
+function spreadSheet() {
+  const limit = st.mintWarn || 100000, plan = C.spreadPlan(limit);
+  const lbl = (u) => esc(mintLabel(mintOf(u) || { url: u }));
+  if (!plan) return mintsSheet();
+  if (!plan.moves.length) {
+    return sheet('Spread your risk', `<p>${lbl(plan.from)} holds ${esc(fmt(plan.have, 'sat'))}, more than your limit of ${esc(fmt(limit, 'sat'))} at one mint.</p>
+      <p class="dim">${plan.noOthers ? 'Add another mint you trust, and blindsig can move some of it there.' : 'Your other mints are full up to the limit too. Add another mint you trust, or raise the limit.'}</p>
+      <button class="btn primary wide" id="spAdd">Add a mint</button>`, (b) => { $('#spAdd', b).onclick = () => mintsSheet(); }, { back: () => mintsSheet() });
+  }
+  const total = plan.moves.reduce((t, m) => t + m.amount, 0);
+  sheet('Spread your risk', `<p>${lbl(plan.from)} holds ${esc(fmt(plan.have, 'sat'))}. Move ${esc(fmt(total, 'sat'))} to your other mints so no single mint holds too much.</p>
+    <ul class="spl">${plan.moves.map((m) => `<li><span>→ ${lbl(m.to)}</span><b>${esc(fmt(m.amount, 'sat'))}</b></li>`).join('')}</ul>
+    ${plan.left ? `<p class="dim small">${esc(fmt(plan.left, 'sat'))} more would need another mint.</p>` : ''}
+    <p class="dim small">Each move is a Lightning payment between mints, so a small fee applies (usually under 1%).</p>
+    <button class="btn primary wide" id="spGo">Move now</button>
+    ${toggle('t_autoSpread', 'Spread automatically', 'When a mint goes over your limit, move the extra to your other mints by itself, while blindsig is open. Skips any move whose fee could be over 2%.', st.autoSpread)}`, (b) => {
+    bindToggles(b, ['autoSpread'], () => { if (st.autoSpread) autoSpread(); });
+    const go = $('#spGo', b);
+    go.onclick = withBusy(go, async () => {
+      let ok = 0, fail = '';
+      await C.spreadRun(plan, { onStep: (mv, r, e) => { if (r) ok += mv.amount; else fail = e ? niceErr(e) : ''; render(); } });
+      render();
+      if (ok) { toast(`Moved ${fmt(ok, 'sat')}. Your sats are spread across your mints.`); FX.play('received'); closeSheet(); }
+      else throw new Error(fail || 'Nothing was moved.');
+    });
+  }, { back: () => mintsSheet() });
+}
+// with "Spread automatically" on: check now and then, and after money comes in
+let spreading = false, spreadAt = 0;
+async function autoSpread() {
+  if (!st.autoSpread || spreading || !st.mintWarn || Date.now() - spreadAt < 60e3 || document.hidden) return;
+  const plan = C.spreadPlan(st.mintWarn);
+  if (!plan || !plan.moves.length) return;
+  spreading = true; spreadAt = Date.now();
+  try {
+    const moved = await C.spreadRun(plan, { maxFeePct: 2, onStep: () => render() });
+    if (moved) toast(`Spread ${fmt(moved, 'sat')} from ${mintLabel(mintOf(plan.from) || { url: plan.from })} to your other mints.`);
+  } catch {} finally { spreading = false; render(); }
 }
 function moveSheet() {
   const others = S.mints.filter((m) => m.url !== S.active && (m.units || []).includes(S.unit));
@@ -1843,6 +1886,7 @@ function schedule() {
   if (st.fiat) bg.push(setInterval(() => { if (!document.hidden) C.loadPrice().then((ch) => ch && render()); }, 30000));
   bg.push(setInterval(render, 60000));
   bg.push(setInterval(() => { if (!document.hidden) C.returnDue(cameBack); }, 30000));
+  bg.push(setInterval(autoSpread, 90000));
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -1874,7 +1918,7 @@ $('#sumBtn').onclick = () => summarySheet();
 $('#btcPrice').onclick = () => { if (S.price[st.fiatCur]) priceChart(); };
 $('#instBtn').onclick = installHelp;
 $('#bkHow').onclick = () => backupCreateSheet();
-$('#riskMove').onclick = () => { const u = $('#riskWarn').dataset.u; if (u) { C.selectMint(u); S.unit = 'sat'; save(); render(); } if (S.mints.length > 1) moveSheet(); else mintsSheet(); };
+$('#riskMove').onclick = () => spreadSheet();
 $('#riskX').onclick = () => { const m = mintOf($('#riskWarn').dataset.u); if (m) { m.riskAck = bal(m.url, 'sat'); save(); } render(); };
 $('#bkWarnX').onclick = () => { st.backupNagged = Date.now(); save(); render(); };
 $('#lockBtn').onclick = () => L.relock();

@@ -900,5 +900,21 @@
 "Month",
 "Completed payments in sats. Pending, failed and taken-back sends aren’t counted.",
 "Export history (CSV)",
-"History exported"
+"History exported",
+"Spread it out",
+"Spread your risk",
+"{0} holds {1}, more than your limit of {2} at one mint.",
+"Add another mint you trust, and blindsig can move some of it there.",
+"Your other mints are full up to the limit too. Add another mint you trust, or raise the limit.",
+"Add a mint",
+"{0} holds {1}. Move {2} to your other mints so no single mint holds too much.",
+"{0} more would need another mint.",
+"Each move is a Lightning payment between mints, so a small fee applies (usually under 1%).",
+"Move now",
+"Spread automatically",
+"When a mint goes over your limit, move the extra to your other mints by itself, while blindsig is open. Skips any move whose fee could be over 2%.",
+"When a mint goes over that, move the extra to your other mints by itself, while blindsig is open. Skips any move whose fee could be over 2%.",
+"Moved {0}. Your sats are spread across your mints.",
+"Nothing was moved.",
+"Spread {0} from {1} to your other mints."
 ]

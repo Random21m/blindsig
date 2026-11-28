@@ -114,7 +114,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - 12-word seed (NUT-13) with full restore (NUT-09), including restoring from another seed
 - Backup file: the whole wallet (seed, ecash, history, notes, keys and settings) in one file locked with a password. Restoring it checks your mints so spent ecash is dropped and anything newer is picked up. Handy for moving to a new phone, or from Safari to the Home Screen app
 - Multiple mints and units (sat, usd, eur…), mint messages, nicknames, and moving funds between mints
-- A warning when one mint holds more than an amount you choose (100,000 sat by default), with a shortcut to move some to another mint
+- A warning when one mint holds more than an amount you choose (100,000 sat by default), with a one-tap plan to spread the extra across your other mints. Turn on "Spread automatically" and it happens by itself while the app is open, skipping any move whose fee could be over 2%
 - Mint discovery and reviews over Nostr (NIP-87), auditor results, and mint-list backup (compatible with cashu.me)
 
 **Receive**

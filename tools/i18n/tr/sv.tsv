@@ -900,3 +900,19 @@
 899	Slutförda betalningar i sats. Väntande, misslyckade och återtagna sändningar räknas inte.
 900	Exportera historik (CSV)
 901	Historiken exporterad
+902	Fördela
+903	Sprid din risk
+904	{0} har {1}, mer än din gräns på {2} per mint.
+905	Lägg till en annan mint du litar på så kan blindsig flytta en del dit.
+906	Dina andra mintar är också fulla upp till gränsen. Lägg till en annan mint du litar på eller höj gränsen.
+907	Lägg till en mint
+908	{0} har {1}. Flytta {2} till dina andra mintar så att ingen har för mycket.
+909	{0} till skulle behöva en annan mint.
+910	Varje flytt är en Lightning-betalning mellan mintar, så en liten avgift tillkommer (oftast under 1 %).
+911	Flytta nu
+912	Fördela automatiskt
+913	När en mint går över din gräns flyttas överskottet av sig självt till dina andra mintar medan blindsig är öppen. Hoppar över flyttar vars avgift kan bli över 2 %.
+914	När en mint går över det flyttas överskottet av sig självt till dina andra mintar medan blindsig är öppen. Hoppar över flyttar vars avgift kan bli över 2 %.
+915	Flyttade {0}. Dina sats är fördelade över dina mintar.
+916	Inget flyttades.
+917	Fördelade {0} från {1} till dina andra mintar.

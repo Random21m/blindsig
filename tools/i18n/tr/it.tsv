@@ -900,3 +900,19 @@
 899	Pagamenti completati in sat. Non contano quelli in attesa, falliti e gli invii recuperati.
 900	Esporta cronologia (CSV)
 901	Cronologia esportata
+902	Distribuisci
+903	Distribuisci il rischio
+904	{0} custodisce {1}, più del tuo limite di {2} per mint.
+905	Aggiungi un altro mint di fiducia e blindsig potrà spostarne una parte lì.
+906	Anche gli altri tuoi mint sono pieni fino al limite. Aggiungi un altro mint di fiducia o alza il limite.
+907	Aggiungi un mint
+908	{0} custodisce {1}. Sposta {2} sugli altri tuoi mint così nessuno ne custodisce troppi.
+909	Altri {0} richiederebbero un altro mint.
+910	Ogni spostamento è un pagamento Lightning tra mint, quindi c’è una piccola commissione (di solito meno dell’1%).
+911	Sposta ora
+912	Distribuisci automaticamente
+913	Quando un mint supera il tuo limite, l’eccesso va da solo sugli altri tuoi mint, mentre blindsig è aperto. Salta gli spostamenti con una commissione che potrebbe superare il 2%.
+914	Quando un mint supera quella cifra, l’eccesso va da solo sugli altri tuoi mint, mentre blindsig è aperto. Salta gli spostamenti con una commissione che potrebbe superare il 2%.
+915	Spostati {0}. I tuoi sat sono distribuiti tra i tuoi mint.
+916	Non è stato spostato nulla.
+917	Distribuiti {0} da {1} agli altri tuoi mint.

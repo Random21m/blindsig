@@ -900,3 +900,19 @@
 899	Dokončené platby v satech. Nezapočítávají se čekající, neúspěšné ani vzaté zpět.
 900	Exportovat historii (CSV)
 901	Historie exportována
+902	Rozložit
+903	Rozložte riziko
+904	{0} drží {1}, víc než váš limit {2} na jeden mint.
+905	Přidejte další mint, kterému věříte, a blindsig tam může část přesunout.
+906	Vaše další minty jsou také plné až po limit. Přidejte další důvěryhodný mint nebo limit zvyšte.
+907	Přidat mint
+908	{0} drží {1}. Přesuňte {2} do dalších mintů, ať žádný nedrží příliš.
+909	Dalších {0} by potřebovalo další mint.
+910	Každý přesun je platba přes Lightning mezi minty, takže se platí malý poplatek (obvykle pod 1 %).
+911	Přesunout teď
+912	Rozkládat automaticky
+913	Když mint překročí váš limit, přebytek se sám přesune do dalších mintů, dokud je blindsig otevřený. Přeskočí přesuny, jejichž poplatek by mohl přesáhnout 2 %.
+914	Když mint tuto částku překročí, přebytek se sám přesune do dalších mintů, dokud je blindsig otevřený. Přeskočí přesuny, jejichž poplatek by mohl přesáhnout 2 %.
+915	Přesunuto {0}. Vaše saty jsou rozložené mezi minty.
+916	Nic se nepřesunulo.
+917	Rozloženo {0} z {1} do dalších mintů.

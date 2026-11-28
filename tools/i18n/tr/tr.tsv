@@ -900,3 +900,19 @@
 899	Tamamlanan ödemeler, sat cinsinden. Bekleyen, başarısız ve geri alınan gönderimler sayılmaz.
 900	Geçmişi dışa aktar (CSV)
 901	Geçmiş dışa aktarıldı
+902	Dağıt
+903	Riskini dağıt
+904	{0} {1} tutuyor; bu, mint başına {2} sınırından fazla.
+905	Güvendiğin başka bir mint ekle, blindsig bir kısmını oraya taşısın.
+906	Diğer mint'lerin de sınıra kadar dolu. Güvendiğin başka bir mint ekle ya da sınırı yükselt.
+907	Mint ekle
+908	{0} {1} tutuyor. Hiçbiri fazla tutmasın diye {2} tutarını diğer mint'lerine taşı.
+909	{0} daha için başka bir mint gerekir.
+910	Her taşıma mint'ler arasında bir Lightning ödemesidir, bu yüzden küçük bir ücret alınır (genelde %1'in altında).
+911	Şimdi taşı
+912	Otomatik dağıt
+913	Bir mint sınırını aşınca fazlası, blindsig açıkken kendiliğinden diğer mint'lerine taşınır. Ücreti %2'yi aşabilecek taşımaları atlar.
+914	Bir mint bu tutarı aşınca fazlası, blindsig açıkken kendiliğinden diğer mint'lerine taşınır. Ücreti %2'yi aşabilecek taşımaları atlar.
+915	{0} taşındı. Sat'ların mint'lerine dağıtıldı.
+916	Hiçbir şey taşınmadı.
+917	{0}, {1} üzerinden diğer mint'lerine dağıtıldı.

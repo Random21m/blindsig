@@ -470,13 +470,47 @@ export async function payMultinut(invoice, parts, unit = S.unit) {
   if (failed.length) throw failed[0].reason;
   return results.map((r) => r.value);
 }
-export async function moveFunds(to, amount, unit = S.unit) {
-  const from = S.active;
+// a move between your own mints: both sides are marked `internal` so summaries don't count them
+// as money in or out. maxFeePct: give up (before paying) if the Lightning fee would be higher
+export async function moveFunds(to, amount, unit = S.unit, from = S.active, maxFeePct = 0) {
   const inv = await createInvoice(amount, to, unit, 'from ' + host(from));
-  const q = await quoteInvoice(inv.request, from, unit);
-  const out = await payInvoice(q, 'to ' + host(to), from, unit);
+  inv.internal = true;
+  let out;
+  try {
+    const q = await quoteInvoice(inv.request, from, unit);
+    const fee = q.fee_reserve.toNumber();
+    if (maxFeePct && fee > Math.max(2, (amount * maxFeePct) / 100)) throw Object.assign(new Error('fee-too-high'), { fee });
+    out = await payInvoice(q, 'to ' + host(to), from, unit);
+    out.internal = true; save();
+  } catch (e) {
+    // nothing was paid: drop the invoice we made at the other mint, so it doesn't sit in history
+    if (inv.status === 'pending' && !out) { S.history = S.history.filter((x) => x !== inv); save(); }
+    throw e;
+  }
   for (let i = 0; i < 8 && inv.status === 'pending'; i++) { await checkInvoice(inv).catch(() => {}); if (inv.status === 'pending') await new Promise((r) => setTimeout(r, 1500)); }
   return { inv, out };
+}
+// spreading your risk: moves that bring the fullest mint over `limit` down to 90% of it,
+// filling your other mints (each kept under that too), fullest room first
+export function spreadPlan(limit) {
+  if (!limit) return null;
+  const target = Math.floor(limit * 0.9);
+  const src = S.mints.map((m) => ({ m, b: bal(m.url, 'sat') })).filter((x) => x.b > limit).sort((a, b) => b.b - a.b)[0];
+  if (!src) return null;
+  const canMint = (m) => { const mm = m.info?.mintMethods; return (m.units || ['sat']).includes('sat') && (!mm || !mm.length || mm.some((x) => x.method === 'bolt11' && x.unit === 'sat')); };
+  const dests = S.mints.filter((m) => m.url !== src.m.url && canMint(m)).map((m) => ({ url: m.url, room: target - bal(m.url, 'sat') })).filter((d) => d.room >= 100).sort((a, b) => b.room - a.room);
+  let excess = src.b - target; const moves = [];
+  for (const d of dests) { if (excess < 100) break; const a = Math.min(d.room, excess); moves.push({ to: d.url, amount: a }); excess -= a; }
+  return { from: src.m.url, have: src.b, moves, left: Math.max(0, excess), noOthers: !dests.length };
+}
+// carry out a plan, one move at a time; onStep(move, result|error)
+export async function spreadRun(plan, { maxFeePct = 0, onStep } = {}) {
+  let moved = 0;
+  for (const mv of plan.moves) {
+    try { const r = await moveFunds(mv.to, mv.amount, 'sat', plan.from, maxFeePct); moved += mv.amount; onStep && onStep(mv, r); }
+    catch (e) { onStep && onStep(mv, null, e); if (e.message !== 'fee-too-high') break; }
+  }
+  return moved;
 }
 
 /* ---------------- P2PK keys ---------------- */

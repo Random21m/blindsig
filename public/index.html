@@ -292,6 +292,7 @@ details.more[open]{padding-bottom:14px}
 .pcnow{animation:livep 2.4s ease-in-out infinite}
 .pcmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 20px}.pcmsg p{margin:0}
 #pcK:empty{display:none}
+.spl{list-style:none;padding:0;margin:14px 0;border-radius:var(--r);background:var(--card)}.spl li{display:flex;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}.spl li:last-child{border:0}.spl b{font:600 15px var(--mono);white-space:nowrap}
 .smbtn{display:inline-flex;align-items:center;gap:6px;color:var(--dim)}.smbtn .ic{width:16px;height:16px}.loghead .tabs{flex-basis:100%}
 .smbars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;align-items:end;margin:18px 0 6px}
 .smb{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0;border-radius:10px;color:var(--dim);min-width:0}.smb.on{background:var(--card);color:var(--ink)}
@@ -358,7 +359,7 @@ details.more[open]{padding-bottom:14px}
     <button id="unitChip" hidden aria-label="Switch unit">SAT</button>
   </div>
   <div class="motd" id="tabWarn" hidden role="status"><p><b>Keep your wallet safe:</b> you’re using blindsig in a Safari tab. Safari can clear a website’s data after about a week without a visit, and that includes this wallet. Add it to your Home Screen and back up your seed phrase. <button class="lnk" id="tabHow">How to install</button></p><button id="tabWarnX" aria-label="Dismiss">✕</button></div>
-  <div class="motd" id="riskWarn" hidden role="status"><p><b>Spread your risk:</b> <span id="riskText"></span> <button class="lnk" id="riskMove">Move some</button></p><button id="riskX" aria-label="Dismiss">✕</button></div>
+  <div class="motd" id="riskWarn" hidden role="status"><p><b>Spread your risk:</b> <span id="riskText"></span> <button class="lnk" id="riskMove">Spread it out</button></p><button id="riskX" aria-label="Dismiss">✕</button></div>
   <div class="motd" id="bkWarn" hidden role="status"><p><b>Back up this wallet:</b> your seed phrase brings back your ecash, but not your history, notes or keys. A backup file keeps everything. <button class="lnk" id="bkHow">Make a backup</button></p><button id="bkWarnX" aria-label="Dismiss">✕</button></div>
   <div class="motd" id="motd" hidden role="status"><p><b>Mint message:</b> <span id="motdText"></span></p><button id="motdX" aria-label="Dismiss">✕</button></div>
 

@@ -900,3 +900,19 @@
 899	Pagos completados en sats. No se cuentan los pendientes, fallidos ni los envíos recuperados.
 900	Exportar historial (CSV)
 901	Historial exportado
+902	Repártelo
+903	Reparte tu riesgo
+904	{0} guarda {1}, más que tu límite de {2} por mint.
+905	Añade otro mint de confianza y blindsig podrá mover parte allí.
+906	Tus otros mints también están llenos hasta el límite. Añade otro mint de confianza o sube el límite.
+907	Añadir un mint
+908	{0} guarda {1}. Mueve {2} a tus otros mints para que ninguno guarde demasiado.
+909	{0} más necesitarían otro mint.
+910	Cada movimiento es un pago Lightning entre mints, así que hay una pequeña comisión (normalmente menos del 1 %).
+911	Mover ahora
+912	Repartir automáticamente
+913	Cuando un mint supere tu límite, mueve el exceso a tus otros mints por sí solo, mientras blindsig está abierto. Omite cualquier movimiento cuya comisión pueda superar el 2 %.
+914	Cuando un mint supere esa cantidad, mueve el exceso a tus otros mints por sí solo, mientras blindsig está abierto. Omite cualquier movimiento cuya comisión pueda superar el 2 %.
+915	Movidos {0}. Tus sats están repartidos entre tus mints.
+916	No se movió nada.
+917	Repartidos {0} de {1} a tus otros mints.

@@ -900,3 +900,19 @@
 899	Abgeschlossene Zahlungen in Sats. Ausstehende, fehlgeschlagene und zurückgeholte Sendungen zählen nicht.
 900	Verlauf exportieren (CSV)
 901	Verlauf exportiert
+902	Verteilen
+903	Verteile dein Risiko
+904	{0} hält {1}, mehr als dein Limit von {2} pro Mint.
+905	Füge eine weitere vertrauenswürdige Mint hinzu, dann kann blindsig einen Teil dorthin verschieben.
+906	Deine anderen Mints sind auch bis zum Limit voll. Füge eine weitere vertrauenswürdige Mint hinzu oder erhöhe das Limit.
+907	Mint hinzufügen
+908	{0} hält {1}. Verschiebe {2} auf deine anderen Mints, damit keine zu viel hält.
+909	Für weitere {0} bräuchte es eine weitere Mint.
+910	Jede Verschiebung ist eine Lightning-Zahlung zwischen Mints, daher fällt eine kleine Gebühr an (meist unter 1 %).
+911	Jetzt verschieben
+912	Automatisch verteilen
+913	Wenn eine Mint dein Limit überschreitet, wird der Überschuss von selbst auf deine anderen Mints verschoben, solange blindsig offen ist. Überspringt Verschiebungen, deren Gebühr über 2 % liegen könnte.
+914	Wenn eine Mint diesen Betrag überschreitet, wird der Überschuss von selbst auf deine anderen Mints verschoben, solange blindsig offen ist. Überspringt Verschiebungen, deren Gebühr über 2 % liegen könnte.
+915	{0} verschoben. Deine Sats sind auf deine Mints verteilt.
+916	Nichts wurde verschoben.
+917	{0} von {1} auf deine anderen Mints verteilt.
