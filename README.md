@@ -54,7 +54,7 @@
 
 <p align="center">
   <a href="assets/blindsig-demo.mp4"><img src="assets/demo-thumb.jpg" width="300" alt="Play the blindsig demo video"></a><br>
-  <sub>Under two minutes: a new wallet, receiving over Lightning with a note, sending ecash, paying and saving a contact, the PIN lock with Face ID, hiding amounts, the live price chart and the themes. Tap to play.</sub>
+  <sub>Under two minutes: a new wallet, receiving over Lightning with a note, sending ecash, a gift card, paying and saving a contact, the PIN lock with Face ID, what each payment was worth then and now, hiding amounts, the live price chart and the themes. Tap to play.</sub>
 </p>
 
 ## Screenshots
@@ -89,6 +89,16 @@
     <td align="center"><img src="assets/screens/chart.png" width="250" alt="Live bitcoin price chart"><br><sub><b>Price chart</b>: tap the price for a live chart, drag to read it</sub></td>
     <td align="center"><img src="assets/screens/contacts.png" width="250" alt="Contacts on the send screen"><br><sub><b>Contacts</b>: pay the people you pay often in one tap</sub></td>
     <td align="center"><img src="assets/screens/onboard.png" width="250" alt="Welcome screen"><br><sub><b>Start</b>: a quick intro, then a 12-word seed. No account.</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/gift.png" width="250" alt="Gift card"><br><sub><b>Gift cards</b>: sats on a card with a message, to share, save or print</sub></td>
+    <td align="center"><img src="assets/screens/gift-claim.png" width="250" alt="Claiming a gift"><br><sub><b>Claim a gift</b>: scan it, no wallet needed yet</sub></td>
+    <td align="center"><img src="assets/screens/comeback.png" width="250" alt="Lock to one person"><br><sub><b>Sends that come back</b>: locked to one person, back to you if unclaimed</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/summary.png" width="250" alt="Monthly summary"><br><sub><b>Summary</b>: money in and out each month, worth then, CSV export</sub></td>
+    <td align="center"><img src="assets/screens/spread.png" width="250" alt="Spread your risk"><br><sub><b>Spread your risk</b>: move the extra from a full mint in one tap</sub></td>
+    <td align="center"><img src="assets/screens/decoy.png" width="250" alt="Decoy PIN"><br><sub><b>Decoy PIN</b>: a second PIN that opens a small, separate wallet</sub></td>
   </tr>
 </table>
 
