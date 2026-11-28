@@ -995,3 +995,48 @@
 994	Pégala en el mostrador: al tocarla se abre el monedero Lightning de quien paga.
 995	o toca una tarjeta NFC
 996	{0} en total
+997	Firma
+998	✓ Firmado por este mint
+999	(comprobado sin conexión)
+1000	Solo una parte lleva la firma del mint
+1001	No coincide con las claves del mint
+1002	No incluida. El mint lo comprueba al recibir.
+1003	No se puede comprobar sin las claves de este mint
+1004	La firma del mint en este ecash no es válida. Puede ser falso. No lo aceptes como pago.
+1005	Incluir firmas del mint
+1006	Pon las pruebas de firma del mint (NUT-12) en el ecash que envías, para que quien lo reciba pueda comprobar que es real, incluso sin conexión. Los tokens son el doble de largos.
+1007	Retirar
+1008	{0} pagará en {1}.
+1009	No queda nada por retirar aquí.
+1010	Este mint no tiene saldo en sats. Elige primero un mint con sats.
+1011	Esperando a que {0} pague
+1012	El importe debe ser {0} sat.
+1013	El importe debe estar entre {0} y {1} sat.
+1014	Escanear un código de retiro
+1015	Eso no es un código LNURL de retiro.
+1016	Ese LNURL es para pagar, no para recibir. Usa Enviar.
+1017	Comprobando el LNURL…
+1018	Este LNURL no es para pagar ni para retirar.
+1019	Retiro LNURL
+1020	Clave oculta al mint (P2BK)
+1021	Ocultar la clave al mint (P2BK)
+1022	El mint no puede vincular este pago con su clave. Su monedero debe admitir NUT-28: blindsig y los monederos basados en Nutshell o CDK lo hacen.
+1023	clave oculta al mint
+1024	Monedero Nostr
+1025	Sincronizar con apps de Nostr
+1026	Guarda tu ecash en tus relays, cifrado para la identidad de nostr de arriba, para que las apps de Nostr con monedero (NIP-60) usen el mismo saldo. Quien tenga esa clave de nostr puede gastarlo.
+1027	Última sincronización: {0}
+1028	La última sincronización falló: {0}
+1029	Aún no sincronizado.
+1030	Sincronizar ahora
+1031	Para compartir el monedero con otra app, usa la misma clave de nostr en ambas: pega tu nsec o usa el mismo firmante.
+1032	Monedero Nostr: +{0} recibidos, {1} gastados en otra parte
+1033	Monedero Nostr: +{0} recibidos
+1034	Monedero Nostr: {0} gastados en otra parte
+1035	Sincronizado con tu monedero Nostr
+1036	Sincronización del monedero Nostr desactivada
+1037	Al día
+1038	Sincronizado, pero algunos mints no respondieron
+1039	Este firmante no puede cifrar los datos del monedero. Usa tu semilla, un nsec o un firmante compatible con NIP-44.
+1040	de tu monedero Nostr
+1041	gastado en otra app de Nostr

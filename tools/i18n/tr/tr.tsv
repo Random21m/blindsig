@@ -995,3 +995,48 @@
 994	Tezgâha yapıştır: dokununca ödeyenin Lightning cüzdanı açılır.
 995	ya da bir NFC karta dokun
 996	toplam {0}
+997	İmza
+998	✓ Bu mint tarafından imzalandı
+999	(çevrimdışı kontrol edildi)
+1000	Yalnızca bir kısmında mint'in imzası var
+1001	Mint'in anahtarlarıyla eşleşmiyor
+1002	Eklenmemiş. Mint, aldığında kontrol eder.
+1003	Bu mint'in anahtarları olmadan kontrol edilemez
+1004	Bu ecash'teki mint imzası doğrulanmıyor. Sahte olabilir. Ödeme olarak kabul etme.
+1005	Mint imzalarını ekle
+1006	Gönderdiğin ecash'e mint'in imza kanıtlarını (NUT-12) ekler; böylece alıcı, çevrimdışı bile olsa gerçek olduğunu kontrol edebilir. Token'lar yaklaşık iki kat uzar.
+1007	Çek
+1008	{0}, {1} hesabına ödeyecek.
+1009	Burada çekilecek bir şey kalmadı.
+1010	Bu mint'te sat bakiyesi yok. Önce sat tutan bir mint seç.
+1011	{0} ödemesi bekleniyor
+1012	Tutar {0} sat olmalı.
+1013	Tutar {0} ile {1} sat arasında olmalı.
+1014	Çekim kodu tara
+1015	Bu bir LNURL çekim kodu değil.
+1016	Bu LNURL ödeme içindir, almak için değil. Gönder'i kullan.
+1017	LNURL kontrol ediliyor…
+1018	Bu LNURL ödeme ya da çekim için değil.
+1019	LNURL çekimi
+1020	Anahtar mint'ten gizli (P2BK)
+1021	Anahtarı mint'ten gizle (P2BK)
+1022	Mint bu ödemeyi alıcının anahtarıyla ilişkilendiremez. Alıcının cüzdanı NUT-28'i desteklemeli: blindsig ile Nutshell veya CDK tabanlı cüzdanlar destekler.
+1023	anahtar mint'ten gizli
+1024	Nostr cüzdanı
+1025	Nostr uygulamalarıyla eşitle
+1026	Ecash'ini, yukarıdaki nostr kimliğine şifrelenmiş olarak relay'lerinde tutar; böylece cüzdan destekleyen (NIP-60) Nostr uygulamaları aynı bakiyeyi kullanabilir. O nostr anahtarına sahip olan herkes harcayabilir.
+1027	Son eşitleme: {0}
+1028	Son eşitleme başarısız: {0}
+1029	Henüz eşitlenmedi.
+1030	Şimdi eşitle
+1031	Cüzdanı başka bir uygulamayla paylaşmak için ikisinde de aynı nostr anahtarını kullan: nsec'ini yapıştır ya da aynı imzalayıcıyı kullan.
+1032	Nostr cüzdanı: +{0} geldi, {1} başka yerde harcandı
+1033	Nostr cüzdanı: +{0} geldi
+1034	Nostr cüzdanı: {0} başka yerde harcandı
+1035	Nostr cüzdanınla eşitlendi
+1036	Nostr cüzdanı eşitleme kapalı
+1037	Güncel
+1038	Eşitlendi ama bazı mint'lere ulaşılamadı
+1039	Bu imzalayıcı cüzdan verisini şifreleyemiyor. Seed'ini, bir nsec'i ya da NIP-44 destekleyen bir imzalayıcıyı kullan.
+1040	Nostr cüzdanından
+1041	başka bir Nostr uygulamasında harcandı

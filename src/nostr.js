@@ -39,22 +39,28 @@ export async function signer() {
   if (signerCache) return signerCache;
   if (N.signer === 'nsec' && N.nsec) {
     const sk = hexToBytes(N.nsec);
-    signerCache = { type: 'nsec', sk, pubkey: getPublicKey(sk), sign: async (t) => finalizeEvent(t, sk) };
+    signerCache = withSelfCrypt({ type: 'nsec', sk, pubkey: getPublicKey(sk), sign: async (t) => finalizeEvent(t, sk) });
   } else if (N.signer === 'nip07' && window.nostr) {
     const pk = await window.nostr.getPublicKey();
-    signerCache = { type: 'nip07', pubkey: pk, sign: (t) => window.nostr.signEvent(t) };
+    const n44 = () => { if (!window.nostr.nip44) throw new Error('your signing extension can’t encrypt (NIP-44)'); return window.nostr.nip44; };
+    signerCache = { type: 'nip07', pubkey: pk, sign: (t) => window.nostr.signEvent(t), enc: (txt) => n44().encrypt(pk, txt), dec: (ct) => n44().decrypt(pk, ct) };
   } else if (N.signer === 'nip46' && N.bunker) {
     const bp = await parseBunkerInput(N.bunker.uri);
     if (!bp) throw new Error('invalid bunker URI');
     const bs = BunkerSigner.fromBunker(hexToBytes(N.bunker.clientSk), bp, { pool });
     await bs.connect().catch(() => {});
     const pk = await bs.getPublicKey();
-    signerCache = { type: 'nip46', pubkey: pk, sign: (t) => bs.signEvent(t) };
+    signerCache = { type: 'nip46', pubkey: pk, sign: (t) => bs.signEvent(t), enc: (txt) => bs.nip44Encrypt(pk, txt), dec: (ct) => bs.nip44Decrypt(pk, ct) };
   } else {
     const sk = seedSk(); if (!sk) throw new Error('wallet has no seed yet');
-    signerCache = { type: 'seed', sk, pubkey: getPublicKey(sk), sign: async (t) => finalizeEvent(t, sk) };
+    signerCache = withSelfCrypt({ type: 'seed', sk, pubkey: getPublicKey(sk), sign: async (t) => finalizeEvent(t, sk) });
   }
   return signerCache;
+}
+// NIP-44 encryption to our own key (NIP-60 wallet data), for signers that hold the key here
+function withSelfCrypt(sg) {
+  const ck = nip44.getConversationKey(sg.sk, sg.pubkey);
+  return { ...sg, enc: async (txt) => nip44.encrypt(txt, ck), dec: async (ct) => nip44.decrypt(ct, ck) };
 }
 export function setSigner(type, data) {
   N.signer = type;
@@ -83,7 +89,7 @@ C.setQuoteKeyProvider(() => {
   return ks;
 });
 
-async function publish(ev, extra = []) {
+export async function publish(ev, extra = []) {
   const targets = [...new Set([...relays(), ...extra])];
   const res = await Promise.allSettled(pool.publish(targets, ev));
   if (!res.some((r) => r.status === 'fulfilled')) throw new Error('no relay accepted the event');
@@ -602,7 +608,7 @@ const NZ = S.nutzap;
 const xonly = (pub) => (pub.length === 66 ? pub.slice(2) : pub);
 const lockKeyOf = (k) => (k.length === 64 ? '02' + k : k);
 export const nutzapsOn = () => !!NZ.enabled;
-function nutzapKey() {
+export function nutzapKey() {
   let k = S.p2pk.find((x) => x.nutzap);
   // a key with an even y, so the x-only key we publish and the 02-prefixed lock are the same key
   while (!k) { const c = C.newP2pkKey(); if (c.pub.startsWith('02')) { c.nutzap = true; c.used = true; k = c; } else S.p2pk = S.p2pk.filter((x) => x !== c); }
@@ -694,12 +700,17 @@ export async function sendNutzap(info, amount, comment, url) {
 
 /* ---------------- lifecycle ---------------- */
 let npcTimer = null;
+// other modules (Nostr wallet sync) start and stop along with the rest
+const hooks = [];
+export const onLifecycle = (start, stop) => hooks.push({ start, stop });
 export function stopAll() {
   stopped = true; stopInbox(); stopNwc(); stopNutzaps(); clearInterval(npcTimer); npcDisconnect();
+  hooks.forEach((h) => { try { h.stop(); } catch {} });
 }
 export function startAll() {
   if (!S.mnemonic) return;
   stopped = false;
+  hooks.forEach((h) => { try { h.start(); } catch {} });
   if (S.pr.enabled) startInbox(); else stopInbox();
   if (S.nwc.enabled) startNwc(); else stopNwc();
   startNutzaps();

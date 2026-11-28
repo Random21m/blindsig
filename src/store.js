@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.23.2';
+export const VERSION = '1.24.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -33,11 +33,13 @@ export const DEFAULT_SETTINGS = {
   nfcEncoding: 'url', // text | url | binary (url: any phone that taps the card opens the wallet)
   nfcQuick: true,
   p2pkQuick: false,
+  p2bk: false, // remember whether locked sends hide the key from the mint (P2BK, NUT-28)
+  dleq: true, // put the mint's signature proofs (NUT-12) in tokens we send, so they can be checked offline
 };
 
 const blank = () => ({
   v: 2, mnemonic: null, counters: {}, mints: [], active: null, unit: 'sat',
-  proofs: {}, history: [], p2pk: [], price: {}, settings: { ...DEFAULT_SETTINGS }, onboarded: false, contacts: [],
+  proofs: {}, history: [], p2pk: [], price: {}, settings: { ...DEFAULT_SETTINGS }, onboarded: false, contacts: [], mintCache: {},
 });
 
 function load() {

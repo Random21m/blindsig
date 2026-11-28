@@ -995,3 +995,48 @@
 994	Nalepte ji na pult: dotyk otevře plátci jeho Lightning peněženku.
 995	nebo přiložte NFC kartu
 996	celkem {0}
+997	Podpis
+998	✓ Podepsáno tímto mintem
+999	(ověřeno offline)
+1000	Podpis mintu má jen část
+1001	Neodpovídá klíčům mintu
+1002	Není součástí. Mint ho ověří při přijetí.
+1003	Bez klíčů tohoto mintu nelze ověřit
+1004	Podpis mintu na tomto ecash nesedí. Může být falešný. Nepřijímejte ho jako platbu.
+1005	Přikládat podpisy mintu
+1006	Přiloží k odeslanému ecash důkazy podpisu mintu (NUT-12), aby si příjemce mohl ověřit pravost, i offline. Tokeny budou asi dvakrát delší.
+1007	Vybrat
+1008	{0} zaplatí do {1}.
+1009	Tady už nic k výběru nezbývá.
+1010	Tento mint nemá zůstatek v satech. Nejdřív vyberte mint se saty.
+1011	Čekám, až {0} zaplatí
+1012	Částka musí být {0} sat.
+1013	Částka musí být mezi {0} a {1} sat.
+1014	Naskenovat kód pro výběr
+1015	To není kód LNURL pro výběr.
+1016	Tento LNURL slouží k placení, ne k přijímání. Použijte Odeslat.
+1017	Ověřuji LNURL…
+1018	Tento LNURL neslouží k placení ani výběru.
+1019	Výběr LNURL
+1020	Klíč skrytý před mintem (P2BK)
+1021	Skrýt klíč před mintem (P2BK)
+1022	Mint nemůže tuto platbu spojit s klíčem příjemce. Jeho peněženka musí podporovat NUT-28: blindsig a peněženky postavené na Nutshell nebo CDK ho podporují.
+1023	klíč skrytý před mintem
+1024	Nostr peněženka
+1025	Synchronizovat s Nostr aplikacemi
+1026	Uloží váš ecash na vaše relaye, zašifrovaný pro nostr identitu výše, aby Nostr aplikace s podporou peněženek (NIP-60) mohly používat stejný zůstatek. Kdokoli s tímto nostr klíčem ho může utratit.
+1027	Naposledy synchronizováno {0}
+1028	Poslední synchronizace selhala: {0}
+1029	Zatím nesynchronizováno.
+1030	Synchronizovat teď
+1031	Chcete-li peněženku sdílet s jinou aplikací, použijte v obou stejný nostr klíč: vložte svůj nsec nebo použijte stejný podepisovač.
+1032	Nostr peněženka: +{0} přijato, {1} utraceno jinde
+1033	Nostr peněženka: +{0} přijato
+1034	Nostr peněženka: {0} utraceno jinde
+1035	Synchronizováno s vaší Nostr peněženkou
+1036	Synchronizace Nostr peněženky vypnuta
+1037	Aktuální
+1038	Synchronizováno, ale některé minty nebyly dostupné
+1039	Tento podepisovač neumí šifrovat data peněženky. Použijte svůj seed, nsec nebo podepisovač s podporou NIP-44.
+1040	z vaší Nostr peněženky
+1041	utraceno v jiné Nostr aplikaci

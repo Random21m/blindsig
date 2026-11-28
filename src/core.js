@@ -2,6 +2,7 @@
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
   getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount, setGlobalRequestOptions,
+  verifyMintSignatures, maybeDeriveP2BKPrivateKeys,
 } from '@cashu/cashu-ts';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
@@ -45,15 +46,39 @@ export function walletFor(url, unit = S.unit, seed = SEED, counters = counterSou
     const p = makeWallet(url, unit, seed, counters);
     wallets.set(key, p);
     p.catch(() => wallets.delete(key));
+    // made from saved keys because the mint didn't answer: try the mint again in a minute
+    p.then((w) => { if (w.fromCache) setTimeout(() => { if (wallets.get(key) === p) wallets.delete(key); }, 60000); }, () => {});
   }
   return wallets.get(key);
 }
 async function makeWallet(url, unit, seed, counters) {
   const w = new Wallet(url, { unit, bip39seed: seed, counterSource: counters });
-  await w.loadMint();
+  const c = (S.mintCache ||= {})[url];
+  // offline (or the mint is down): carry on with the keys we saved last time, so offline sends and
+  // checking the mint's signatures on ecash still work
+  if (c && navigator.onLine === false) { w.loadMintFromCache(c.info, c.keys); w.fromCache = true; return w; }
+  try { await w.loadMint(); } catch (e) { if (!c) throw e; w.loadMintFromCache(c.info, c.keys); w.fromCache = true; return w; }
+  rememberKeys(url, w);
   return w;
 }
+// a mint's public keys, saved for offline use. Only active keysets keep their keys, to stay small;
+// a keyset id is a hash of its keys, so saved keys never go stale.
+function rememberKeys(url, w) {
+  try {
+    const cache = w.keyChain.cache, info = w.getMintInfo().cache;
+    const keysets = cache.keysets.map((k) => (k.active ? k : { ...k, keys: undefined }));
+    const sig = keysets.map((k) => `${k.id}${k.active ? '+' : '-'}${k.keys ? 'k' : ''}`).join();
+    const old = (S.mintCache ||= {})[url];
+    if (old && old.sig === sig) return;
+    S.mintCache[url] = { sig, info, keys: { ...cache, keysets } };
+    // keep keys only for mints in the wallet (and this one, which may be about to join)
+    for (const u of Object.keys(S.mintCache)) if (u !== url && !mintOf(u)) delete S.mintCache[u];
+    save();
+  } catch (e) { console.warn('mint cache', e); }
+}
 export const dropWallets = () => wallets.clear();
+// wallets made from saved keys are swapped for live ones once we're back online
+if (typeof addEventListener === 'function') addEventListener('online', () => { for (const [k, p] of wallets) p.then((w) => w.fromCache && wallets.delete(k), () => {}); });
 
 async function infoSnapshot(w) {
   const info = w.getMintInfo(), c = info.cache || {};
@@ -208,18 +233,52 @@ export function parseToken(str) {
 export async function tokenLockInfo(t) {
   const w = await walletFor(t.mint, t.unit);
   const { proofs } = w.decodeToken(t.str);
-  const locks = new Set(); let until = 0;
+  const locks = new Set(); let until = 0, blinded = false;
+  const mineBlinded = new Set();
   for (const p of proofs) {
     try { getP2PKExpectedWitnessPubkeys(p.secret).forEach((k) => locks.add(k)); } catch {}
     try { const [kind, d] = JSON.parse(p.secret); const lt = kind === 'P2PK' && (d.tags || []).find((t) => t[0] === 'locktime'); if (lt) until = Math.max(until, +lt[1] * 1000); } catch {}
+    // P2BK (NUT-28): the lock shows only a blinded key; ours if we can derive its private half
+    if (p.p2pk_e) {
+      blinded = true;
+      for (const k of S.p2pk) { try { if (maybeDeriveP2BKPrivateKeys([k.priv], p).length) mineBlinded.add(k.pub); } catch {} }
+    }
   }
   if (!locks.size) return { locked: false };
-  const mine = S.p2pk.filter((k) => locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
-  return { locked: true, mine: mine.length > 0, keys: [...locks], until: until > Date.now() ? until : 0 };
+  const mine = S.p2pk.filter((k) => mineBlinded.has(k.pub) || locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
+  return { locked: true, mine: mine.length > 0, blinded, keys: [...locks, ...mineBlinded], until: until > Date.now() ? until : 0 };
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
 
-export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId } = {}) {
+// NUT-12: did the mint really sign this ecash? Checked against the mint's public keys, which works
+// offline for mints whose keys we've saved. Only the mint can say whether it's already spent.
+// state: ok (every note checks out) | partial (some carry no proof) | none (no proofs included)
+//        | bad (a proof doesn't match: likely fake) | unknown (we don't have this mint's keys)
+export async function checkSignatures(t) {
+  let w;
+  try { w = await walletFor(t.mint, t.unit); } catch { return { state: 'unknown' }; }
+  let proofs;
+  try { proofs = w.decodeToken(t.str).proofs; } catch { return { state: 'unknown' }; }
+  const signed = proofs.filter((p) => p.dleq);
+  if (!signed.length) return { state: 'none', offline: !!w.fromCache };
+  for (const id of new Set(signed.map((p) => p.id))) {
+    try { await w.keyChain.ensureKeysetKeys(id); } catch {}
+    let ks; try { ks = w.keyChain.getKeyset(id); } catch {}
+    if (!ks || !ks.hasKeys) return { state: 'unknown', offline: !!w.fromCache };
+  }
+  const v = await verifyMintSignatures(signed, (id) => w.keyChain.getKeyset(id), { require: true });
+  if (v.invalid.length) return { state: 'bad', offline: !!w.fromCache };
+  return { state: signed.length === proofs.length ? 'ok' : 'partial', offline: !!w.fromCache };
+}
+// the same token without signature proofs: about half the size, for NFC cards with little room
+export async function compactToken(token) {
+  const t = parseToken(token);
+  const w = await walletFor(t.mint, t.unit);
+  return getEncodedToken(w.decodeToken(t.str), { removeDleq: true });
+}
+
+// blind: hide the lock's keys from the mint (P2BK, NUT-28). The receiver's wallet must support it.
+export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId, blind } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
   if (amount > before) throw new Error('insufficient balance at this mint');
@@ -227,13 +286,14 @@ export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, ke
   // locked to someone, optionally with a way back: after the locktime our refund key can take it
   const refundAt = lockTo && returnAfter > 0 ? Date.now() + returnAfter : 0;
   if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
-  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}) }).includeFees(true).run();
+  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}), ...(blind ? { blindKeys: true } : {}) }).includeFees(true).run();
   else res = await w.send(amount, getProofs(url, unit), { includeFees: true, ...(keysetId ? { keysetId } : {}) });
   // never record a send unless the token really carries the amount
   if (!res.send.length || sum(res.send) < amount) throw new Error(offline ? 'no exact match for offline sending' : 'could not prepare the token');
   setProofs(url, res.keep, unit);
-  const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: true });
-  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
+  // with the mint's signature proofs (NUT-12) the receiver can check the ecash is real, even offline
+  const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: !S.settings.dleq });
+  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(lockTo && blind ? { blind: true } : {}), ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
 }
 export async function receiveEcash(t) {
   await addMint(t.mint);
@@ -369,15 +429,49 @@ export async function swapIncoming(t, dst = S.active) {
 /* ---------------- lightning out ---------------- */
 export const isInvoice = (s) => /^ln(bc|tb|bcrt|tbs)[0-9]/i.test(s);
 export const isAddress = (s) => /^[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(s);
-export const isLnurl = (s) => /^lnurl1[02-9ac-hj-np-z]+$/i.test(s);
-function decodeLnurl(s) { const { words } = bech32.decode(s.toLowerCase(), 2000); return new TextDecoder().decode(bech32.fromWords(words)); }
-export async function lnurlMeta(target) {
+// bech32 LNURLs, and the LUD-17 forms (lnurlw://, lnurlp://, keyauth://) that are plain URLs
+export const isLnurl = (s) => /^lnurl1[02-9ac-hj-np-z]+$/i.test(s) || /^(lnurl[cwp]|keyauth):\/\/[^\s]+$/i.test(s);
+function decodeLnurl(s) {
+  const m = s.match(/^(lnurl[cwp]|keyauth):\/\/(.+)$/i);
+  if (m) return (/\.onion(?:[:/]|$)/i.test(m[2].split('/')[0]) ? 'http://' : 'https://') + m[2];
+  const { words } = bech32.decode(s.toLowerCase(), 2000); return new TextDecoder().decode(bech32.fromWords(words));
+}
+// what an LNURL or Lightning address points at: a pay endpoint (payRequest) or a withdraw voucher
+// (withdrawRequest, LUD-03). Some services put the whole withdraw request in the link itself.
+export async function lnurlResolve(target) {
   const url = isLnurl(target) ? decodeLnurl(target) : (() => { const [u, d] = target.split('@'); return `https://${d}/.well-known/lnurlp/${u}`; })();
+  const q = new URL(url).searchParams;
+  if (q.get('tag') === 'withdrawRequest' && q.get('callback') && q.get('k1')) {
+    return { tag: 'withdrawRequest', callback: q.get('callback'), k1: q.get('k1'), minWithdrawable: +q.get('minWithdrawable') || 1000, maxWithdrawable: +q.get('maxWithdrawable') || 0, defaultDescription: q.get('defaultDescription') || '' };
+  }
   let meta;
   try { meta = await (await fetch(url)).json(); } catch { throw new Error('could not reach ' + host(url)); }
   if (meta.status === 'ERROR') throw new Error(meta.reason || 'lnurl error');
+  return meta;
+}
+export async function lnurlMeta(target) {
+  const meta = await lnurlResolve(target);
   if (meta.tag !== 'payRequest') throw new Error('not a lightning pay endpoint');
   return meta;
+}
+// LNURL-withdraw: make an invoice at our mint and hand it to the service, which pays it.
+// Returns the invoice's history entry; it completes like any invoice once the payment lands.
+export async function lnurlWithdraw(meta, sats, url = S.active) {
+  const min = Math.ceil(meta.minWithdrawable / 1000), max = Math.floor(meta.maxWithdrawable / 1000);
+  if (sats < min || sats > max) throw new Error(min === max ? `amount must be ${min} sat` : `amount must be ${min}–${max} sat`);
+  const h = await createInvoice(sats, url, 'sat', meta.defaultDescription || 'LNURL withdraw');
+  h.withdraw = new URL(meta.callback).host; save();
+  const cb = new URL(meta.callback);
+  cb.searchParams.set('k1', meta.k1);
+  cb.searchParams.set('pr', h.request);
+  let r;
+  try { r = await (await fetch(cb)).json(); } catch { r = { status: 'ERROR', reason: 'could not reach ' + host(meta.callback) }; }
+  if (r.status === 'ERROR') {
+    // nothing will pay this invoice: don't leave it waiting in the history
+    S.history = S.history.filter((x) => x !== h); save();
+    throw new Error(r.reason || 'the service refused the withdrawal');
+  }
+  return h;
 }
 export async function lnurlInvoice(meta, sats, comment) {
   const msat = sats * 1000;
@@ -500,7 +594,8 @@ export async function moveFunds(to, amount, unit = S.unit, from = S.active, maxF
 // takes them back like any unclaimed locked send.
 export async function lockVault(amount, until) {
   const burn = newKey().pub; // the private key is never kept
-  const h = await sendEcash(amount, { lockTo: burn, returnAfter: until - Date.now() });
+  // blinded (P2BK): only this wallet ever spends it, and the mint can't link vaults by our refund key
+  const h = await sendEcash(amount, { lockTo: burn, returnAfter: until - Date.now(), blind: true });
   h.vault = true; save();
   return h;
 }
