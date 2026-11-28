@@ -577,7 +577,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       let lock = null, sig = null;
       const draw = () => {
         $('#prev', b).innerHTML = (isGiftMemo(parsed.memo) ? giftBanner(parsed) : '') + kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && !isGiftMemo(parsed.memo) && ['Memo', esc(parsed.memo)],
-          lock && lock.locked && ['Lock', lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>'],
+          lock && lock.locked && ['Lock', (lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>') + (lock.blinded ? '<br><small class="dim">Key hidden from the mint (P2BK)</small>' : '')],
           lock && lock.until && ['Claim by', `${esc(whenShort(lock.until))}<br><small class="dim">After that it goes back to the sender.</small>`],
           sig && ['Signature', sigLine(sig)]])
           + (sig && sig.state === 'bad' ? '<p class="warn">The mint’s signature on this ecash doesn’t check out. It may be fake. Don’t accept it as payment.</p>' : '')
@@ -723,6 +723,8 @@ function sendSheet(tab = 'ecash', prefill = '') {
         ${keyContacts().length ? `<div class="cts" role="list" aria-label="Contacts">${keyContacts().map((c) => `<button type="button" role="listitem" class="ctc" data-k="${esc(c.npub)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}</div>` : ''}
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
         <p class="hint">Only the holder of the matching private key can redeem it.</p>
+        <label class="chk"><input type="checkbox" id="blk" ${st.p2bk ? 'checked' : ''}> <span>Hide the key from the mint (P2BK)</span></label>
+        <p class="hint">The mint can’t link this payment to their key. Their wallet must support NUT-28: blindsig and wallets built on Nutshell or CDK do.</p>
         ${mintOf(S.active)?.info?.nut11 === false ? '<p class="warn small">This mint doesn’t support locked ecash.</p>' : `<label class="lbl" for="ret">If they don’t claim it, send it back to me after</label>
         <select id="ret" class="field">${RETURN_AFTER.map(([v, l]) => `<option value="${v}" ${v === 864e5 ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <p class="hint">Until then only they can claim it. Afterwards it comes back to you automatically.</p>`}</details>
@@ -748,11 +750,13 @@ function sendSheet(tab = 'ecash', prefill = '') {
       if (!(await bigOk(a))) return;
       const returnAfter = lockTo ? +($('#ret', b)?.value || 0) : 0;
       let h;
-      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline }); }
+      const blind = !!(lockTo && $('#blk', b).checked);
+      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline, blind }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
       render(); tokenView(h); C.watchSent(sentClaimed);
       FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
+    $('#blk', b).onchange = (e) => { st.p2bk = e.target.checked; save(); };
     $$('#lockBox .ctc', b).forEach((x) => (x.onclick = () => { $('#lock', b).value = x.dataset.k; $$('#lockBox .ctc', b).forEach((y) => y.classList.toggle('on', y === x)); }));
     $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
@@ -890,7 +894,7 @@ function tokenView(h, fromLog) {
   sheet('Ecash token', `<div class="qrwrap" id="tq"></div>
     <p class="big">${bigAmt(h.amount, h.unit)}</p>
     ${h.fee ? `<p class="dim small center">Includes ${esc(fmt(h.fee, h.unit))} mint fee</p>` : ''}
-    ${h.lockTo ? `<p class="dim small center">Locked to ${esc(lockName(h.lockTo))}</p>` : ''}
+    ${h.lockTo ? `<p class="dim small center">Locked to ${esc(lockName(h.lockTo))}${h.blind ? ' · key hidden from the mint' : ''}</p>` : ''}
     ${h.refundAt && h.status === 'pending' ? `<p class="okline small center">If it isn’t claimed by ${esc(whenShort(h.refundAt))}, it comes back to you.</p>` : ''}
     ${armor(h.token)}
     <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji" title="Copy as emoji"><span aria-hidden="true">🥜</span> Emoji</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>

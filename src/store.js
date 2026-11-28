@@ -33,6 +33,7 @@ export const DEFAULT_SETTINGS = {
   nfcEncoding: 'url', // text | url | binary (url: any phone that taps the card opens the wallet)
   nfcQuick: true,
   p2pkQuick: false,
+  p2bk: false, // remember whether locked sends hide the key from the mint (P2BK, NUT-28)
   dleq: true, // put the mint's signature proofs (NUT-12) in tokens we send, so they can be checked offline
 };
 

@@ -2,7 +2,7 @@
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
   getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount, setGlobalRequestOptions,
-  verifyMintSignatures,
+  verifyMintSignatures, maybeDeriveP2BKPrivateKeys,
 } from '@cashu/cashu-ts';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
@@ -228,14 +228,20 @@ export function parseToken(str) {
 export async function tokenLockInfo(t) {
   const w = await walletFor(t.mint, t.unit);
   const { proofs } = w.decodeToken(t.str);
-  const locks = new Set(); let until = 0;
+  const locks = new Set(); let until = 0, blinded = false;
+  const mineBlinded = new Set();
   for (const p of proofs) {
     try { getP2PKExpectedWitnessPubkeys(p.secret).forEach((k) => locks.add(k)); } catch {}
     try { const [kind, d] = JSON.parse(p.secret); const lt = kind === 'P2PK' && (d.tags || []).find((t) => t[0] === 'locktime'); if (lt) until = Math.max(until, +lt[1] * 1000); } catch {}
+    // P2BK (NUT-28): the lock shows only a blinded key; ours if we can derive its private half
+    if (p.p2pk_e) {
+      blinded = true;
+      for (const k of S.p2pk) { try { if (maybeDeriveP2BKPrivateKeys([k.priv], p).length) mineBlinded.add(k.pub); } catch {} }
+    }
   }
   if (!locks.size) return { locked: false };
-  const mine = S.p2pk.filter((k) => locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
-  return { locked: true, mine: mine.length > 0, keys: [...locks], until: until > Date.now() ? until : 0 };
+  const mine = S.p2pk.filter((k) => mineBlinded.has(k.pub) || locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
+  return { locked: true, mine: mine.length > 0, blinded, keys: [...locks, ...mineBlinded], until: until > Date.now() ? until : 0 };
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
 
@@ -266,7 +272,8 @@ export async function compactToken(token) {
   return getEncodedToken(w.decodeToken(t.str), { removeDleq: true });
 }
 
-export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId } = {}) {
+// blind: hide the lock's keys from the mint (P2BK, NUT-28). The receiver's wallet must support it.
+export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId, blind } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
   if (amount > before) throw new Error('insufficient balance at this mint');
@@ -274,14 +281,14 @@ export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, ke
   // locked to someone, optionally with a way back: after the locktime our refund key can take it
   const refundAt = lockTo && returnAfter > 0 ? Date.now() + returnAfter : 0;
   if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
-  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}) }).includeFees(true).run();
+  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}), ...(blind ? { blindKeys: true } : {}) }).includeFees(true).run();
   else res = await w.send(amount, getProofs(url, unit), { includeFees: true, ...(keysetId ? { keysetId } : {}) });
   // never record a send unless the token really carries the amount
   if (!res.send.length || sum(res.send) < amount) throw new Error(offline ? 'no exact match for offline sending' : 'could not prepare the token');
   setProofs(url, res.keep, unit);
   // with the mint's signature proofs (NUT-12) the receiver can check the ecash is real, even offline
   const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: !S.settings.dleq });
-  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
+  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(lockTo && blind ? { blind: true } : {}), ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
 }
 export async function receiveEcash(t) {
   await addMint(t.mint);
@@ -582,7 +589,8 @@ export async function moveFunds(to, amount, unit = S.unit, from = S.active, maxF
 // takes them back like any unclaimed locked send.
 export async function lockVault(amount, until) {
   const burn = newKey().pub; // the private key is never kept
-  const h = await sendEcash(amount, { lockTo: burn, returnAfter: until - Date.now() });
+  // blinded (P2BK): only this wallet ever spends it, and the mint can't link vaults by our refund key
+  const h = await sendEcash(amount, { lockTo: burn, returnAfter: until - Date.now(), blind: true });
   h.vault = true; save();
   return h;
 }
