@@ -939,6 +939,7 @@ function splitNew() {
     <button class="btn primary wide" id="sGo">Create requests</button>`, (b) => {
     const others = () => n - ($('#sMe', b).checked ? 1 : 0);
     const upd = () => {
+      if (!$('#sN', b)) return b.removeEventListener('click', onKp); // this sheet has gone
       $('#sN', b).textContent = String(n); $('#sPeople', b).textContent = I18N.t('people');
       $('#sMinus', b).disabled = n <= 2; $('#sPlus', b).disabled = n >= 12;
       const a = readAmt(b, 'samt');
@@ -947,7 +948,8 @@ function splitNew() {
     $('#sMinus', b).onclick = () => { n = Math.max(2, n - 1); upd(); };
     $('#sPlus', b).onclick = () => { n = Math.min(12, n + 1); upd(); };
     $('#sMe', b).onchange = upd;
-    $('#samt', b).addEventListener('input', upd); b.addEventListener('click', (e) => { if (e.target.closest('.kp')) setTimeout(upd, 0); });
+    const onKp = (e) => { if (e.target.closest('.kp')) setTimeout(upd, 0); };
+    $('#samt', b).addEventListener('input', upd); b.addEventListener('click', onKp);
     upd();
     const go = $('#sGo', b);
     go.onclick = withBusy(go, async () => {

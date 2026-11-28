@@ -54,7 +54,7 @@
 
 <p align="center">
   <a href="assets/blindsig-demo.mp4"><img src="assets/demo-thumb.jpg" width="300" alt="Play the blindsig demo video"></a><br>
-  <sub>Under two minutes: a new wallet, receiving over Lightning with a note, sending ecash, a gift card, paying and saving a contact, the PIN lock with Face ID, what each payment was worth then and now, hiding amounts, the live price chart and the themes. Tap to play.</sub>
+  <sub>About two and a half minutes: a new wallet, receiving over Lightning with a note, sending ecash, a gift card, paying and saving a contact, the PIN lock with Face ID, what each payment was worth then and now, splitting a bill, the time vault, a tip jar card, hiding amounts, the live price chart and the themes. Tap to play.</sub>
 </p>
 
 ## Screenshots
@@ -99,6 +99,16 @@
     <td align="center"><img src="assets/screens/summary.png" width="250" alt="Monthly summary"><br><sub><b>Summary</b>: money in and out each month, worth then, CSV export</sub></td>
     <td align="center"><img src="assets/screens/spread.png" width="250" alt="Spread your risk"><br><sub><b>Spread your risk</b>: move the extra from a full mint in one tap</sub></td>
     <td align="center"><img src="assets/screens/decoy.png" width="250" alt="Decoy PIN"><br><sub><b>Decoy PIN</b>: a second PIN that opens a small, separate wallet</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/tipjar.png" width="250" alt="Tip jar card"><br><sub><b>Tip jar</b>: your Lightning address on a card to print or share</sub></td>
+    <td align="center"><img src="assets/screens/vault.png" width="250" alt="Time vault"><br><sub><b>Time vault</b>: sats locked away until a date, even from you</sub></td>
+    <td align="center"><img src="assets/screens/split.png" width="250" alt="Split a bill"><br><sub><b>Split a bill</b>: one request each, with live progress</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/nutzap.png" width="250" alt="Nutzap"><br><sub><b>Nutzaps</b>: send ecash to anyone's npub over Nostr</sub></td>
+    <td align="center"><img src="assets/screens/nfc.png" width="250" alt="Write to NFC card"><br><sub><b>NFC cards</b>: put a gift on a card any phone can tap (Android writes)</sub></td>
+    <td align="center"><img src="assets/screens/mint-details.png" width="250" alt="Mint details"><br><sub><b>Mint details</b>: what a mint supports, its keysets and auditor record</sub></td>
   </tr>
 </table>
 
