@@ -793,5 +793,19 @@
 "You already have a contact with that address.",
 "Contact saved",
 "Contact updated",
-"Contact deleted"
+"Contact deleted",
+"Bitcoin price chart",
+"Past hour",
+"Past day",
+"Past week",
+"Past month",
+"Past year",
+"All time",
+"Low",
+"High",
+"Prices from Coinbase",
+"live while open",
+"Price settings",
+"Couldn’t load the chart. Check your connection.",
+"Try again"
 ]

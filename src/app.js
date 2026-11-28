@@ -19,6 +19,7 @@ import * as C from './core.js';
 import * as N from './nostr.js';
 import { nostrUI } from './nostr-ui.js';
 import * as I18N from './i18n.js';
+import * as CH from './chart.js';
 
 // the developer's Lightning address, for tips (Settings → About)
 const TIP_ADDR = 'npub1t5nvfnlmegsqkqegcpnyek4qf4fc2f2gx2t4lm88h2kq22plpmxqdhgpa9@npub.cash';
@@ -165,6 +166,108 @@ function btcPrice() {
     clearTimeout(dirTimer); dirTimer = setTimeout(() => el.classList.remove('moved'), 4000);
   }
   shownPrice = price;
+}
+// tap the price chip: a live chart of the bitcoin price, drag along it to read any point
+let chartPeriod = 'day';
+const money = (n, cur) => n.toLocaleString('en-US', { style: 'currency', currency: cur, maximumFractionDigits: n < 100 ? 2 : 0 });
+function priceChart() {
+  const cur = st.fiatCur;
+  sheet('Bitcoin price', `<div class="pch" data-notr>
+      <div class="pcp" id="pcP">${S.price[cur] ? money(S.price[cur], cur) : '…'}</div>
+      <div class="pcc" id="pcC">&nbsp;</div>
+    </div>
+    <div class="pcw" id="pcW" tabindex="0" role="img" aria-label="Bitcoin price chart"><div class="pcmsg dim small" id="pcM">Loading…</div></div>
+    <div class="pct dim small" data-notr><span id="pcT0"></span><span id="pcT1"></span></div>
+    ${seg(CH.RANGES.map(([k, p]) => [p, k]), chartPeriod)}
+    <dl class="kv" id="pcK"></dl>
+    <p class="dim small center">Prices from Coinbase · live while open</p>
+    <button class="btn wide" id="pcS">Price settings</button>`, (b) => {
+    let pts = null, geo = null, ctrl = null, scrub = -1, dead = false;
+    const W = $('#pcW', b), P = $('#pcP', b), Cc = $('#pcC', b), M = $('#pcM', b);
+    const label = () => CH.RANGES.find((r) => r[1] === chartPeriod)[2];
+    function head() {
+      if (!pts) return;
+      const s = CH.stats(pts);
+      if (scrub >= 0) {
+        const [t, p] = pts[scrub], d = p - s.first;
+        P.textContent = money(p, cur);
+        Cc.className = 'pcc ' + (d < 0 ? 'dn' : 'up');
+        Cc.innerHTML = `<bdi>${d < 0 ? '▼' : '▲'} ${esc(money(Math.abs(d), cur))} (${Math.abs((d / s.first) * 100).toFixed(2)}%)</bdi> · <bdi>${esc(CH.when(t, chartPeriod))}</bdi>`;
+        return;
+      }
+      P.textContent = money(s.last, cur);
+      Cc.className = 'pcc ' + (s.change < 0 ? 'dn' : 'up');
+      Cc.innerHTML = `<bdi>${s.change < 0 ? '▼' : '▲'} ${esc(money(Math.abs(s.change), cur))} (${Math.abs(s.pct).toFixed(2)}%)</bdi> · <span>${esc(I18N.t(label()))}</span>`;
+    }
+    function draw() {
+      if (!pts || dead) return;
+      const w = W.clientWidth || 320, h = W.clientHeight || 200, s = CH.stats(pts);
+      geo = CH.geometry(pts, w, h);
+      const tone = s.change < 0 ? 'var(--err)' : 'var(--up,var(--ac))';
+      const [lx, ly] = geo.xy[geo.xy.length - 1];
+      W.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+        <defs><linearGradient id="pcG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tone}" stop-opacity=".28"/><stop offset="1" stop-color="${tone}" stop-opacity="0"/></linearGradient></defs>
+        <path d="${geo.area}" fill="url(#pcG)"/>
+        <path d="${geo.line}" fill="none" stroke="${tone}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle class="pcnow" cx="${lx}" cy="${ly}" r="4" fill="${tone}"/>
+        <g id="pcX" style="display:none"><line x1="0" x2="0" y1="0" y2="${h}" stroke="var(--dim)" stroke-dasharray="3 3"/><circle r="5" fill="${tone}" stroke="var(--bg)" stroke-width="2"/></g>
+      </svg>`;
+      W.setAttribute('aria-label', `${I18N.t('Bitcoin price chart')}: ${I18N.t(label())}, ${money(s.first, cur)} → ${money(s.last, cur)}`);
+      $('#pcT0', b).textContent = CH.when(pts[0][0], chartPeriod);
+      $('#pcT1', b).textContent = CH.when(pts[pts.length - 1][0], chartPeriod);
+      $('#pcK', b).innerHTML = `<dt>Low</dt><dd data-notr>${esc(money(s.lo, cur))}</dd><dt>High</dt><dd data-notr>${esc(money(s.hi, cur))}</dd>`;
+      I18N.translateTree($('#pcK', b));
+      mark(); head();
+    }
+    function mark() {
+      const g = $('#pcX', W); if (!g || !geo) return;
+      g.style.display = scrub < 0 ? 'none' : ''; if (scrub < 0) return;
+      const [x, y] = geo.xy[scrub];
+      g.firstElementChild.setAttribute('x1', x); g.firstElementChild.setAttribute('x2', x);
+      g.lastElementChild.setAttribute('cx', x); g.lastElementChild.setAttribute('cy', y);
+    }
+    const at = (e) => { if (!geo) return; const r = W.getBoundingClientRect(); scrub = CH.nearest(geo.xy, e.clientX - r.left); mark(); head(); };
+    const off = () => { if (scrub < 0) return; scrub = -1; mark(); head(); };
+    W.onpointerdown = (e) => { at(e); };
+    W.onpointermove = (e) => { if (e.pointerType === 'mouse' || e.buttons) at(e); };
+    W.onpointerup = W.onpointercancel = (e) => { if (e.pointerType !== 'mouse') off(); };
+    W.onpointerleave = off;
+    W.onkeydown = (e) => {
+      if (!pts) return;
+      const k = { ArrowLeft: -1, ArrowRight: 1 }[e.key];
+      if (k) { e.preventDefault(); scrub = Math.max(0, Math.min(pts.length - 1, (scrub < 0 ? pts.length - 1 : scrub) + k * Math.max(1, Math.round(pts.length / 60)))); mark(); head(); }
+      else if (e.key === 'Escape' && scrub >= 0) { e.stopPropagation(); off(); }
+    };
+    W.onblur = off;
+    // nothing from the last range stays on screen while the next one loads or fails
+    const blank = () => { Cc.className = 'pcc'; Cc.innerHTML = '&nbsp;'; P.textContent = S.price[cur] ? money(S.price[cur], cur) : '…'; $('#pcK', b).innerHTML = ''; $('#pcT0', b).textContent = $('#pcT1', b).textContent = ''; };
+    async function load(quiet) {
+      ctrl?.abort(); ctrl = new AbortController();
+      const period = chartPeriod;
+      if (!quiet && !CH.fresh(cur, period)) { pts = null; blank(); W.innerHTML = '<div class="pcmsg dim small">Loading…</div>'; I18N.translateTree(W); }
+      try {
+        const raw = await CH.series(cur, period, ctrl.signal);
+        if (dead || period !== chartPeriod) return;
+        pts = CH.withSpot(raw, S.price[cur]); draw();
+      } catch (e) {
+        if (dead || e.name === 'AbortError' || period !== chartPeriod) return;
+        if (quiet && pts) return;
+        pts = null; geo = null; blank();
+        W.innerHTML = '<div class="pcmsg"><p class="dim small">Couldn’t load the chart. Check your connection.</p><button class="btn" id="pcR">Try again</button></div>';
+        I18N.translateTree(W);
+        $('#pcR', W).onclick = () => load();
+      }
+    }
+    bindSeg(b, (p) => { chartPeriod = p; scrub = -1; load(); });
+    $('#pcS', b).onclick = () => SECTIONS.privacy();
+    // live: the spot price every 30 s, and the history again once it goes stale
+    const tick = async () => { if (document.hidden || dead) return; if (await C.loadPrice()) render(); load(true); };
+    const timer = setInterval(tick, 30000);
+    let rz; const onRz = () => { clearTimeout(rz); rz = setTimeout(draw, 120); };
+    addEventListener('resize', onRz);
+    onClose = () => { dead = true; clearInterval(timer); clearTimeout(rz); removeEventListener('resize', onRz); ctrl?.abort(); };
+    load();
+  });
 }
 // shrink the balance digits until the whole line fits the screen
 function fitBal() {
@@ -1433,7 +1536,7 @@ $('#scanBtn').onclick = () => (needMint() ? null : startScan(route));
 $('#mintChip').onclick = () => mintsSheet();
 $('#unitChip').onclick = () => { const m = mintOf(S.active); const u = m?.units || ['sat']; S.unit = u[(u.indexOf(S.unit) + 1) % u.length]; save(); render(); };
 $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
-$('#btcPrice').onclick = () => { if (S.mnemonic) SECTIONS.privacy(); };
+$('#btcPrice').onclick = () => { if (S.price[st.fiatCur]) priceChart(); };
 $('#instBtn').onclick = installHelp;
 $('#bkHow').onclick = () => backupCreateSheet();
 $('#riskMove').onclick = () => { const u = $('#riskWarn').dataset.u; if (u) { C.selectMint(u); S.unit = 'sat'; save(); render(); } if (S.mints.length > 1) moveSheet(); else mintsSheet(); };

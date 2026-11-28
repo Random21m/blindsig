@@ -151,6 +151,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 
 - 14 languages: English, Español, Português (Brasil), Français, Deutsch, Italiano, Svenska, Čeština, Ελληνικά, Türkçe, العربية (right to left), ไทย, 日本語 and 中文
 - On-screen keypad, optional ₿ symbol, prices in 20 currencies
+- Tap the bitcoin price at the top for a live chart (hour, day, week, month, year or all time); drag along it to read any point
 - Four themes: green, white, amber and burnt orange
 - Coin sounds, confetti and a drawn checkmark when payments complete, a shake when something's off (each can be turned off). Sound and vibration only when money arrives or leaves. On iPhone, sounds can play even with the phone on silent
 - Works offline once installed
