@@ -1110,3 +1110,10 @@
 1109	Tous les réglages sont déjà par défaut.
 1110	Les réglages sont revenus par défaut
 1111	Langue du téléphone
+1112	Cela fait moins d’1 sat par personne. Saisissez un montant plus élevé ou partagez entre moins de personnes.
+1113	{0} récupérés, mais une mint n’a pas répondu. Le code leurre reste actif pour l’instant. Réessayez une fois en ligne.
+1114	Une mint n’a pas répondu, les ecash du leurre n’ont donc pas pu revenir. Le code leurre reste actif pour l’instant. Réessayez une fois en ligne.
+1115	Le paiement de l’échange est encore en cours. Il se réglera tout seul ; consultez votre historique dans un moment.
+1116	{0} a envoyé une facture d’un montant différent de celui saisi. Rien n’a été payé.
+1117	Vos ecash sont en sécurité. Touchez à nouveau « Passer à la nouvelle seed » quand vos mints répondent, pour que tout passe sur la nouvelle seed.
+1118	impossible de joindre {0}

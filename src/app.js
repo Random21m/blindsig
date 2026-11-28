@@ -797,7 +797,9 @@ function sendSheet(tab = 'ecash', prefill = '') {
     ln.oninput = () => {
       bipName = ''; terminal = false;
       const v = ln.value.trim().replace(/^lightning:/i, '');
-      stage = quote = meta = null; x.innerHTML = '';
+      // a new target starts from scratch: a method left over from an offer or an on-chain address
+      // would send the next Lightning payment down the wrong path
+      stage = quote = meta = null; x.innerHTML = ''; method = 'bolt11'; feeIndex = undefined; invoice = '';
       chainInfo = C.parseBitcoin(v);
       if (chainInfo && (chainInfo.lightning || chainInfo.lno || chainInfo.creq)) { ln.value = pickFromUri(chainInfo); return ln.oninput(); }
       if (C.isBip353(v)) { stage = 'bip353'; label = v; }
@@ -896,7 +898,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       if (stage === 'lnamt') {
         const a = readAmt(b, 'lamt'); if (!a) return nope('Enter an amount.');
         invoice = await C.lnurlInvoice(meta, a, $('#cmt', b)?.value.trim());
-        quote = await C.quoteInvoice(invoice); return showQuote();
+        method = 'bolt11'; quote = await C.quoteInvoice(invoice); return showQuote();
       }
       if (stage === 'pay') {
         const qa = Number(quote?.amount?.toNumber?.() ?? quote?.amount ?? 0) + Number(quote?.fee_reserve?.toNumber?.() ?? quote?.fee_reserve ?? 0);
@@ -1069,7 +1071,7 @@ function splitNew() {
     const go = $('#sGo', b);
     go.onclick = withBusy(go, async () => {
       const total = readAmt(b, 'samt'); if (!total) return nope('Enter an amount.');
-      if (total < n) return nope('Enter an amount.');
+      if (total < n) return nope('That’s less than 1 sat each. Enter a bigger amount or split it fewer ways.');
       const title = $('#sfor', b).value.trim(), names = $('#sNames', b).value.split(',').map((x) => x.trim()).filter(Boolean);
       // shares that add up to the bill exactly: the first few round up
       const base = Math.floor(total / n), extra = total - base * n;
@@ -1514,7 +1516,14 @@ function detail(h) {
     const del = $('#del', b); if (del) del.onclick = () => { S.history = S.history.filter((x) => x !== h); save(); render(); closeSheet(); };
     const cpi = $('#cpi', b); if (cpi) cpi.onclick = () => copy(h.request, h.method === 'bolt12' ? 'Offer copied' : 'Invoice copied');
     const s2 = $('#st', b); if (s2) s2.onclick = withBusy(s2, async () => { await C.settleMelt(h); render(); detail(h); });
-    const re = $('#re', b); if (re) re.onclick = withBusy(re, async () => { h.status = 'pending'; const s = await C.checkInvoice(h); if (s === 'pending') { h.status = 'expired'; save(); toast('Still unpaid.', 'warn'); } render(); detail(h); });
+    const re = $('#re', b); if (re) re.onclick = withBusy(re, async () => {
+      h.status = 'pending';
+      let s;
+      // the mint can't be reached: it's still expired, not waiting for payment again
+      try { s = await C.checkInvoice(h); } catch (e) { h.status = 'expired'; save(); throw e; }
+      if (s === 'pending') { h.status = 'expired'; save(); toast('Still unpaid.', 'warn'); }
+      render(); detail(h);
+    });
   });
 }
 
@@ -2039,10 +2048,18 @@ function decoySheet() {
       }, { back: decoySheet }));
       $('#drm', b).onclick = () => decoyPinThen('Remove decoy PIN', async (pin) => {
         sheet('Remove decoy PIN', '<p class="dim center">Moving the decoy’s ecash back…</p>', null, { locked: true });
-        let got = 0;
-        try { await editDecoy(pin, async (st) => { got = await C.sweepState(st); }); } catch (e) { console.error(e); }
-        await clearDecoy(); locked = false; render();
-        toast(got ? `Decoy removed. ${fmt(got, 'sat')} moved back to this wallet.` : 'Decoy removed');
+        let r = null;
+        // the decoy is saved with whatever moved taken out, so trying again never counts it twice
+        try { await editDecoy(pin, async (st) => { r = await C.sweepState(st); }); } catch (e) { console.error(e); }
+        locked = false;
+        // a mint didn't answer: removing the decoy now would throw away the ecash still in it
+        if (!r || r.left) {
+          render(); decoySheet();
+          toast(r?.got ? `${fmt(r.got, 'sat')} moved back, but a mint didn’t answer. The decoy PIN stays on for now. Try again when you’re online.` : 'A mint didn’t answer, so the decoy’s ecash couldn’t move back. The decoy PIN stays on for now. Try again when you’re online.', 'warn');
+          return;
+        }
+        await clearDecoy(); render();
+        toast(r.got ? `Decoy removed. ${fmt(r.got, 'sat')} moved back to this wallet.` : 'Decoy removed');
         SECTIONS.security();
       });
     }, { back: SECTIONS.security });
@@ -2245,9 +2262,16 @@ function newSeedSheet() {
         g.onclick = withBusy(g, async () => {
           const lg = $('#lg', b2); lg.hidden = false;
           C.setSeed(m);
-          await C.rekeyAll((s) => (lg.textContent += '> ' + s + '\n'));
+          try { await C.rekeyAll((s) => (lg.textContent += '> ' + s + '\n')); }
+          catch (e) {
+            // the new seed is in use already; ecash that didn't move yet is still safe, just not on it
+            lg.textContent += `> ${niceErr(e)}\n`;
+            locked = false;
+            if (!$('#ncl', b2)) { g.insertAdjacentHTML('afterend', '<button class="btn wide" id="ncl">Close</button><p class="dim small">Your ecash is safe. Tap “Switch to new seed” again when your mints can be reached, so all of it moves onto the new seed.</p>'); I18N.translateTree($('.sb', b2)); $('#ncl', b2).onclick = () => closeSheet(); }
+            throw e;
+          }
           lg.textContent += '> done\n'; toast('New seed is active'); render();
-          later(() => { g.textContent = 'Close'; g.onclick = () => closeSheet(); });
+          locked = false; later(() => { g.textContent = 'Close'; g.onclick = () => closeSheet(); });
         });
       }, { locked: true });
     };

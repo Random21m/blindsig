@@ -1110,3 +1110,10 @@
 1109	Tutte le impostazioni sono già ai valori predefiniti.
 1110	Impostazioni riportate ai valori predefiniti
 1111	Lingua del telefono
+1112	Sono meno di 1 sat a testa. Inserisci un importo più alto o dividi tra meno persone.
+1113	{0} riportati indietro, ma una mint non ha risposto. Il PIN esca resta attivo per ora. Riprova quando sei online.
+1114	Una mint non ha risposto, quindi l’ecash del wallet esca non è potuto tornare. Il PIN esca resta attivo per ora. Riprova quando sei online.
+1115	Il pagamento dello scambio è ancora in corso. Si risolverà da solo; controlla la cronologia tra un po’.
+1116	{0} ha inviato una fattura per un importo diverso da quello inserito. Non è stato pagato nulla.
+1117	Il tuo ecash è al sicuro. Tocca di nuovo «Passa al nuovo seed» quando le mint rispondono, così tutto passa al nuovo seed.
+1118	impossibile raggiungere {0}

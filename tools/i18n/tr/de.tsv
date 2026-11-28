@@ -1110,3 +1110,10 @@
 1109	Alle Einstellungen sind schon auf dem Standard.
 1110	Einstellungen sind zurückgesetzt
 1111	Sprache des Telefons
+1112	Das ist weniger als 1 Sat pro Person. Gib einen höheren Betrag ein oder teile durch weniger.
+1113	{0} zurückverschoben, aber eine Mint hat nicht geantwortet. Die Täusch-PIN bleibt vorerst an. Versuch es noch mal, wenn du online bist.
+1114	Eine Mint hat nicht geantwortet, daher konnte das Ecash der Täusch-Wallet nicht zurück. Die Täusch-PIN bleibt vorerst an. Versuch es noch mal, wenn du online bist.
+1115	Die Zahlung für den Tausch läuft noch. Sie erledigt sich von selbst; schau später in deinen Verlauf.
+1116	{0} hat eine Rechnung über einen anderen Betrag geschickt, als du eingegeben hast. Es wurde nichts bezahlt.
+1117	Dein Ecash ist sicher. Tippe noch mal auf „Zum neuen Seed wechseln“, sobald deine Mints erreichbar sind, damit alles auf den neuen Seed umzieht.
+1118	{0} nicht erreichbar

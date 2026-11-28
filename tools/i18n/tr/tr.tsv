@@ -1110,3 +1110,10 @@
 1109	Tüm ayarlar zaten varsayılan.
 1110	Ayarlar varsayılana döndü
 1111	Telefonun dili
+1112	Bu kişi başı 1 sat’tan az. Daha büyük bir tutar girin ya da daha az kişiye bölün.
+1113	{0} geri taşındı, ama bir mint yanıt vermedi. Sahte PIN şimdilik açık kalıyor. Çevrimiçi olunca tekrar deneyin.
+1114	Bir mint yanıt vermedi, bu yüzden sahte cüzdanın ecash’i geri taşınamadı. Sahte PIN şimdilik açık kalıyor. Çevrimiçi olunca tekrar deneyin.
+1115	Takas ödemesi hâlâ sürüyor. Kendiliğinden sonuçlanacak; bir süre sonra geçmişinize bakın.
+1116	{0} girdiğinizden farklı bir tutar için fatura gönderdi. Hiçbir şey ödenmedi.
+1117	Ecash’iniz güvende. Mint’lerinize ulaşılabildiğinde “Yeni seed’e geç”e tekrar dokunun; böylece hepsi yeni seed’e taşınır.
+1118	{0} adresine ulaşılamadı

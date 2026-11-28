@@ -1110,5 +1110,12 @@
 "What will change",
 "Every setting is already at its default.",
 "Settings are back to their defaults",
-"Phone’s language"
+"Phone’s language",
+"That’s less than 1 sat each. Enter a bigger amount or split it fewer ways.",
+"{0} moved back, but a mint didn’t answer. The decoy PIN stays on for now. Try again when you’re online.",
+"A mint didn’t answer, so the decoy’s ecash couldn’t move back. The decoy PIN stays on for now. Try again when you’re online.",
+"The swap payment is still going through. It settles by itself; check your history in a while.",
+"{0} sent an invoice for a different amount than you entered. Nothing was paid.",
+"Your ecash is safe. Tap “Switch to new seed” again when your mints can be reached, so all of it moves onto the new seed.",
+"could not reach {0}"
 ]
