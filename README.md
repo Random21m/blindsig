@@ -53,8 +53,8 @@
 ## Demo
 
 <p align="center">
-  <a href="assets/blindsig-demo.mp4"><img src="assets/demo-thumb.jpg" width="300" alt="Play the one-minute blindsig demo video"></a><br>
-  <sub>One minute: a new wallet, receiving over Lightning, sending ecash, the PIN lock and the themes. Tap to play.</sub>
+  <a href="assets/blindsig-demo.mp4"><img src="assets/demo-thumb.jpg" width="300" alt="Play the blindsig demo video"></a><br>
+  <sub>Under two minutes: a new wallet, receiving over Lightning with a note, sending ecash, paying and saving a contact, the PIN lock with Face ID, hiding amounts, the live price chart and the themes. Tap to play.</sub>
 </p>
 
 ## Screenshots
@@ -84,6 +84,11 @@
     <td align="center"><img src="assets/screens/note.png" width="250" alt="A private note on a transaction"><br><sub><b>Notes</b>: a private note on any transaction</sub></td>
     <td align="center"><img src="assets/screens/search.png" width="250" alt="Searching history"><br><sub><b>Search</b>: find payments by note, memo or amount</sub></td>
     <td align="center"><img src="assets/screens/backup.png" width="250" alt="Backup file"><br><sub><b>Backup file</b>: the whole wallet in one password-locked file</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/screens/chart.png" width="250" alt="Live bitcoin price chart"><br><sub><b>Price chart</b>: tap the price for a live chart, drag to read it</sub></td>
+    <td align="center"><img src="assets/screens/contacts.png" width="250" alt="Contacts on the send screen"><br><sub><b>Contacts</b>: pay the people you pay often in one tap</sub></td>
+    <td align="center"><img src="assets/screens/onboard.png" width="250" alt="Welcome screen"><br><sub><b>Start</b>: a quick intro, then a 12-word seed. No account.</sub></td>
   </tr>
 </table>
 
