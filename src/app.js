@@ -327,7 +327,7 @@ function render() {
   $('#logBody').hidden = !!st.hideHistory; $('#logTabs').hidden = !!st.hideHistory;
   const q = histQ.trim().toLowerCase();
   $('#histQ').hidden = S.history.length < 2 && !q;
-  const list = S.history.filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash')))
+  const list = S.history.filter((h) => !(h.split && h.status !== 'done')).filter((h) => logFilter === 'all' || (logFilter === 'pending' ? h.status === 'pending' : logFilter === 'ln' ? h.kind.startsWith('ln') || h.kind.startsWith('chain') : h.kind.startsWith('ecash')))
     .filter((h) => !q || q.split(/\s+/).every((w) => searchText(h).includes(w)));
   const shown = list.slice(0, logLimit);
   $('#moreHist').hidden = list.length <= logLimit;
@@ -353,6 +353,7 @@ function render() {
   }).join('');
   $('#empty').hidden = list.length > 0;
   $('#sumBtn').hidden = !S.history.some(counted);
+  if (splitRefresh) splitRefresh();
   const vs = vaults(), vc = $('#vaultChip');
   vc.hidden = !vs.length;
   if (vs.length) vc.textContent = `🔒 ${st.hideAmounts ? HIDDEN : fmt(vs.reduce((t, h) => t + h.amount, 0), 'sat')} ${I18N.t('in the time vault')}`;
@@ -537,7 +538,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <input id="desc" class="field" placeholder="Description (optional)" maxlength="80">
       ${b12 ? '<label class="chk"><input type="checkbox" id="b12"> <span>Reusable offer (BOLT12)</span></label>' : ''}
       <button class="btn primary wide" id="inv">Create invoice</button>
-      <p class="center small"><button class="lnk" id="tjl">Make a tip jar card</button></p>
+      <p class="center small lnks"><button class="lnk" id="spl">Split a bill</button><button class="lnk" id="tjl">Make a tip jar card</button></p>
     </div>
     ${chain ? `<div class="pane" data-p="btc" ${tab !== 'btc' ? 'hidden' : ''}>
       <p class="dim">Deposit bitcoin on-chain. The mint credits ecash after the transaction confirms.</p>
@@ -604,6 +605,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     if (ad) ad.onclick = withBusy(ad, async () => liveView(await C.createDepositAddress(S.active, S.unit, readAmt(b, 'camt'))));
     const tjb = $('#tjb', b); if (tjb) tjb.onclick = () => tipSheet();
     $('#tjl', b).onclick = () => tipSheet();
+    $('#spl', b).onclick = () => splitHome();
     const cpa = $('#cpa', b); if (cpa) { cpa.onclick = () => copy(S.npc.address, 'Address copied'); $('#qra', b).onclick = () => qrSvg('lightning:' + S.npc.address).then((s) => { $('#aq', b).innerHTML = `<div class="qr">${s}</div>`; }); N.npcSync().then((n) => n && render()).catch(() => {}); }
     $('#nreq', b).onclick = () => NU.newRequest(() => receiveSheet('req'));
     const lreq = $('#lreq', b); if (lreq) lreq.onclick = () => NU.showRequest(S.pr.requests[0], () => receiveSheet('req'));
@@ -868,6 +870,113 @@ function tokenView(h, fromLog) {
 function lockName(pub) {
   const c = keyContacts().find((x) => { try { return C.parsePubkey(x.npub) === pub; } catch { return false; } });
   return c ? c.name : pub.slice(0, 12) + '…';
+}
+/* ================= split the bill ================= */
+// one Lightning invoice per person; progress comes from which of them are paid
+let splitRefresh = null;
+const splitParts = (sp) => sp.parts.map((x) => ({ ...x, h: S.history.find((h) => h.id === x.hid) }));
+function splitStats(sp) {
+  const ps = splitParts(sp), paid = ps.filter((x) => x.h?.status === 'done');
+  return { ps, paid: paid.length, n: ps.length, got: paid.reduce((t, x) => t + x.amount, 0), want: ps.reduce((t, x) => t + x.amount, 0) };
+}
+function splitHome() {
+  const list = (S.splits || []).slice(0, 10);
+  if (!list.length) return splitNew();
+  sheet('Split a bill', `<ul class="spl">${list.map((sp) => { const t = splitStats(sp); return `<li><button class="splr" data-id="${esc(sp.id)}"><span><b dir="auto">${esc(sp.title || I18N.t('Bill'))}</b><small class="dim">${esc(stamp(sp.ts))}</small></span><span class="vr"><b>${t.paid}/${t.n}</b><small class="dim">${esc(fmt(t.got, 'sat'))}</small></span></button></li>`; }).join('')}</ul>
+    <button class="btn primary wide" id="spN">New split</button>`, (b) => {
+    $$('.splr', b).forEach((x) => (x.onclick = () => splitView(x.dataset.id)));
+    $('#spN', b).onclick = () => splitNew();
+  }, { back: () => receiveSheet('ln') });
+}
+function splitNew() {
+  if (needMint()) return;
+  if (S.unit !== 'sat') { S.unit = 'sat'; save(); render(); }
+  let n = 4;
+  sheet('Split a bill', `${amountField('samt', 'The whole bill')}
+    <label class="lbl" for="sfor">What for?</label><input id="sfor" class="field" maxlength="40" placeholder="Dinner" autocomplete="off" dir="auto">
+    <label class="lbl">Split between</label>
+    <div class="stepper"><button class="btn" id="sMinus" aria-label="Fewer people">−</button><b id="sN" aria-live="polite">4</b><button class="btn" id="sPlus" aria-label="More people">+</button><span class="dim" id="sPeople"></span></div>
+    <label class="check"><input type="checkbox" id="sMe" checked> <span>I’m paying my share too</span></label>
+    <label class="lbl" for="sNames">Names</label><input id="sNames" class="field" placeholder="Optional, separated by commas" autocomplete="off" dir="auto">
+    <p class="okline center" id="sEach"></p>
+    <button class="btn primary wide" id="sGo">Create requests</button>`, (b) => {
+    const others = () => n - ($('#sMe', b).checked ? 1 : 0);
+    const upd = () => {
+      $('#sN', b).textContent = String(n); $('#sPeople', b).textContent = I18N.t('people');
+      $('#sMinus', b).disabled = n <= 2; $('#sPlus', b).disabled = n >= 12;
+      const a = readAmt(b, 'samt');
+      $('#sEach', b).textContent = a ? I18N.t('Each pays about {0}. You’ll get {1} requests to share.').replace('{0}', fmt(Math.ceil(a / n), 'sat')).replace('{1}', others()) : '';
+    };
+    $('#sMinus', b).onclick = () => { n = Math.max(2, n - 1); upd(); };
+    $('#sPlus', b).onclick = () => { n = Math.min(12, n + 1); upd(); };
+    $('#sMe', b).onchange = upd;
+    $('#samt', b).addEventListener('input', upd); b.addEventListener('click', (e) => { if (e.target.closest('.kp')) setTimeout(upd, 0); });
+    upd();
+    const go = $('#sGo', b);
+    go.onclick = withBusy(go, async () => {
+      const total = readAmt(b, 'samt'); if (!total) return nope('Enter an amount.');
+      if (total < n) return nope('Enter an amount.');
+      const title = $('#sfor', b).value.trim(), names = $('#sNames', b).value.split(',').map((x) => x.trim()).filter(Boolean);
+      // shares that add up to the bill exactly: the first few round up
+      const base = Math.floor(total / n), extra = total - base * n;
+      const shares = Array.from({ length: n }, (_, i) => base + (i < extra ? 1 : 0));
+      if ($('#sMe', b).checked) shares.pop();
+      const sp = { id: 'sp' + Date.now().toString(36), ts: Date.now(), title, total, n, parts: [] };
+      for (let i = 0; i < shares.length; i++) {
+        const name = names[i] || I18N.t('Person {0}').replace('{0}', i + 1);
+        const h = await C.createInvoice(shares[i], S.active, 'sat', [title || I18N.t('Bill'), name].join(' · '));
+        h.split = sp.id;
+        sp.parts.push({ name, amount: shares[i], hid: h.id });
+      }
+      S.splits = [sp, ...(S.splits || [])].slice(0, 30); save();
+      splitView(sp.id);
+    });
+  }, { back: () => ((S.splits || []).length ? splitHome() : receiveSheet('ln')) });
+}
+function splitView(id) {
+  const sp = (S.splits || []).find((x) => x.id === id); if (!sp) return splitHome();
+  let timer = 0, dead = false, done0 = splitStats(sp).paid === splitStats(sp).n;
+  sheet(sp.title || 'Split a bill', `<div id="spHead"></div><ul class="spl" id="spList"></ul>
+    <button class="btn wide" id="spAll">Copy all for a group chat</button>
+    <p class="dim small">Each person scans or opens their own request. Requests expire after a while; paid ones land in your history.</p>`, (b) => {
+    const draw = () => {
+      if (dead || !b.isConnected) return;
+      const t = splitStats(sp), pct = t.want ? Math.round((t.got / t.want) * 100) : 0;
+      $('#spHead', b).innerHTML = `<p class="big">${bigAmt(t.got, 'sat')}</p>
+        <p class="dim small center">${esc(I18N.t('{0} of {1} paid').replace('{0}', t.paid).replace('{1}', t.n))} · ${esc(I18N.t('of {0}').replace('{0}', fmt(t.want, 'sat')))}</p>
+        <div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>`;
+      $('#spList', b).innerHTML = t.ps.map((x, i) => { const s = x.h?.status || 'expired'; return `<li><button class="splr" data-i="${i}" ${s === 'pending' ? '' : 'disabled'}><span><b dir="auto">${esc(x.name)}</b><small class="dim">${esc(fmt(x.amount, 'sat'))}</small></span><em class="pill ${s === 'done' ? 'p-done' : s === 'pending' ? 'p-open' : 'p-expired'}">${esc(I18N.t(s === 'done' ? 'Paid' : s === 'pending' ? 'Show request' : 'Expired'))}</em></button></li>`; }).join('');
+      $$('#spList .splr', b).forEach((x) => (x.onclick = () => splitShare(sp, +x.dataset.i)));
+      if (!done0 && t.paid === t.n) { done0 = true; FX.play('received'); FX.confetti($('#spHead', b), true); toast('Everyone paid'); }
+    };
+    splitRefresh = draw;
+    draw();
+    const tick = async () => {
+      if (dead) return;
+      for (const x of splitParts(sp)) if (x.h && x.h.status === 'pending') { try { await C.checkInvoice(x.h); } catch {} }
+      render(); timer = setTimeout(tick, st.websockets ? 5000 : 3000);
+    };
+    timer = setTimeout(tick, 1500);
+    onClose = () => { dead = true; clearTimeout(timer); splitRefresh = null; };
+    $('#spAll', b).onclick = () => {
+      const lines = splitParts(sp).filter((x) => x.h?.status === 'pending').map((x) => `${x.name} (${fmt(x.amount, 'sat')}): lightning:${x.h.request}`);
+      if (!lines.length) return toast('Everyone paid');
+      copy(`${sp.title || I18N.t('Bill')}\n\n${lines.join('\n\n')}`, 'Copied');
+    };
+  }, { back: () => { splitRefresh = null; splitHome(); } });
+}
+function splitShare(sp, i) {
+  const x = splitParts(sp)[i]; if (!x?.h) return;
+  sheet(x.name, `<p class="big">${bigAmt(x.amount, 'sat')}</p><p class="dim center" dir="auto">${esc(sp.title || I18N.t('Bill'))}</p>
+    <div class="qr" id="sq"></div>
+    <div class="btnrow"><button class="btn primary" id="ssh">Share</button><button class="btn" id="scp">Copy</button></div>`, (b) => {
+    qrSvg('lightning:' + x.h.request).then((svg) => { $('#sq', b).innerHTML = svg; });
+    const text = `${sp.title || I18N.t('Bill')} · ${x.name}: ${fmt(x.amount, 'sat')}\nlightning:${x.h.request}`;
+    $('#scp', b).onclick = () => copy(x.h.request, 'Invoice copied');
+    $('#ssh', b).onclick = async () => { try { if (navigator.share) await navigator.share({ text }); else copy(text, 'Copied'); } catch (e) { if (e?.name !== 'AbortError') copy(text, 'Copied'); } };
+    let dead = false; const watch = async () => { if (dead) return; try { if ((await C.checkInvoice(x.h)) === 'done') { render(); FX.play('received'); toast(`${x.name} paid`); return splitView(sp.id); } } catch {} setTimeout(watch, 2500); };
+    setTimeout(watch, 1500); onClose = () => { dead = true; };
+  }, { back: () => splitView(sp.id) });
 }
 /* ================= time vault ================= */
 const vaults = () => S.history.filter((h) => h.vault && h.status === 'pending' && (h.unit || 'sat') === 'sat');
