@@ -46,6 +46,8 @@ export function walletFor(url, unit = S.unit, seed = SEED, counters = counterSou
     const p = makeWallet(url, unit, seed, counters);
     wallets.set(key, p);
     p.catch(() => wallets.delete(key));
+    // made from saved keys because the mint didn't answer: try the mint again in a minute
+    p.then((w) => { if (w.fromCache) setTimeout(() => { if (wallets.get(key) === p) wallets.delete(key); }, 60000); }, () => {});
   }
   return wallets.get(key);
 }
@@ -68,7 +70,10 @@ function rememberKeys(url, w) {
     const sig = keysets.map((k) => `${k.id}${k.active ? '+' : '-'}${k.keys ? 'k' : ''}`).join();
     const old = (S.mintCache ||= {})[url];
     if (old && old.sig === sig) return;
-    S.mintCache[url] = { sig, info, keys: { ...cache, keysets } }; save();
+    S.mintCache[url] = { sig, info, keys: { ...cache, keysets } };
+    // keep keys only for mints in the wallet (and this one, which may be about to join)
+    for (const u of Object.keys(S.mintCache)) if (u !== url && !mintOf(u)) delete S.mintCache[u];
+    save();
   } catch (e) { console.warn('mint cache', e); }
 }
 export const dropWallets = () => wallets.clear();
