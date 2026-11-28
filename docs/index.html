@@ -33,8 +33,8 @@ LAYOUT: one column, thumb-first: mint line, readout, three actions, history; flo
   --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;--d:"JetBrains Mono",ui-monospace,monospace;
   --r:14px}
 [data-accent=white]{--ac:#efe9dd;--ac-ink:#161411;--ac-soft:rgba(239,233,221,.10);--glow:rgba(239,233,221,.18)}
-[data-accent=amber]{--ac:#f2b763;--ac-ink:#1e1507;--ac-soft:rgba(242,183,99,.13);--glow:rgba(242,183,99,.26);--warn:#e88f5a}
-[data-accent=orange]{--ac:#d0784a;--ac-ink:#1f1209;--ac-soft:rgba(208,120,74,.14);--glow:rgba(208,120,74,.26);--warn:#e3b65c;--err:#e46a6a}
+[data-accent=amber]{--up:#7fcf8e;--ac:#f2b763;--ac-ink:#1e1507;--ac-soft:rgba(242,183,99,.13);--glow:rgba(242,183,99,.26);--warn:#e88f5a}
+[data-accent=orange]{--up:#7fcf8e;--ac:#d0784a;--ac-ink:#1f1209;--ac-soft:rgba(208,120,74,.14);--glow:rgba(208,120,74,.26);--warn:#e3b65c;--err:#e46a6a}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
 /* no double-tap zoom: quick taps on the keypad must never enlarge the page */
 html,button,a,input,textarea,select,label{touch-action:manipulation}
@@ -285,6 +285,15 @@ details.more[open]{padding-bottom:14px}
 .pinpad .pkp button{width:74px;height:74px;min-height:0;padding:0;border-radius:50%;font-size:26px}
 .pinpad .lnk{display:inline-block;margin-top:8px;padding:10px;color:var(--dim)}
 .okline{color:var(--ac)}
+.pch{margin:2px 0 10px}.pcp{font:600 34px var(--mono);letter-spacing:-1px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.pcc{font:500 13.5px var(--mono);font-variant-numeric:tabular-nums;margin-top:4px;min-height:1.3em}.pcc.up{color:var(--up,var(--ac))}.pcc.dn{color:var(--err)}.pcc span,.pcc bdi+bdi{color:var(--dim)}
+.pcw{position:relative;height:210px;margin:0 -2px;touch-action:pan-y;user-select:none;-webkit-user-select:none;border-radius:10px;outline-offset:4px}
+.pcw svg{display:block;overflow:visible}.pcw:focus-visible{outline:2px solid var(--ac)}
+.pcnow{animation:livep 2.4s ease-in-out infinite}
+.pcmsg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 20px}.pcmsg p{margin:0}
+#pcK:empty{display:none}
+.pct{direction:ltr;display:flex;justify-content:space-between;margin:8px 0 14px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.pcnow{animation:none}}
 .cts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.ctc{min-height:40px;max-width:100%;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font:500 14px var(--sans);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctc b{font-weight:500}.ctc.more{color:var(--dim)}.pinpad .pbio{display:block;max-width:300px;margin:4px auto 0}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
 @media (max-height:700px){.pinpad .pkp{grid-template-columns:repeat(3,64px);gap:10px 26px}.pinpad .pkp button{width:64px;height:64px;font-size:23px}.pinpad .ps{margin-bottom:10px}}
 .note{margin-top:18px}.note .lbl{margin-top:0}.note textarea{font:16px/1.45 var(--sans);word-break:normal;overflow-wrap:anywhere}.note .small{margin:6px 0 0}
@@ -326,7 +335,7 @@ details.more[open]{padding-bottom:14px}
 <main class="app">
   <header class="top">
     <div class="brand"><b>$</b> blindsig<span class="cur">_</span></div>
-    <button class="btcp" id="btcPrice" hidden aria-label="Bitcoin price"><i class="live"></i><span id="btcVal"></span><b id="btcDir"></b></button>
+    <button class="btcp" id="btcPrice" hidden aria-label="Bitcoin price chart"><i class="live"></i><span id="btcVal"></span><b id="btcDir"></b></button>
     <button class="tbtn" id="instBtn" hidden>Install</button>
     <button class="tbtn" id="lockBtn" hidden aria-label="Lock"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
     <button class="tbtn" id="setBtn" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
