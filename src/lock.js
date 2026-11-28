@@ -79,7 +79,8 @@ export function pinPad(root, { len = 6, title, sub = '', onPin, extra = '', lenS
 }
 
 let overlay = null;
-function show(onDone) {
+// opts: { title, sub, cancel } — cancel: a Cancel button instead of "Forgot PIN?" (for confirming a send)
+function show(onDone, opts = {}) {
   const info = pinInfo() || { len: 6 };
   overlay = document.getElementById('pinLock') || document.createElement('div');
   overlay.id = 'pinLock'; overlay.setAttribute('role', 'dialog'); overlay.setAttribute('aria-modal', 'true'); overlay.setAttribute('aria-labelledby', 'plT');
@@ -92,16 +93,18 @@ function show(onDone) {
   const box = document.createElement('div'); box.className = 'plbox';
   overlay.innerHTML = '<div class="brand"><b>$</b> blindsig<span class="cur">_</span></div>';
   overlay.appendChild(box);
-  const forgot = (bioOn() ? `<button type="button" class="btn wide pbio" id="plB">${bioLabel() === 'Face ID or Touch ID' ? 'Use Face ID or Touch ID' : 'Use fingerprint or face unlock'}</button>` : '') + '<button type="button" class="lnk pforgot" id="plF">Forgot PIN?</button>';
+  const forgot = (bioOn() ? `<button type="button" class="btn wide pbio" id="plB">${bioLabel() === 'Face ID or Touch ID' ? 'Use Face ID or Touch ID' : 'Use fingerprint or face unlock'}</button>` : '')
+    + (opts.cancel ? '<button type="button" class="lnk pforgot" id="plX">Cancel</button>' : '<button type="button" class="lnk pforgot" id="plF">Forgot PIN?</button>');
   const pad = pinPad(box, {
-    len: info.len, title: 'Enter your PIN', extra: forgot,
+    len: info.len, title: opts.title || 'Enter your PIN', sub: opts.sub || '', extra: forgot,
     onPin: async (pin) => {
       const ok = await onDone(pin);
       if (!ok) { const m = failed(); return m.fails < 5 ? (m.fails === 4 ? 'Wrong PIN. 1 try left before a wait.' : 'Wrong PIN.') : 'Wrong PIN.'; }
       resetFails(); hide(); return true;
     },
   });
-  box.querySelector('#plF').onclick = () => forgotPin(box, () => show(onDone));
+  const fp = box.querySelector('#plF'); if (fp) fp.onclick = () => forgotPin(box, () => show(onDone, opts));
+  const cx = box.querySelector('#plX'); if (cx) cx.onclick = () => { hide(); opts.cancel(); };
   const bb = box.querySelector('#plB');
   if (bb) bb.onclick = async () => {
     bb.disabled = true; pad.setMsg('');
@@ -160,6 +163,14 @@ export async function coldUnlock(pub) {
 export function relock() {
   if (isShowing() || !pinInfo()) return;
   show(async (pin) => !!(await checkPin(pin)));
+}
+// confirm a big send: PIN pad (or Face ID) over the current screen, which stays as it was underneath.
+// Resolves true when confirmed (or when no PIN is set), false when cancelled.
+export function authorize(sub) {
+  return new Promise((done) => {
+    if (!pinInfo() || isShowing()) return done(!isShowing());
+    show(async (pin) => { const ok = !!(await checkPin(pin)); if (ok) setTimeout(() => done(true), 0); return ok; }, { title: 'Confirm with your PIN', sub, cancel: () => done(false) });
+  });
 }
 // ask for the PIN before a sensitive step (showing the seed phrase); resolves to the PIN (or true
 // when no PIN is set); stays pending if the person goes back

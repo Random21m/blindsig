@@ -756,3 +756,15 @@
 755	Mostra o nascondi importi
 756	Nascondi cronologia
 757	Chiude le transazioni nella schermata principale per un aspetto pulito. Tocca Cronologia per aprirla.
+758	Fai un backup di questo wallet:
+759	la frase seed recupera il tuo ecash, ma non cronologia, note o chiavi. Un file di backup conserva tutto.
+760	Fai un backup
+761	Conferma con il PIN
+762	Invio di {0}
+763	Annulla
+764	Conferma invii grandi
+765	Chiede il PIN (o Face ID) prima di inviare più di questo importo, così chi ha il tuo telefono sbloccato non può svuotare il wallet.
+766	Mai
+767	Oltre {0}
+768	Gli invii grandi chiedono il PIN: oltre {0}
+769	Gli invii grandi non chiedono il PIN

@@ -196,6 +196,11 @@ function render() {
   $('#fiat').textContent = S.unit === 'sat' && st.fiat && !st.hideAmounts ? fiatOf(total('sat')) : '';
   btcPrice();
   $('#mintBal').textContent = S.mints.length > 1 && m && !st.hideAmounts ? `${fmt(bal(m.url))} at this mint` : '';
+  // backup reminder: never backed up (or not for a month) once there's money and some history;
+  // dismissing it waits a month. Not shown together with the Safari-tab warning.
+  const MONTH = 30 * 864e5, now = Date.now();
+  $('#bkWarn').hidden = !(S.mnemonic && $('#tabWarn').hidden && (total('sat') >= 1000 || S.history.length >= 3) && total('sat') > 0
+    && (!S.lastBackup || now - S.lastBackup > MONTH) && now - (st.backupNagged || 0) > MONTH);
   // motd
   const motd = m?.info?.motd;
   $('#motd').hidden = !(motd && motd !== m.motdSeen);
@@ -235,6 +240,12 @@ function render() {
   $('#empty').textContent = q ? 'No matches.' : S.history.length ? 'Nothing in this view.' : 'No transactions yet. Receive some ecash or top up over Lightning.';
 }
 
+// big sends: with a PIN set, ask for it (or Face ID) before more than st.confirmOver sats leave
+async function bigOk(amount, unit = S.unit) {
+  const sats = unit === 'sat' ? amount : unit === 'msat' ? amount / 1000 : 0;
+  if (!st.confirmOver || !pinOn() || sats <= st.confirmOver) return true;
+  return L.authorize(`Sending ${fmt(amount, unit)}`);
+}
 // hidden amounts (like cashu.me): tap the balance to switch
 const HIDDEN = '••••';
 // history search: notes, memos, amounts (as shown and as plain digits), kind, status and mint
@@ -558,6 +569,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const lockRaw = $('#lock', b).value.trim();
       const lockTo = lockRaw ? C.parsePubkey(lockRaw) : undefined;
       const offline = $('#off', b).checked;
+      if (!(await bigOk(a))) return;
       let h;
       try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, offline }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
@@ -628,6 +640,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       }
       if (stage === 'creqpay') {
         const a = req.amount || readAmt(b, 'ramt'); if (!a) return nope('Enter an amount.');
+        if (!(await bigOk(a + (N.requestMintOk(req, S.active) ? N.requestFee(req, S.active) : 0), req.unit))) return;
         const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
       }
       if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
@@ -645,6 +658,8 @@ function sendSheet(tab = 'ecash', prefill = '') {
         quote = await C.quoteInvoice(invoice); return showQuote();
       }
       if (stage === 'pay') {
+        const qa = Number(quote?.amount?.toNumber?.() ?? quote?.amount ?? 0) + Number(quote?.fee_reserve?.toNumber?.() ?? quote?.fee_reserve ?? 0);
+        if (!(await bigOk(qa))) return;
         const h = await C.payInvoice(quote, label || undefined, S.active, S.unit, method, feeIndex);
         if (h.status === 'done') done(h, 'Paid'); else { toast(method === 'onchain' ? 'Transaction submitted. It confirms on-chain.' : 'Payment in flight. It will settle.', 'warn'); render(); closeSheet(); }
       }
@@ -675,6 +690,7 @@ function multinutSheet(invoice, amount) {
     const go = $('#go', b);
     go.onclick = withBusy(go, async () => {
       const parts = fields.filter((f) => !f.disabled && parseInt(f.value, 10) > 0).map((f) => [f.dataset.u, parseInt(f.value, 10)]);
+      if (!(await bigOk(amount))) return;
       const res = await C.payMultinut(invoice, parts);
       done({ kind: 'ln-out', amount, unit: S.unit, fee: res.reduce((t, h) => t + (h.fee || 0), 0) }, 'Paid');
     });
@@ -943,10 +959,13 @@ const SECTIONS = {
       <h3>Ask again</h3><p class="dim small">How long blindsig can be in the background before it asks for your PIN again. It always asks when the app starts.</p>
       ${AFTER.map(([v, l]) => `<label class="radio"><input type="radio" name="aft" value="${v}" ${info.after === v ? 'checked' : ''}><span class="mt"><b>${l}</b></span></label>`).join('')}
       <div id="bioRow"></div>
+      <h3>Confirm big sends</h3><p class="dim small">Ask for your PIN (or Face ID) before sending more than this, so someone holding your unlocked phone can’t empty the wallet.</p>
+      ${[0, 1000, 10000, 100000].map((v) => [v, v ? `Over ${fmt(v, 'sat')}` : 'Never']).map(([v, l]) => `<label class="radio"><input type="radio" name="cov" value="${v}" ${(st.confirmOver || 0) === v ? 'checked' : ''}><span class="mt"><b>${l}</b></span></label>`).join('')}
       <button class="btn wide" id="lk">Lock now</button>
       <button class="btn wide" id="ch">Change PIN</button>
       <button class="btn wide danger" id="off">Turn off PIN lock</button>`, (b) => {
       $$('input[name=aft]', b).forEach((r) => (r.onchange = () => setLockAfter(+r.value)));
+      $$('input[name=cov]', b).forEach((r) => (r.onchange = () => { st.confirmOver = +r.value; save(); toast(+r.value ? `Big sends need your PIN: over ${fmt(+r.value, 'sat')}` : 'Big sends don’t need your PIN'); }));
       // Face ID / Touch ID, where the phone supports it
       BIO.bioAvailable().then((ok) => {
         const row = $('#bioRow', b); if (!ok || !row) return;
@@ -1365,6 +1384,8 @@ $('#unitChip').onclick = () => { const m = mintOf(S.active); const u = m?.units 
 $('#setBtn').onclick = () => (S.mnemonic ? settingsSheet() : welcome());
 $('#btcPrice').onclick = () => { if (S.mnemonic) SECTIONS.privacy(); };
 $('#instBtn').onclick = installHelp;
+$('#bkHow').onclick = () => backupCreateSheet();
+$('#bkWarnX').onclick = () => { st.backupNagged = Date.now(); save(); render(); };
 $('#lockBtn').onclick = () => L.relock();
 // ask for the PIN again after time in the background ("Right away" also hides the app-switcher snapshot)
 {

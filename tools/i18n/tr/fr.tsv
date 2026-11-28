@@ -756,3 +756,15 @@
 755	Afficher ou masquer les montants
 756	Masquer l’historique
 757	Replie vos transactions sur l’écran principal pour un écran épuré. Touchez Historique pour l’ouvrir.
+758	Sauvegardez ce portefeuille :
+759	votre phrase seed récupère votre ecash, mais pas votre historique, vos notes ni vos clés. Un fichier de sauvegarde garde tout.
+760	Faire une sauvegarde
+761	Confirmez avec votre code
+762	Envoi de {0}
+763	Annuler
+764	Confirmer les gros envois
+765	Demande votre code (ou Face ID) avant d’envoyer plus que ce montant, pour que personne avec votre téléphone déverrouillé ne puisse vider le portefeuille.
+766	Jamais
+767	Plus de {0}
+768	Les gros envois demandent votre code : plus de {0}
+769	Les gros envois ne demandent pas votre code

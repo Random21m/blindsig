@@ -756,3 +756,15 @@
 755	Visa eller dölj belopp
 756	Dölj historik
 757	Fäller ihop dina transaktioner på huvudskärmen för ett rent utseende. Tryck på Historik för att öppna.
+758	Säkerhetskopiera plånboken:
+759	din seed-fras återställer din ecash, men inte historik, anteckningar eller nycklar. En säkerhetskopia sparar allt.
+760	Gör en säkerhetskopia
+761	Bekräfta med din PIN-kod
+762	Skickar {0}
+763	Avbryt
+764	Bekräfta stora betalningar
+765	Ber om din PIN-kod (eller Face ID) innan mer än så skickas, så att ingen med din upplåsta telefon kan tömma plånboken.
+766	Aldrig
+767	Över {0}
+768	Stora betalningar kräver PIN-kod: över {0}
+769	Stora betalningar kräver ingen PIN-kod

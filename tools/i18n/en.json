@@ -756,5 +756,17 @@
 "Amounts shown",
 "Show or hide amounts",
 "Hide history",
-"Fold your transactions away on the main screen for a clean look. Tap History to open it."
+"Fold your transactions away on the main screen for a clean look. Tap History to open it.",
+"Back up this wallet:",
+"your seed phrase brings back your ecash, but not your history, notes or keys. A backup file keeps everything.",
+"Make a backup",
+"Confirm with your PIN",
+"Sending {0}",
+"Cancel",
+"Confirm big sends",
+"Ask for your PIN (or Face ID) before sending more than this, so someone holding your unlocked phone can’t empty the wallet.",
+"Never",
+"Over {0}",
+"Big sends need your PIN: over {0}",
+"Big sends don’t need your PIN"
 ]

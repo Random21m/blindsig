@@ -756,3 +756,15 @@
 755	Zobrazit nebo skrýt částky
 756	Skrýt historii
 757	Sbalí transakce na hlavní obrazovce pro čistý vzhled. Klepnutím na Historii ji otevřete.
+758	Zálohujte tuto peněženku:
+759	seed fráze obnoví váš ecash, ale ne historii, poznámky ani klíče. Záložní soubor uchová vše.
+760	Vytvořit zálohu
+761	Potvrďte PINem
+762	Odesílání {0}
+763	Zrušit
+764	Potvrzovat velké platby
+765	Před odesláním většího obnosu se zeptá na PIN (nebo Face ID), aby nikdo s vaším odemčeným telefonem nevybral peněženku.
+766	Nikdy
+767	Nad {0}
+768	Velké platby vyžadují PIN: nad {0}
+769	Velké platby PIN nevyžadují

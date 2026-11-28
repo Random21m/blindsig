@@ -756,3 +756,15 @@
 755	Mostrar u ocultar importes
 756	Ocultar historial
 757	Pliega tus transacciones en la pantalla principal para un aspecto limpio. Toca Historial para abrirlo.
+758	Haz una copia de este monedero:
+759	tu frase semilla recupera tu ecash, pero no tu historial, notas ni claves. Un archivo de copia lo guarda todo.
+760	Hacer una copia
+761	Confirma con tu PIN
+762	Enviando {0}
+763	Cancelar
+764	Confirmar envíos grandes
+765	Pide tu PIN (o Face ID) antes de enviar más de esta cantidad, para que nadie con tu teléfono desbloqueado pueda vaciar el monedero.
+766	Nunca
+767	Más de {0}
+768	Los envíos grandes piden tu PIN: más de {0}
+769	Los envíos grandes no piden tu PIN

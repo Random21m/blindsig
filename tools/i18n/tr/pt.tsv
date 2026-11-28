@@ -756,3 +756,15 @@
 755	Mostrar ou ocultar valores
 756	Ocultar histórico
 757	Recolhe suas transações na tela principal para um visual limpo. Toque em Histórico para abrir.
+758	Faça backup desta carteira:
+759	sua frase semente recupera seu ecash, mas não seu histórico, notas ou chaves. Um arquivo de backup guarda tudo.
+760	Fazer backup
+761	Confirme com seu PIN
+762	Enviando {0}
+763	Cancelar
+764	Confirmar envios grandes
+765	Pede seu PIN (ou Face ID) antes de enviar mais que isso, para que ninguém com seu celular desbloqueado esvazie a carteira.
+766	Nunca
+767	Acima de {0}
+768	Envios grandes pedem seu PIN: acima de {0}
+769	Envios grandes não pedem seu PIN

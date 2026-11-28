@@ -756,3 +756,15 @@
 755	Beträge zeigen oder ausblenden
 756	Verlauf ausblenden
 757	Klappt deine Transaktionen auf dem Hauptbildschirm ein, für einen aufgeräumten Look. Tippe auf Verlauf, um ihn zu öffnen.
+758	Sichere diese Wallet:
+759	deine Seed-Phrase stellt dein Ecash wieder her, aber nicht Verlauf, Notizen oder Schlüssel. Eine Backup-Datei sichert alles.
+760	Backup erstellen
+761	Mit deiner PIN bestätigen
+762	Sende {0}
+763	Abbrechen
+764	Große Zahlungen bestätigen
+765	Fragt nach deiner PIN (oder Face ID), bevor mehr als dieser Betrag gesendet wird, damit niemand mit deinem entsperrten Telefon die Wallet leeren kann.
+766	Nie
+767	Über {0}
+768	Große Zahlungen brauchen deine PIN: über {0}
+769	Große Zahlungen brauchen keine PIN
