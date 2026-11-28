@@ -853,3 +853,36 @@
 852	Därefter går den tillbaka till avsändaren.
 853	returer
 854	{0} kom tillbaka till dig. Den löstes inte in i tid.
+855	Lock-PIN
+856	En andra PIN som öppnar en separat, liten plånbok. För om någon tvingar dig att låsa upp.
+857	Lock-PIN: på
+858	Ställ in en lock-PIN
+859	Ta bort lock-PIN först. Då kommer dess ecash tillbaka hit.
+860	Det är din lock-PIN. Välj en annan.
+861	Lägg in några sats
+862	En lockplånbok med lite pengar ser äkta ut. Flyttas från {0} (du har {1}).
+863	Inget just nu
+864	Flyttat till lockplånboken
+865	Lock-PIN är på.
+866	Ange den i stället för din PIN när blindsig öppnas, så öppnas lockplånboken i stället för den här. Prova genom att trycka på Lås nu och ange lock-PIN.
+867	Lägg sats i lockplånboken
+868	Ta bort lock-PIN
+869	När du tar bort den flyttas lockplånbokens ecash tillbaka hit.
+870	Välj ett belopp.
+871	{0} flyttade till lockplånboken
+872	Flyttar tillbaka lockplånbokens ecash…
+873	Lockplånbok borttagen. {0} är tillbaka i den här plånboken.
+874	Lockplånbok borttagen
+875	En andra PIN som öppnar en separat, liten plånbok i stället för den här.
+876	Om någon tvingar dig att låsa upp blindsig, ange lock-PIN. De ser bara lockplånboken, med eget saldo och egen historik. Den här plånboken förblir låst och dold.
+877	Lägg lite i lockplånboken så att den ser äkta ut.
+878	Face ID öppnar alltid din riktiga plånbok. Använd PIN när det gäller.
+879	Lås nu och Fråga igen gäller båda: PIN-koden du anger avgör plånboken.
+880	Ange din lock-PIN
+881	Det är inte din lock-PIN.
+882	Välj en lock-PIN
+883	Annan än din riktiga PIN och lika lång.
+884	Det är din riktiga PIN. Välj en annan.
+885	Lockplånbok
+886	Skapa lockplånbok
+887	Lock-PIN är på

@@ -149,6 +149,7 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - Private notes on any transaction, kept only on your device (and encrypted with the PIN lock), and search across notes, memos and amounts
 - Optional PIN lock that also encrypts the wallet on the device (AES-256-GCM, key from the PIN via PBKDF2). It asks again after a time in the background you choose, before showing the seed phrase, and waits longer after repeated wrong guesses. Face ID or Touch ID can unlock it, using a passkey on your phone (WebAuthn PRF), with no server involved
 - Confirm big sends: with the PIN lock on, ask for the PIN (or Face ID) before sending more than an amount you pick
+- Decoy PIN: a second PIN that opens a separate, small wallet instead of your real one, for when someone forces you to unlock. Put a little in it so it looks real; removing it moves its ecash back
 - A reminder to make a backup file once the wallet holds money, repeated monthly until you do
 - Data stays in this browser's IndexedDB, and only one tab can run the wallet at a time, so two tabs can't spend the same ecash
 - Spent-proof cleanup, keyset counters, export and new-seed tools for when something looks off

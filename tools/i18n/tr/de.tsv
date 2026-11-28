@@ -853,3 +853,36 @@
 852	Danach geht es an den Absender zurück.
 853	Rückgaben
 854	{0} sind zu dir zurückgekommen. Sie wurden nicht rechtzeitig eingelöst.
+855	Täusch-PIN
+856	Eine zweite PIN, die ein separates, kleines Wallet öffnet. Für den Fall, dass dich jemand zum Entsperren zwingt.
+857	Täusch-PIN: an
+858	Täusch-PIN einrichten
+859	Entferne zuerst die Täusch-PIN. Dann kommt ihr Ecash hierher zurück.
+860	Das ist deine Täusch-PIN. Wähle eine andere.
+861	Leg ein paar Sats hinein
+862	Ein Täusch-Wallet mit etwas Geld wirkt echt. Kommt von {0} (du hast {1}).
+863	Vorerst nichts
+864	Ins Täusch-Wallet verschoben
+865	Die Täusch-PIN ist an.
+866	Gib sie statt deiner PIN ein, wenn blindsig startet, dann öffnet sich das Täusch-Wallet statt diesem. Zum Ausprobieren tippe auf Jetzt sperren und gib die Täusch-PIN ein.
+867	Sats ins Täusch-Wallet legen
+868	Täusch-PIN entfernen
+869	Beim Entfernen kommt das Ecash des Täusch-Wallets in dieses Wallet zurück.
+870	Wähle einen Betrag.
+871	{0} ins Täusch-Wallet verschoben
+872	Ecash des Täusch-Wallets wird zurückgeholt…
+873	Täusch-Wallet entfernt. {0} sind zurück in diesem Wallet.
+874	Täusch-Wallet entfernt
+875	Eine zweite PIN, die statt diesem ein separates, kleines Wallet öffnet.
+876	Wenn dich jemand zwingt, blindsig zu entsperren, gib die Täusch-PIN ein. Man sieht nur das Täusch-Wallet mit eigenem Guthaben und Verlauf. Dieses Wallet bleibt gesperrt und verborgen.
+877	Leg etwas ins Täusch-Wallet, damit es echt wirkt.
+878	Face ID öffnet immer dein echtes Wallet. Nimm die PIN, wenn es darauf ankommt.
+879	Jetzt sperren und Erneut fragen gelten für beide: Die eingegebene PIN entscheidet über das Wallet.
+880	Gib deine Täusch-PIN ein
+881	Das ist nicht deine Täusch-PIN.
+882	Wähle eine Täusch-PIN
+883	Anders als deine echte PIN und gleich lang.
+884	Das ist deine echte PIN. Wähle eine andere.
+885	Täusch-Wallet
+886	Täusch-Wallet erstellen
+887	Täusch-PIN ist an

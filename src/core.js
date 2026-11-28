@@ -253,6 +253,25 @@ export async function receiveFee(t) {
   const w = await walletFor(t.mint, t.unit);
   return w.getFeesForProofs(w.decodeToken(t.str).proofs).toNumber();
 }
+// take all the ecash out of another wallet's state (the decoy) into this one; returns the sats moved
+export async function sweepState(st) {
+  let got = 0;
+  for (const [k, arr] of Object.entries(st.proofs || {})) {
+    if (!arr || !arr.length) continue;
+    const i = k.lastIndexOf('|'), url = k.slice(0, i), unit = k.slice(i + 1);
+    try {
+      if (!mintOf(url)) await addMint(url);
+      const w = await walletFor(url, unit);
+      const p = await w.receive(getEncodedToken({ mint: url, proofs: deserializeProofs(arr), unit }));
+      addProofs(url, p, unit); if (unit === 'sat') got += sum(p);
+    } catch (e) { console.error('sweep', e); }
+  }
+  for (const h of st.history || []) {
+    if (h.kind !== 'ecash-in' || h.status !== 'pending' || !h.token) continue;
+    try { const t = parseToken(h.token); const w = await walletFor(t.mint, t.unit); const p = await w.receive(t.str); addProofs(t.mint, p, t.unit); if (t.unit === 'sat') got += sum(p); } catch {}
+  }
+  return got;
+}
 export async function checkClaimed(h) {
   if (h.kind !== 'ecash-out' || h.status !== 'pending') return h.status;
   const w = await walletFor(h.mint, h.unit);

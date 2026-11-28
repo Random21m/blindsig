@@ -853,3 +853,36 @@
 852	Potom se vrátí odesílateli.
 853	vrácení
 854	{0} se vám vrátilo. Nebylo vyzvednuto včas.
+855	Klamný PIN
+856	Druhý PIN, který otevře samostatnou malou peněženku. Pro chvíli, kdy vás někdo nutí odemknout.
+857	Klamný PIN: zapnuto
+858	Nastavit klamný PIN
+859	Nejdřív odeberte klamný PIN. Jeho ecash se tím vrátí sem.
+860	To je váš klamný PIN. Zvolte jiný.
+861	Vložte do ní pár satů
+862	Klamná peněženka s trochou peněz vypadá skutečně. Převede se z {0} (máte {1}).
+863	Zatím nic
+864	Přesunuto do klamné peněženky
+865	Klamný PIN je zapnutý.
+866	Zadejte ho místo svého PINu při otevření blindsig a otevře se klamná peněženka místo této. Vyzkoušíte to klepnutím na Zamknout teď a zadáním klamného PINu.
+867	Přidat saty do klamné peněženky
+868	Odebrat klamný PIN
+869	Odebráním se ecash klamné peněženky vrátí do této peněženky.
+870	Zvolte částku.
+871	{0} přesunuto do klamné peněženky
+872	Vracím ecash klamné peněženky…
+873	Klamná peněženka odebrána. {0} se vrátilo do této peněženky.
+874	Klamná peněženka odebrána
+875	Druhý PIN, který místo této otevře samostatnou malou peněženku.
+876	Pokud vás někdy někdo donutí odemknout blindsig, zadejte klamný PIN. Uvidí jen klamnou peněženku s vlastním zůstatkem a historií. Tato peněženka zůstane zamčená a skrytá.
+877	Vložte do klamné peněženky trochu peněz, ať vypadá skutečně.
+878	Face ID vždy otevře vaši skutečnou peněženku. Když na tom záleží, použijte PIN.
+879	Zamknout teď a Znovu se zeptat platí pro obě: o peněžence rozhodne zadaný PIN.
+880	Zadejte svůj klamný PIN
+881	To není váš klamný PIN.
+882	Zvolte klamný PIN
+883	Jiný než váš skutečný PIN a stejně dlouhý.
+884	To je váš skutečný PIN. Zvolte jiný.
+885	Klamná peněženka
+886	Vytvořit klamnou peněženku
+887	Klamný PIN je zapnutý

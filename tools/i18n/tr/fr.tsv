@@ -853,3 +853,36 @@
 852	Ensuite, il retourne à l’expéditeur.
 853	retours
 854	{0} vous est revenu. Il n’a pas été récupéré à temps.
+855	Code leurre
+856	Un second code qui ouvre un petit portefeuille distinct. Pour le jour où quelqu’un vous force à déverrouiller.
+857	Code leurre : activé
+858	Configurer un code leurre
+859	Supprimez d’abord le code leurre. Son ecash revient alors ici.
+860	C’est votre code leurre. Choisissez-en un autre.
+861	Mettez-y quelques sats
+862	Un leurre avec un peu d’argent paraît réel. Pris sur {0} (vous avez {1}).
+863	Rien pour l’instant
+864	Déplacé vers le portefeuille leurre
+865	Le code leurre est activé.
+866	Saisissez-le à la place de votre code à l’ouverture de blindsig : le portefeuille leurre s’ouvre au lieu de celui-ci. Pour essayer, touchez Verrouiller maintenant et saisissez le code leurre.
+867	Ajouter des sats au leurre
+868	Supprimer le code leurre
+869	En le supprimant, l’ecash du leurre revient dans ce portefeuille.
+870	Choisissez un montant.
+871	{0} déplacés vers le portefeuille leurre
+872	Retour de l’ecash du leurre…
+873	Leurre supprimé. {0} sont revenus dans ce portefeuille.
+874	Leurre supprimé
+875	Un second code qui ouvre un petit portefeuille distinct au lieu de celui-ci.
+876	Si un jour quelqu’un vous force à déverrouiller blindsig, saisissez le code leurre. Il ne verra que le portefeuille leurre, avec son propre solde et son historique. Ce portefeuille reste verrouillé et caché.
+877	Mettez un peu dans le leurre pour qu’il paraisse réel.
+878	Face ID ouvre toujours votre vrai portefeuille. Utilisez le code quand ça compte.
+879	Verrouiller maintenant et Redemander valent pour les deux : le code saisi décide du portefeuille.
+880	Saisissez votre code leurre
+881	Ce n’est pas votre code leurre.
+882	Choisissez un code leurre
+883	Différent de votre vrai code, et de même longueur.
+884	C’est votre vrai code. Choisissez-en un autre.
+885	Portefeuille leurre
+886	Créer le portefeuille leurre
+887	Code leurre activé

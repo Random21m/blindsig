@@ -853,3 +853,36 @@
 852	Dopo tornano a chi li ha inviati.
 853	rimborsi
 854	{0} sono tornati a te. Non sono stati riscossi in tempo.
+855	PIN esca
+856	Un secondo PIN che apre un piccolo wallet separato. Per quando qualcuno ti costringe a sbloccare.
+857	PIN esca: attivo
+858	Imposta un PIN esca
+859	Rimuovi prima il PIN esca. Così i suoi ecash tornano qui.
+860	Questo è il tuo PIN esca. Scegline un altro.
+861	Mettici qualche sat
+862	Un wallet esca con un po’ di soldi sembra vero. Presi da {0} (hai {1}).
+863	Niente per ora
+864	Spostati nel wallet esca
+865	Il PIN esca è attivo.
+866	Inseriscilo al posto del tuo PIN all’apertura di blindsig e si aprirà il wallet esca invece di questo. Per provarlo, tocca Blocca ora e inserisci il PIN esca.
+867	Aggiungi sat all’esca
+868	Rimuovi PIN esca
+869	Rimuovendolo, gli ecash dell’esca tornano in questo wallet.
+870	Scegli un importo.
+871	{0} spostati nel wallet esca
+872	Recupero degli ecash dell’esca…
+873	Esca rimossa. {0} sono tornati in questo wallet.
+874	Esca rimossa
+875	Un secondo PIN che apre un piccolo wallet separato al posto di questo.
+876	Se qualcuno ti costringe a sbloccare blindsig, inserisci il PIN esca. Vedrà solo il wallet esca, con il suo saldo e la sua cronologia. Questo wallet resta bloccato e nascosto.
+877	Metti un po’ nell’esca perché sembri vera.
+878	Face ID apre sempre il tuo wallet vero. Usa il PIN quando conta.
+879	Blocca ora e Richiedi di nuovo valgono per entrambi: il PIN che inserisci decide il wallet.
+880	Inserisci il tuo PIN esca
+881	Questo non è il tuo PIN esca.
+882	Scegli un PIN esca
+883	Diverso dal tuo PIN vero e della stessa lunghezza.
+884	Questo è il tuo PIN vero. Scegline uno diverso.
+885	Wallet esca
+886	Crea wallet esca
+887	PIN esca attivo

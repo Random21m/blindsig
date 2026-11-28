@@ -10,6 +10,7 @@ import { UR, UREncoder, URDecoder } from '@gandlaf21/bc-ur';
 import {
   S, save, VERSION, DEFAULT_SETTINGS, getProofs, bal, total, sum, mintOf, mintLabel, host, esc, fmt, fmtParts, unitLabel,
   toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind, pinOn, pinInfo, setPin, clearPin, setLockAfter, flushSave,
+  decoyOn, inDecoy, freshState, setDecoy, editDecoy, clearDecoy, isMainPin, isDecoyPin,
   encryptBackup, decryptBackup, replaceState,
 } from './store.js';
 import * as L from './lock.js';
@@ -1220,14 +1221,15 @@ const SECTIONS = {
       <div id="bioRow"></div>
       <h3>Confirm big sends</h3><p class="dim small">Ask for your PIN (or Face ID) before sending more than this, so someone holding your unlocked phone can’t empty the wallet.</p>
       ${[0, 1000, 10000, 100000].map((v) => [v, v ? `Over ${fmt(v, 'sat')}` : 'Never']).map(([v, l]) => `<label class="radio"><input type="radio" name="cov" value="${v}" ${(st.confirmOver || 0) === v ? 'checked' : ''}><span class="mt"><b>${l}</b></span></label>`).join('')}
+      ${inDecoy() ? '' : `<h3>Decoy PIN</h3><p class="dim small">A second PIN that opens a separate, small wallet. For when someone forces you to unlock.</p>
+      <button class="btn wide" id="dcy">${decoyOn() ? 'Decoy PIN: on' : 'Set up a decoy PIN'}</button>`}
       <button class="btn wide" id="lk">Lock now</button>
-      <button class="btn wide" id="ch">Change PIN</button>
-      <button class="btn wide danger" id="off">Turn off PIN lock</button>`, (b) => {
+      ${inDecoy() ? '' : '<button class="btn wide" id="ch">Change PIN</button><button class="btn wide danger" id="off">Turn off PIN lock</button>'}`, (b) => {
       $$('input[name=aft]', b).forEach((r) => (r.onchange = () => setLockAfter(+r.value)));
       $$('input[name=cov]', b).forEach((r) => (r.onchange = () => { st.confirmOver = +r.value; save(); toast(+r.value ? `Big sends need your PIN: over ${fmt(+r.value, 'sat')}` : 'Big sends don’t need your PIN'); }));
       // Face ID / Touch ID, where the phone supports it
       BIO.bioAvailable().then((ok) => {
-        const row = $('#bioRow', b); if (!ok || !row) return;
+        const row = $('#bioRow', b); if (!ok || !row || inDecoy()) return;
         const apple = BIO.bioLabel() === 'Face ID or Touch ID';
         row.innerHTML = toggle('t_bio', apple ? 'Unlock with Face ID or Touch ID' : 'Unlock with fingerprint or face unlock', 'Your PIN still works, and is still needed to change these settings.', BIO.bioOn());
         I18N.translateTree(row);
@@ -1243,8 +1245,12 @@ const SECTIONS = {
         };
       });
       $('#lk', b).onclick = () => { closeSheet(); L.relock(); };
+      const dcy = $('#dcy', b); if (dcy) dcy.onclick = () => decoySheet();
+      if (inDecoy()) return;
       $('#ch', b).onclick = async () => { if (await L.confirmPin(sheet, 'Change PIN', SECTIONS.security)) choosePin(true); };
       $('#off', b).onclick = async () => {
+        // the decoy lives inside the PIN lock: remove it first, which moves its ecash back here
+        if (decoyOn()) { toast('Remove the decoy PIN first. That moves its ecash back here.', 'warn'); return decoySheet(); }
         if (!(await L.confirmPin(sheet, 'Turn off PIN lock', SECTIONS.security))) return;
         await clearPin(); toast('PIN lock is off'); render(); SECTIONS.security();
       };
@@ -1388,15 +1394,106 @@ const SECTIONS = {
 };
 // common PINs a thief would try first
 const easyPin = (p) => /^(\d)\1+$/.test(p) || '01234567890'.includes(p) || '09876543210'.includes(p) || ['121212', '112233', '123123', '696969', '1212', '6969', '2580', '258025'].includes(p);
+/* ================= decoy PIN ================= */
+// a second PIN that opens a separate, small wallet; the real one stays sealed underneath
+const DECOY_AMOUNTS = [0, 1000, 5000, 10000, 21000];
+function decoyAmounts(b) {
+  const have = bal(S.active, 'sat');
+  return `<h3>Put some sats in it</h3><p class="dim small">A decoy with a little money in it looks real. Moved from ${esc(mintLabel(mintOf(S.active) || { url: S.active }))} (you have ${esc(fmt(have, 'sat'))}).</p>
+    ${DECOY_AMOUNTS.map((v, i) => `<label class="radio"><input type="radio" name="dam" value="${v}" ${i === 0 ? 'checked' : ''} ${v > have ? 'disabled' : ''}><span class="mt"><b>${v ? esc(fmt(v, 'sat')) : 'Nothing for now'}</b></span></label>`).join('')}`;
+}
+async function fundDecoy(amount) {
+  if (!amount) return null;
+  const h = await C.sendEcash(amount);
+  h.note = I18N.t('Moved to decoy wallet'); save();
+  return { id: 'dcy' + Date.now().toString(36), ts: Date.now(), kind: 'ecash-in', status: 'pending', token: h.token, amount, unit: 'sat', mint: h.mint, auto: true };
+}
+function decoySheet() {
+  if (inDecoy()) return SECTIONS.security();
+  if (decoyOn()) {
+    return sheet('Decoy PIN', `<p class="okline">Decoy PIN is on.</p>
+      <p class="dim">Enter it instead of your PIN when blindsig opens, and the decoy wallet opens instead of this one. To try it, tap Lock now and enter the decoy PIN.</p>
+      <button class="btn wide" id="dlk">Lock now</button>
+      <button class="btn wide" id="dadd">Add sats to the decoy</button>
+      <button class="btn wide danger" id="drm">Remove decoy PIN</button>
+      <p class="dim small">Removing it moves the decoy’s ecash back into this wallet.</p>`, (b) => {
+      $('#dlk', b).onclick = () => { closeSheet(); L.relock(); };
+      $('#dadd', b).onclick = () => decoyPinThen('Add sats to the decoy', (pin) => sheet('Add sats to the decoy', `${decoyAmounts()}<button class="btn primary wide" id="dgo">Add</button>`, (bb) => {
+        const go = $('#dgo', bb);
+        go.onclick = withBusy(go, async () => {
+          const v = +($('input[name=dam]:checked', bb)?.value || 0); if (!v) return nope('Pick an amount.');
+          const e = await fundDecoy(v);
+          if (!(await editDecoy(pin, (st) => { st.history.unshift(e); }))) throw new Error('decoy PIN changed');
+          render(); toast(`${fmt(v, 'sat')} moved to the decoy wallet`); decoySheet();
+        });
+      }, { back: decoySheet }));
+      $('#drm', b).onclick = () => decoyPinThen('Remove decoy PIN', async (pin) => {
+        sheet('Remove decoy PIN', '<p class="dim center">Moving the decoy’s ecash back…</p>', null, { locked: true });
+        let got = 0;
+        try { await editDecoy(pin, async (st) => { got = await C.sweepState(st); }); } catch (e) { console.error(e); }
+        await clearDecoy(); locked = false; render();
+        toast(got ? `Decoy removed. ${fmt(got, 'sat')} moved back to this wallet.` : 'Decoy removed');
+        SECTIONS.security();
+      });
+    }, { back: SECTIONS.security });
+  }
+  sheet('Decoy PIN', `<p>A second PIN that opens a separate, small wallet instead of this one.</p>
+    <p class="dim">If someone ever forces you to unlock blindsig, enter the decoy PIN. They see only the decoy wallet, with its own balance and history. This wallet stays locked and out of sight.</p>
+    <ul class="dim small tips"><li>Put a little in the decoy so it looks real.</li><li>Face ID always opens your real wallet. Use the PIN when it matters.</li><li>Lock now and Ask again work for both: whichever PIN you enter decides the wallet.</li></ul>
+    <button class="btn primary wide" id="dgo">Set up a decoy PIN</button>`, (b) => {
+    $('#dgo', b).onclick = () => chooseDecoy();
+  }, { back: SECTIONS.security });
+}
+function decoyPinThen(title, fn) {
+  const info = pinInfo();
+  sheet(title, '<div id="pcBox"></div>', (b) => L.pinPad($('#pcBox', b), {
+    len: info.len, title: 'Enter your decoy PIN',
+    onPin: async (p) => { const ok = await editDecoy(p, () => {}); if (!ok) return 'That isn’t your decoy PIN.'; later(() => fn(p)); return true; },
+  }), { back: decoySheet });
+}
+function chooseDecoy() {
+  const info = pinInfo();
+  sheet('Decoy PIN', '<div id="pcBox"></div>', (b) => {
+    const box = $('#pcBox', b);
+    const first = (msg) => {
+      const pad = L.pinPad(box, {
+        len: info.len, title: 'Choose a decoy PIN', sub: 'Different from your real PIN, and the same length.',
+        onPin: async (p) => (easyPin(p) ? 'That PIN is too easy to guess. Pick another.' : (await isMainPin(p)) ? 'That’s your real PIN. Pick a different one.' : (later(() => again(p)), true)),
+      });
+      if (msg) pad.setMsg(msg, true);
+    };
+    const again = (p1) => L.pinPad(box, {
+      len: p1.length, title: 'Enter it again', sub: 'To make sure you typed it right.',
+      onPin: async (p) => { if (p !== p1) { later(() => first('Those PINs didn’t match. Try again.')); return true; } later(() => decoyFund(p)); return true; },
+    });
+    first();
+  }, { back: decoySheet });
+}
+function decoyFund(pin) {
+  sheet('Decoy wallet', `${decoyAmounts()}<button class="btn primary wide" id="dmk">Create decoy wallet</button>`, (b) => {
+    const go = $('#dmk', b);
+    go.onclick = withBusy(go, async () => {
+      const v = +($('input[name=dam]:checked', b)?.value || 0);
+      const st = freshState();
+      st.mnemonic = generateMnemonic(wordlist, 128); st.onboarded = true;
+      st.mints = S.mints.map((m) => ({ ...m })); st.active = S.active; st.unit = 'sat'; st.price = { ...S.price };
+      for (const k of ['theme', 'lang', 'fiat', 'fiatCur', 'sounds', 'haptics', 'soundsOnSilent', 'motion', 'keypad', 'btcSymbol', 'confirmOver']) if (k in S.settings) st.settings[k] = S.settings[k];
+      st.settings.backupNagged = Date.now();
+      const e = await fundDecoy(v); if (e) st.history.unshift(e);
+      await setDecoy(pin, st);
+      render(); toast('Decoy PIN is on'); decoySheet();
+    });
+  }, { back: decoySheet });
+}
 function choosePin(change) {
   const title = change ? 'Change PIN' : 'Set up PIN';
   sheet(title, '<div id="pcBox"></div>', (b) => {
     const box = $('#pcBox', b);
     const first = (msg) => {
       const pad = L.pinPad(box, {
-        len: 6, lenSwitch: true, title: change ? 'Choose a new PIN' : 'Choose a PIN',
+        len: decoyOn() ? pinInfo().len : 6, lenSwitch: !decoyOn(), title: change ? 'Choose a new PIN' : 'Choose a PIN',
         sub: 'You’ll enter it every time blindsig opens.',
-        onPin: async (p) => (easyPin(p) ? 'That PIN is too easy to guess. Pick another.' : (later(() => again(p)), true)),
+        onPin: async (p) => (easyPin(p) ? 'That PIN is too easy to guess. Pick another.' : (await isDecoyPin(p)) ? 'That’s your decoy PIN. Pick another.' : (later(() => again(p)), true)),
       });
       if (msg) pad.setMsg(msg, true);
     };
@@ -1755,6 +1852,8 @@ setTimeout(() => {
   }
   C.loadPrice().then(render);
   if (S.mnemonic) N.startAll();
+  // ecash moved in for us (the decoy's starting sats): claim it quietly
+  for (const h of S.history.filter((x) => x.auto && x.kind === 'ecash-in' && x.status === 'pending' && x.token)) C.receiveEcash(C.parseToken(h.token)).then(render).catch(() => {});
 }, chan ? 350 : 0);
 document.addEventListener('visibilitychange', () => { if (!blocked && !document.hidden && S.mints.length) { if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render); C.returnDue(cameBack); } });
 

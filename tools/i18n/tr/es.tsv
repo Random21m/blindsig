@@ -853,3 +853,36 @@
 852	Después vuelve a quien lo envió.
 853	devoluciones
 854	{0} ha vuelto a ti. No se reclamó a tiempo.
+855	PIN señuelo
+856	Un segundo PIN que abre un monedero aparte y pequeño. Para cuando alguien te obligue a desbloquear.
+857	PIN señuelo: activado
+858	Configurar un PIN señuelo
+859	Primero quita el PIN señuelo. Así su ecash vuelve aquí.
+860	Ese es tu PIN señuelo. Elige otro.
+861	Ponle algunos sats
+862	Un señuelo con algo de dinero parece real. Se mueve desde {0} (tienes {1}).
+863	Nada por ahora
+864	Movido al monedero señuelo
+865	El PIN señuelo está activado.
+866	Introdúcelo en lugar de tu PIN al abrir blindsig y se abrirá el monedero señuelo en vez de este. Para probarlo, toca Bloquear ahora e introduce el PIN señuelo.
+867	Añadir sats al señuelo
+868	Quitar PIN señuelo
+869	Al quitarlo, el ecash del señuelo vuelve a este monedero.
+870	Elige una cantidad.
+871	{0} movidos al monedero señuelo
+872	Devolviendo el ecash del señuelo…
+873	Señuelo quitado. {0} han vuelto a este monedero.
+874	Señuelo quitado
+875	Un segundo PIN que abre un monedero aparte y pequeño en lugar de este.
+876	Si alguna vez alguien te obliga a desbloquear blindsig, introduce el PIN señuelo. Solo verá el monedero señuelo, con su propio saldo e historial. Este monedero sigue bloqueado y oculto.
+877	Pon un poco en el señuelo para que parezca real.
+878	Face ID siempre abre tu monedero real. Usa el PIN cuando importe.
+879	Bloquear ahora y Volver a pedirlo funcionan para ambos: el PIN que introduzcas decide el monedero.
+880	Introduce tu PIN señuelo
+881	Ese no es tu PIN señuelo.
+882	Elige un PIN señuelo
+883	Distinto de tu PIN real y de la misma longitud.
+884	Ese es tu PIN real. Elige otro distinto.
+885	Monedero señuelo
+886	Crear monedero señuelo
+887	PIN señuelo activado

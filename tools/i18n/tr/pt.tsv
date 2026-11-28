@@ -853,3 +853,36 @@
 852	Depois disso, volta para quem enviou.
 853	devoluções
 854	{0} voltou para você. Não foi resgatado a tempo.
+855	PIN de fachada
+856	Um segundo PIN que abre uma carteira separada e pequena. Para quando alguém forçar você a desbloquear.
+857	PIN de fachada: ativado
+858	Configurar um PIN de fachada
+859	Remova o PIN de fachada primeiro. Assim o ecash dele volta para cá.
+860	Esse é o seu PIN de fachada. Escolha outro.
+861	Coloque alguns sats nela
+862	Uma fachada com um pouco de dinheiro parece real. Sai de {0} (você tem {1}).
+863	Nada por enquanto
+864	Movido para a carteira de fachada
+865	O PIN de fachada está ativado.
+866	Digite-o no lugar do seu PIN ao abrir o blindsig e a carteira de fachada abre em vez desta. Para testar, toque em Bloquear agora e digite o PIN de fachada.
+867	Adicionar sats à fachada
+868	Remover PIN de fachada
+869	Ao remover, o ecash da fachada volta para esta carteira.
+870	Escolha um valor.
+871	{0} movidos para a carteira de fachada
+872	Devolvendo o ecash da fachada…
+873	Fachada removida. {0} voltaram para esta carteira.
+874	Fachada removida
+875	Um segundo PIN que abre uma carteira separada e pequena em vez desta.
+876	Se alguém algum dia forçar você a desbloquear o blindsig, digite o PIN de fachada. A pessoa vê só a carteira de fachada, com saldo e histórico próprios. Esta carteira continua bloqueada e escondida.
+877	Coloque um pouco na fachada para parecer real.
+878	O Face ID sempre abre sua carteira real. Use o PIN quando importar.
+879	Bloquear agora e Pedir de novo valem para as duas: o PIN que você digitar decide a carteira.
+880	Digite seu PIN de fachada
+881	Esse não é o seu PIN de fachada.
+882	Escolha um PIN de fachada
+883	Diferente do seu PIN real e do mesmo tamanho.
+884	Esse é o seu PIN real. Escolha um diferente.
+885	Carteira de fachada
+886	Criar carteira de fachada
+887	PIN de fachada ativado

@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.15.0';
+export const VERSION = '1.16.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -131,24 +131,61 @@ export async function initStore() {
   if (db && !(await idbGet('state')) && localStorage.getItem(KEY)) save(); // migrate localStorage -> IndexedDB
   return { locked: false };
 }
-// does this PIN open the wallet? (checks a small sealed value, not the whole state)
+// Decoy PIN: a second, separate wallet sealed under its own PIN in env.alt { salt, chk, len, iv, ct }.
+// The PIN that's entered at startup decides which wallet opens; the other stays sealed and untouched.
+let slot = 'main', mainBox = null; // mainBox: the real wallet's ciphertext, kept as is while the decoy is open
+async function tryKey(pin, box) {
+  try { const k = await deriveKey(pin, unb64(box.salt), env.iter); return (await open_(k, box.chk)) === CHECK ? k : null; } catch { return null; }
+}
+// does this PIN open the wallet that's open now? (checks a small sealed value, not the whole state)
 export async function checkPin(pin) {
   if (!env) return true;
-  try { const k = await deriveKey(pin, unb64(env.salt), env.iter); return (await open_(k, env.chk)) === CHECK ? k : null; } catch { return null; }
+  return tryKey(pin, slot === 'alt' ? env.alt : env);
 }
+// is this the decoy's PIN? (from the real wallet only: changing the real PIN)
+export async function isDecoyPin(pin) { return !!env?.alt && slot === 'main' && !!(await tryKey(pin, env.alt)); }
+// is this the real wallet's PIN? (from the real wallet only: setting up a decoy)
+export async function isMainPin(pin) { return !!env && slot === 'main' && !!(await tryKey(pin, env)); }
 // first unlock after a cold start: decrypt the saved state into S
 export async function unlock(pin) {
-  const k = await checkPin(pin);
-  if (!k) return false;
+  // both checks always run, side by side, so the decoy PIN takes no longer than the real one
+  const [k, ka] = await Promise.all([tryKey(pin, env), env.alt ? tryKey(pin, env.alt) : null]);
+  if (!k && !ka) return false;
+  const useAlt = !k && !!ka;
   if (lockedRaw) {
-    const st = normalize(JSON.parse(await open_(k, lockedRaw)));
+    const st = normalize(JSON.parse(await open_(useAlt ? ka : k, useAlt ? env.alt : lockedRaw)));
     for (const x of Object.keys(S)) delete S[x];
     Object.assign(S, st);
+    if (useAlt) mainBox = { iv: lockedRaw.iv, ct: lockedRaw.ct };
     lockedRaw = null;
   }
-  key = k;
+  slot = useAlt ? 'alt' : 'main';
+  key = useAlt ? ka : k;
   return true;
 }
+export const decoyOn = () => !!env?.alt;
+export const inDecoy = () => slot === 'alt';
+// a fresh, empty wallet state (for the decoy)
+export const freshState = () => normalize(blank());
+// seal a decoy wallet under its own PIN (from the real wallet)
+export async function setDecoy(pin, state) {
+  if (!env || slot !== 'main' || !key) throw new Error('PIN lock is off');
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const k = await deriveKey(pin, salt, env.iter);
+  env.alt = { salt: b64(salt), chk: await seal(k, CHECK), len: pin.length, ...(await seal(k, JSON.stringify(state))) };
+  await flushSave(true);
+}
+// change the decoy wallet from the real one: needs its PIN; fn edits its state
+export async function editDecoy(pin, fn) {
+  if (!env?.alt || slot !== 'main') return false;
+  const k = await tryKey(pin, env.alt); if (!k) return false;
+  const st = normalize(JSON.parse(await open_(k, env.alt)));
+  await fn(st);
+  env.alt = { ...env.alt, ...(await seal(k, JSON.stringify(st))) };
+  await flushSave(true);
+  return true;
+}
+export async function clearDecoy() { if (!env?.alt || slot !== 'main') return; delete env.alt; await flushSave(true); }
 /* ---------- backup file: the whole wallet, encrypted with a password ---------- */
 // { blindsig: 'backup', v: 1, created, kdf, iter, salt, iv, ct } — AES-256-GCM, key from the password
 // with PBKDF2-SHA256. Holds everything in S: seed, ecash, history, notes, keys and settings.
@@ -179,20 +216,23 @@ export const pinOn = () => !!env;
 // Face ID / Touch ID: the PIN, sealed with a key that only the passkey's PRF output can make.
 // Kept in the readable header (it's encrypted), so the lock screen can offer it before unlocking.
 export const bioInfo = () => (env?.bio ? { id: env.bio.id, salt: env.bio.salt } : null);
-export async function setBio(id, salt, prfKey, pin) { if (!env) return; env.bio = { id, salt, ...(await seal(prfKey, pin)) }; await flushSave(true); }
+export async function setBio(id, salt, prfKey, pin) { if (!env || slot === 'alt') return; env.bio = { id, salt, ...(await seal(prfKey, pin)) }; await flushSave(true); }
 export async function clearBio() { if (!env?.bio) return; delete env.bio; await flushSave(true); }
 export async function bioPin(prfKey) { return open_(prfKey, env.bio); }
 export const pinInfo = () => (env ? { len: env.pub?.len || 6, after: env.pub?.after ?? 300 } : null);
 // turn the PIN on, or change it: re-encrypt everything under a new salt and key
 export async function setPin(pin, after) {
+  if (slot === 'alt') throw new Error('not available');
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const k = await deriveKey(pin, salt, PIN_ITER);
-  // a new PIN drops Face ID: the PIN sealed for it would be the old one
-  env = { enc: 1, kdf: 'pbkdf2-sha256', iter: PIN_ITER, salt: b64(salt), chk: await seal(k, CHECK), pub: { len: pin.length, after: after ?? env?.pub?.after ?? 300 } };
+  // a new PIN drops Face ID: the PIN sealed for it would be the old one. A decoy stays only while
+  // its PIN is the same length (the lock screen shows one number of dots for both)
+  const alt = env?.alt && env.alt.len === pin.length ? env.alt : undefined;
+  env = { enc: 1, kdf: 'pbkdf2-sha256', iter: PIN_ITER, salt: b64(salt), chk: await seal(k, CHECK), pub: { len: pin.length, after: after ?? env?.pub?.after ?? 300 }, ...(alt ? { alt } : {}) };
   key = k;
   await flushSave(true);
 }
-export async function clearPin() { env = null; key = null; await flushSave(true); }
+export async function clearPin() { if (slot === 'alt') return; env = null; key = null; await flushSave(true); }
 export async function setLockAfter(sec) { if (!env) return; env.pub.after = sec; await flushSave(true); }
 
 let writing = null, queued = false;
@@ -213,7 +253,8 @@ async function flush() {
         if (env && key) {
           env.pub.theme = S.settings.theme; env.pub.lang = S.settings.lang || '';
           env.pub.fx = { sounds: S.settings.sounds !== false, haptics: S.settings.haptics !== false, soundsOnSilent: !!S.settings.soundsOnSilent, motion: S.settings.motion !== false };
-          out = JSON.stringify({ ...env, ...(await seal(key, json)) });
+          if (slot === 'alt') { env.alt = { ...env.alt, ...(await seal(key, json)) }; out = JSON.stringify({ ...env, ...mainBox }); }
+          else out = JSON.stringify({ ...env, ...(await seal(key, json)) });
         } else if (env) continue; // still locked: never overwrite the encrypted state
         await writeRaw(out, !!env);
       } catch (e) {

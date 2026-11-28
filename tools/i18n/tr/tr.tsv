@@ -853,3 +853,36 @@
 852	Sonra gönderene geri döner.
 853	iadeler
 854	{0} sana geri döndü. Zamanında alınmadı.
+855	Sahte PIN
+856	Ayrı, küçük bir cüzdan açan ikinci bir PIN. Biri seni kilidi açmaya zorlarsa diye.
+857	Sahte PIN: açık
+858	Sahte PIN ayarla
+859	Önce sahte PIN'i kaldır. Böylece içindeki ecash buraya döner.
+860	Bu senin sahte PIN'in. Başka birini seç.
+861	İçine biraz sat koy
+862	İçinde biraz para olan sahte cüzdan gerçek görünür. {0} üzerinden aktarılır ({1} var).
+863	Şimdilik hiç
+864	Sahte cüzdana aktarıldı
+865	Sahte PIN açık.
+866	blindsig açılırken PIN'in yerine bunu gir; bu cüzdan yerine sahte cüzdan açılır. Denemek için Şimdi kilitle'ye dokun ve sahte PIN'i gir.
+867	Sahte cüzdana sat ekle
+868	Sahte PIN'i kaldır
+869	Kaldırınca sahte cüzdandaki ecash bu cüzdana döner.
+870	Bir tutar seç.
+871	{0} sahte cüzdana aktarıldı
+872	Sahte cüzdandaki ecash geri alınıyor…
+873	Sahte cüzdan kaldırıldı. {0} bu cüzdana döndü.
+874	Sahte cüzdan kaldırıldı
+875	Bunun yerine ayrı, küçük bir cüzdan açan ikinci bir PIN.
+876	Biri seni blindsig'in kilidini açmaya zorlarsa sahte PIN'i gir. Yalnızca kendi bakiyesi ve geçmişi olan sahte cüzdanı görür. Bu cüzdan kilitli ve gizli kalır.
+877	Gerçek görünmesi için sahte cüzdana biraz koy.
+878	Face ID her zaman gerçek cüzdanını açar. Önemli olduğunda PIN kullan.
+879	Şimdi kilitle ve Tekrar sor ikisi için de geçerli: girdiğin PIN hangi cüzdanın açılacağına karar verir.
+880	Sahte PIN'ini gir
+881	Bu senin sahte PIN'in değil.
+882	Bir sahte PIN seç
+883	Gerçek PIN'inden farklı ve aynı uzunlukta.
+884	Bu senin gerçek PIN'in. Farklı birini seç.
+885	Sahte cüzdan
+886	Sahte cüzdan oluştur
+887	Sahte PIN açık

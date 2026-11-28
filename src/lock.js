@@ -1,6 +1,6 @@
 // PIN lock: the full-screen PIN pad shown at startup (before the wallet is decrypted) and
 // after the app has been in the background. Also the reusable pad for setting a PIN.
-import { checkPin, unlock, pinInfo, wipeStore, KEY, esc } from './store.js';
+import { checkPin, unlock, pinInfo, wipeStore, KEY, esc, decoyOn, flushSave } from './store.js';
 import * as I18N from './i18n.js';
 import * as FX from './fx.js';
 import { bioOn, bioUnlock, bioLabel } from './bio.js';
@@ -162,6 +162,8 @@ export async function coldUnlock(pub) {
 // lock again while the app is running (the wallet stays loaded in memory underneath)
 export function relock() {
   if (isShowing() || !pinInfo()) return;
+  // with a decoy PIN, locking starts over from a cold start, so either PIN can open its own wallet
+  if (decoyOn()) { flushSave().then(() => location.reload()); return; }
   show(async (pin) => !!(await checkPin(pin)));
 }
 // confirm a big send: PIN pad (or Face ID) over the current screen, which stays as it was underneath.
