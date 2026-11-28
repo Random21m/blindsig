@@ -677,6 +677,32 @@ export async function sweepSpent(onlyActive = false) {
   }
   return removed;
 }
+// tidying up: swap each mint's ecash for the fewest notes that make up the same amount. Fewer notes
+// mean shorter tokens and, at mints that charge per note spent, lower fees later. The swap itself
+// pays that mint's input fee once.
+const popcount = (n) => { let c = 0; while (n > 0) { c += n & 1; n = Math.floor(n / 2); } return c; };
+export async function tidyPlan() {
+  const out = [];
+  for (const m of S.mints) for (const unit of m.units || ['sat']) {
+    const p = getProofs(m.url, unit); if (p.length < 3) continue;
+    let fee; try { fee = (await walletFor(m.url, unit)).getFeesForProofs(p).toNumber(); } catch { continue; }
+    const amount = sum(p), after = popcount(amount - fee);
+    // only worth it when it removes a good share of the notes
+    if (amount - fee <= 0 || p.length - after < Math.max(3, p.length / 3)) continue;
+    out.push({ url: m.url, unit, count: p.length, after, fee, amount });
+  }
+  return out;
+}
+export async function tidy(url, unit) {
+  const w = await walletFor(url, unit), old = getProofs(url, unit);
+  const fresh = await w.receive(old);
+  // ecash that arrived while the swap ran stays; only the swapped notes are replaced
+  const gone = new Set(old.map((p) => p.secret));
+  setProofs(url, [...getProofs(url, unit).filter((p) => !gone.has(p.secret)), ...fresh], unit);
+  const fee = sum(old) - sum(fresh);
+  if (fee > 0) H({ kind: 'ecash-out', amount: fee, unit, mint: url, status: 'done', memo: 'mint fee for tidying up' });
+  return { before: old.length, after: fresh.length, fee };
+}
 // restore ecash from a seed (current one by default) into this wallet
 export async function restoreMint(url, mnemonic = S.mnemonic, log = () => {}) {
   const foreign = mnemonic !== S.mnemonic;

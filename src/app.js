@@ -1793,6 +1793,8 @@ const SECTIONS = {
     sheet('Advanced', `<p class="dim">For troubleshooting. Read each description before using it.</p>
       <h3>Remove spent proofs</h3><p class="dim small">Ask your mints which ecash is already spent and remove it. Use if your balance looks wrong.</p>
       <button class="btn wide" id="sw">Remove spent proofs</button>
+      <h3>Tidy up ecash</h3><p class="dim small">Swap many small notes for the fewest that make up the same amount. Tokens get shorter, and mints that charge per note cost less later. The mint charges its fee once for the swap.</p>
+      <div id="tdy"><p class="dim small">Checking your mints…</p></div>
       <h3>Export active proofs</h3><p class="dim small">Copy the whole balance of the active mint and unit as one token.</p>
       <button class="btn wide" id="ex">Export active proofs</button>
       <h3>Keyset counters</h3><p class="dim small">Tap a keyset to bump its counter by 10. Fixes “outputs have already been signed” errors.</p>
@@ -1808,6 +1810,18 @@ const SECTIONS = {
       <button class="btn wide danger" id="wipe">Reset wallet data</button>`, (b) => {
       const sw = $('#sw', b); sw.onclick = withBusy(sw, async () => { const r = await C.sweepSpent(); render(); toast(r ? `Removed ${fmt(r)} of spent proofs` : 'All proofs are valid'); });
       $('#ex', b).onclick = () => exportSheet(true);
+      const tdy = () => C.tidyPlan().then((plan) => {
+        const el = $('#tdy', b); if (!el) return;
+        if (!plan.length) { el.innerHTML = '<p class="dim small">Nothing to tidy up.</p>'; return; }
+        el.innerHTML = `<ul class="keys">${plan.map((x, i) => `<li><button data-i="${i}"><span class="mt"><b>${esc(mintLabel(mintOf(x.url)))}</b><small>${esc(`${x.count} notes → ${x.after}`)} · ${esc(x.fee ? `fee ${fmt(x.fee, x.unit)}` : 'no fee')}</small></span><span>Tidy</span></button></li>`).join('')}</ul>`;
+        $$('#tdy button', b).forEach((bt) => (bt.onclick = withBusy(bt, async () => {
+          const x = plan[+bt.dataset.i];
+          const r = await C.tidy(x.url, x.unit); render();
+          toast(r.fee ? `Tidied up: ${r.before} notes → ${r.after}, fee ${fmt(r.fee, x.unit)}` : `Tidied up: ${r.before} notes → ${r.after}`);
+          tdy();
+        })));
+      }).catch(() => { const el = $('#tdy', b); if (el) el.innerHTML = '<p class="dim small">Couldn’t reach your mints.</p>'; });
+      tdy();
       $$('.kc', b).forEach((x) => (x.onclick = () => { S.counters[x.dataset.id] = (S.counters[x.dataset.id] || 0) + 10; save(); SECTIONS.advanced(); }));
       const rel = $('#rel', b); rel.onclick = withBusy(rel, async () => { const n = await C.releasePending(); render(); toast(n ? `Pending payments released: ${n}` : 'Nothing to release. Payments still in flight are left to settle.'); });
       $('#ns', b).onclick = newSeedSheet;
