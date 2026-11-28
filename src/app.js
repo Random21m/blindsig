@@ -735,12 +735,13 @@ function sendSheet(tab = 'ecash', prefill = '') {
       <details class="more" id="lockBox"><summary>Lock it (to a person or with a code)</summary>
         <label class="chk"><input type="checkbox" id="hlc"> <span>Lock with a code (HTLC)</span></label>
         <p class="hint" id="hlcH">Whoever gets the token also needs a code, which you share another way. You can take it back any time until it’s claimed.</p>
-        <input id="hhash" class="field" placeholder="Or a hash to lock to (for swaps)" autocomplete="off" autocapitalize="off" spellcheck="false" hidden>
+        <input id="hhash" class="field" placeholder="Or a hash (for swaps)" autocomplete="off" autocapitalize="off" spellcheck="false" hidden>
+        <div id="p2pkF">
         ${keyContacts().length ? `<div class="cts" role="list" aria-label="Contacts">${keyContacts().map((c) => `<button type="button" role="listitem" class="ctc" data-k="${esc(c.npub)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}</div>` : ''}
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
         <p class="hint">Only the holder of the matching private key can redeem it.</p>
         <label class="chk"><input type="checkbox" id="blk" ${st.p2bk ? 'checked' : ''}> <span>Hide the key from the mint (P2BK)</span></label>
-        <p class="hint">The mint can’t link this payment to their key. Their wallet must support NUT-28: blindsig and wallets built on Nutshell or CDK do.</p>
+        <p class="hint">The mint can’t link this payment to their key. Their wallet must support NUT-28: blindsig and wallets built on Nutshell or CDK do.</p></div>
         ${mintOf(S.active)?.info?.nut11 === false ? '<p class="warn small">This mint doesn’t support locked ecash.</p>' : `<label class="lbl" for="ret">If they don’t claim it, send it back to me after</label>
         <select id="ret" class="field">${RETURN_AFTER.map(([v, l]) => `<option value="${v}" ${v === 864e5 ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <p class="hint">Until then only they can claim it. Afterwards it comes back to you automatically.</p>`}</details>
@@ -780,7 +781,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
     $('#blk', b).onchange = (e) => { st.p2bk = e.target.checked; save(); };
-    $('#hlc', b).onchange = (e) => { $('#hhash', b).hidden = !e.target.checked; };
+    $('#hlc', b).onchange = (e) => { const on = e.target.checked; $('#hhash', b).hidden = !on; $('#p2pkF', b).hidden = on; if (on) $('#lock', b).value = ''; };
     $$('#lockBox .ctc', b).forEach((x) => (x.onclick = () => { $('#lock', b).value = x.dataset.k; $$('#lockBox .ctc', b).forEach((y) => y.classList.toggle('on', y === x)); }));
     $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);

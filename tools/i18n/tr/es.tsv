@@ -1041,7 +1041,7 @@
 1040	de tu monedero Nostr
 1041	gastado en otra app de Nostr
 1042	Código para desbloquearlo
-1043	O un hash al que bloquearlo (para swaps)
+1043	O un hash (para swaps)
 1044	De vuelta al terminal (NFC)
 1045	Código copiado
 1046	Copiar código
@@ -1100,3 +1100,4 @@
 1099	este dominio no está protegido por DNSSEC
 1100	las firmas DNS de este nombre no son válidas
 1101	demasiadas redirecciones para este nombre
+1102	Elige cuándo vuelve a ti si no lo reclaman.

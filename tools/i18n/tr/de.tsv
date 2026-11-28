@@ -1041,7 +1041,7 @@
 1040	aus deiner Nostr-Wallet
 1041	in einer anderen Nostr-App ausgegeben
 1042	Code zum Entsperren
-1043	Oder ein Hash zum Sperren (für Swaps)
+1043	Oder ein Hash (für Swaps)
 1044	Zurück an das Terminal (NFC)
 1045	Code kopiert
 1046	Code kopieren
@@ -1100,3 +1100,4 @@
 1099	diese Domain ist nicht durch DNSSEC geschützt
 1100	die DNS-Signaturen für diesen Namen stimmen nicht
 1101	zu viele Weiterleitungen für diesen Namen
+1102	Wähle, wann es zu dir zurückkommt, wenn es nicht eingelöst wird.

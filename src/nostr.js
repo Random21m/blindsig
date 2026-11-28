@@ -692,7 +692,7 @@ export async function sendNutzap(info, amount, comment, url) {
     // locked to their key; if they never redeem it, it comes back to us after a week
     h = await C.sendEcash(amount, { lockTo: info.key, returnAfter: 7 * 864e5, memo: comment || undefined });
   } finally { C.selectMint(prev); S.unit = prevUnit; save(); }
-  const proofs = (await C.tokenProofs(h.token, url, 'sat')).map((p) => ({ id: p.id, amount: Number(p.amount), secret: p.secret, C: p.C }));
+  const proofs = (await C.tokenProofs(h.token, url, 'sat')).map((p) => ({ id: p.id, amount: p.amount.toNumber ? p.amount.toNumber() : Number(p.amount), secret: p.secret, C: p.C }));
   const sg = await signer();
   const ev = await sg.sign({ kind: 9321, created_at: now(), content: comment || '', tags: [...proofs.map((p) => ['proof', JSON.stringify(p)]), ['u', url], ['unit', 'sat'], ['p', info.pk]] });
   await publish(ev, info.relays);

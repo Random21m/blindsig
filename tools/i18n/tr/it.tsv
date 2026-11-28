@@ -1041,7 +1041,7 @@
 1040	dal tuo wallet Nostr
 1041	speso in un’altra app Nostr
 1042	Codice per sbloccarlo
-1043	Oppure un hash a cui bloccarlo (per gli swap)
+1043	Oppure un hash (per swap)
 1044	Di ritorno al terminale (NFC)
 1045	Codice copiato
 1046	Copia codice
@@ -1100,3 +1100,4 @@
 1099	questo dominio non è protetto da DNSSEC
 1100	le firme DNS di questo nome non tornano
 1101	troppi reindirizzamenti per questo nome
+1102	Scegli quando torna da te se non viene riscattato.

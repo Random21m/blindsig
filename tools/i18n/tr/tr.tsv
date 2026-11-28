@@ -1041,7 +1041,7 @@
 1040	Nostr cüzdanından
 1041	başka bir Nostr uygulamasında harcandı
 1042	Kilidi açma kodu
-1043	Ya da kilitlenecek bir hash (takaslar için)
+1043	Ya da bir hash (takaslar için)
 1044	Terminale geri (NFC)
 1045	Kod kopyalandı
 1046	Kodu kopyala
@@ -1100,3 +1100,4 @@
 1099	bu alan adı DNSSEC ile korunmuyor
 1100	bu adın DNS imzaları doğrulanmıyor
 1101	bu ad için çok fazla yönlendirme var
+1102	Alınmazsa ne zaman sana geri döneceğini seç.
