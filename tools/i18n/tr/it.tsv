@@ -1040,3 +1040,63 @@
 1039	Questo firmatario non può cifrare i dati del wallet. Usa il tuo seed, un nsec o un firmatario che supporti NIP-44.
 1040	dal tuo wallet Nostr
 1041	speso in un’altra app Nostr
+1042	Codice per sbloccarlo
+1043	Oppure un hash a cui bloccarlo (per gli swap)
+1044	Di ritorno al terminale (NFC)
+1045	Codice copiato
+1046	Copia codice
+1047	Si può riscattare solo con il codice. Fino ad allora puoi recuperarlo dalla cronologia.
+1048	Accedi
+1049	Esci
+1050	Accesso
+1051	Serve un codice
+1052	Non connesso
+1053	Accesso scaduto
+1054	✓ Connesso
+1055	Token di riserva
+1056	Questo codice non sblocca questo ecash.
+1057	Questo mint non indica come accedere.
+1058	Questo mint richiede l’accesso. Apri i suoi dettagli in Mint e tocca Accedi.
+1059	La pagina di accesso di questo mint non consente l’accesso da un’altra app (accesso dispositivo).
+1060	Questo nome punta a qualcosa che blindsig non può pagare.
+1061	Controlla che la pagina di accesso mostri lo stesso codice. Quando hai finito, torna qui.
+1062	Controllo del nome…
+1063	Controllo dei tuoi mint…
+1064	Impossibile raggiungere i tuoi mint.
+1065	Bloccalo (per una persona o con un codice)
+1066	Blocca con un codice (HTLC)
+1067	Niente da riordinare.
+1068	Apri la pagina di accesso
+1069	Avvio…
+1070	Scambia tante piccole banconote con il minor numero possibile per lo stesso importo. I token si accorciano e i mint che addebitano per banconota costano meno in seguito. Il mint applica la sua commissione una volta per lo scambio.
+1071	Avvicina a un terminale di pagamento (NFC)
+1072	Riordina l’ecash
+1073	Riordina
+1074	In attesa che tu acceda
+1075	Chi riceve il token ha bisogno anche di un codice, che condividi in altro modo. Puoi recuperarlo in qualsiasi momento finché non viene riscattato.
+1076	Il tuo codice
+1077	Un hash è di 64 caratteri esadecimali.
+1078	Inserisci il codice.
+1079	Blocca per una persona o con un codice, non entrambi.
+1080	Questo mint non supporta il blocco con codice.
+1081	Avvicina il telefono al terminale…
+1082	Accesso effettuato
+1083	Disconnesso
+1084	Inviato al terminale. Controlla che mostri il pagamento.
+1085	{0} banconote → {1}
+1086	commissione {0}
+1087	Riordinato: {0} banconote → {1}, commissione {2}
+1088	Riordinato: {0} banconote → {1}
+1089	✓ {0} verificato con DNSSEC
+1090	{0} richiede l’accesso con il tuo account.
+1091	Bloccato sull’hash
+1092	Invia il codice in modo diverso dal token. Per altri wallet, la preimmagine è
+1093	Questo mint serve solo chi accede con un account. Ogni richiesta usa poi un token cieco, così il mint non può collegare i tuoi pagamenti al tuo account.
+1094	commissione del mint per il riordino
+1095	terminale del negozio
+1096	non è un ₿nome@dominio
+1097	questo nome ha più di un record di pagamento, quindi non si può usare
+1098	nessuna istruzione di pagamento per questo nome
+1099	questo dominio non è protetto da DNSSEC
+1100	le firme DNS di questo nome non tornano
+1101	troppi reindirizzamenti per questo nome

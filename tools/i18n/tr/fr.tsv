@@ -1040,3 +1040,63 @@
 1039	Ce signataire ne peut pas chiffrer les données du portefeuille. Utilisez votre phrase de récupération, un nsec ou un signataire compatible NIP-44.
 1040	depuis votre portefeuille Nostr
 1041	dépensé dans une autre app Nostr
+1042	Code pour le déverrouiller
+1043	Ou un hash auquel le verrouiller (pour les swaps)
+1044	Retour au terminal (NFC)
+1045	Code copié
+1046	Copier le code
+1047	Il ne peut être réclamé qu’avec le code. D’ici là, vous pouvez le récupérer depuis l’historique.
+1048	Se connecter
+1049	Se déconnecter
+1050	Connexion
+1051	Nécessite un code
+1052	Non connecté
+1053	Connexion expirée
+1054	✓ Connecté
+1055	Jetons de réserve
+1056	Ce code ne déverrouille pas cet ecash.
+1057	Cette mint n’indique pas comment se connecter.
+1058	Cette mint exige une connexion. Ouvrez ses détails dans Mints et touchez Se connecter.
+1059	La page de connexion de cette mint ne permet pas de se connecter depuis une autre app (connexion d’appareil).
+1060	Ce nom pointe vers quelque chose que blindsig ne peut pas payer.
+1061	Vérifiez que la page de connexion affiche le même code. Une fois terminé, revenez ici.
+1062	Vérification du nom…
+1063	Vérification de vos mints…
+1064	Impossible de joindre vos mints.
+1065	Le verrouiller (pour une personne ou avec un code)
+1066	Verrouiller avec un code (HTLC)
+1067	Rien à ranger.
+1068	Ouvrir la page de connexion
+1069	Démarrage…
+1070	Échange de nombreux petits billets contre le moins possible pour le même montant. Les jetons raccourcissent et les mints qui facturent par billet coûtent moins ensuite. La mint prélève ses frais une fois pour l’échange.
+1071	Approcher d’un terminal de paiement (NFC)
+1072	Ranger l’ecash
+1073	Ranger
+1074	En attente de votre connexion
+1075	La personne qui reçoit le jeton a aussi besoin d’un code, que vous partagez autrement. Vous pouvez le récupérer à tout moment tant qu’il n’est pas réclamé.
+1076	Votre code
+1077	Un hash fait 64 caractères hexadécimaux.
+1078	Saisissez le code.
+1079	Verrouillez pour une personne ou avec un code, pas les deux.
+1080	Cette mint ne gère pas le verrouillage par code.
+1081	Approchez votre téléphone du terminal…
+1082	Connecté
+1083	Déconnecté
+1084	Envoyé au terminal. Vérifiez qu’il affiche le paiement.
+1085	{0} billets → {1}
+1086	frais {0}
+1087	Rangé : {0} billets → {1}, frais {2}
+1088	Rangé : {0} billets → {1}
+1089	✓ {0} vérifié avec DNSSEC
+1090	{0} exige que vous vous connectiez avec votre compte.
+1091	Verrouillé sur le hash
+1092	Envoyez le code autrement que le jeton. Pour d’autres portefeuilles, la préimage est
+1093	Cette mint ne sert que les personnes connectées avec un compte. Chaque requête utilise ensuite un jeton aveugle, donc la mint ne peut pas relier vos paiements à votre compte.
+1094	frais de la mint pour le rangement
+1095	terminal de magasin
+1096	ce n’est pas un ₿nom@domaine
+1097	ce nom a plusieurs enregistrements de paiement, il ne peut donc pas être utilisé
+1098	aucune instruction de paiement pour ce nom
+1099	ce domaine n’est pas protégé par DNSSEC
+1100	les signatures DNS de ce nom ne sont pas valides
+1101	trop de redirections pour ce nom

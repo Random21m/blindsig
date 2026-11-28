@@ -1040,3 +1040,63 @@
 1039	Este firmante no puede cifrar los datos del monedero. Usa tu semilla, un nsec o un firmante compatible con NIP-44.
 1040	de tu monedero Nostr
 1041	gastado en otra app de Nostr
+1042	Código para desbloquearlo
+1043	O un hash al que bloquearlo (para swaps)
+1044	De vuelta al terminal (NFC)
+1045	Código copiado
+1046	Copiar código
+1047	Solo se puede reclamar con el código. Hasta entonces puedes recuperarlo desde tu historial.
+1048	Iniciar sesión
+1049	Cerrar sesión
+1050	Inicio de sesión
+1051	Necesita un código
+1052	Sesión no iniciada
+1053	Sesión caducada
+1054	✓ Sesión iniciada
+1055	Tokens de reserva
+1056	Ese código no desbloquea este ecash.
+1057	Este mint no indica cómo iniciar sesión.
+1058	Este mint requiere que inicies sesión. Abre sus detalles en Mints y toca Iniciar sesión.
+1059	La página de inicio de sesión de este mint no permite entrar desde otra app (inicio de sesión de dispositivo).
+1060	Este nombre apunta a algo que blindsig no puede pagar.
+1061	Comprueba que la página de inicio de sesión muestra el mismo código. Cuando termines allí, vuelve aquí.
+1062	Comprobando el nombre…
+1063	Comprobando tus mints…
+1064	No se pudo contactar con tus mints.
+1065	Bloquearlo (a una persona o con un código)
+1066	Bloquear con un código (HTLC)
+1067	Nada que ordenar.
+1068	Abrir la página de inicio de sesión
+1069	Iniciando…
+1070	Cambia muchas notas pequeñas por las mínimas que suman lo mismo. Los tokens se acortan y los mints que cobran por nota cuestan menos después. El mint cobra su comisión una vez por el cambio.
+1071	Acercar a un terminal de pago (NFC)
+1072	Ordenar el ecash
+1073	Ordenar
+1074	Esperando a que inicies sesión
+1075	Quien reciba el token también necesita un código, que compartes por otra vía. Puedes recuperarlo en cualquier momento hasta que lo reclamen.
+1076	Tu código
+1077	Un hash tiene 64 caracteres hexadecimales.
+1078	Introduce el código.
+1079	Bloquéalo a una persona o con un código, no ambos.
+1080	Este mint no admite bloqueo con código.
+1081	Acerca el teléfono al terminal…
+1082	Sesión iniciada
+1083	Sesión cerrada
+1084	Enviado al terminal. Comprueba que muestra el pago.
+1085	{0} notas → {1}
+1086	comisión {0}
+1087	Ordenado: {0} notas → {1}, comisión {2}
+1088	Ordenado: {0} notas → {1}
+1089	✓ {0} comprobado con DNSSEC
+1090	{0} requiere que inicies sesión con tu cuenta.
+1091	Bloqueado al hash
+1092	Envía el código por otra vía distinta del token. Para otros monederos, la preimagen es
+1093	Este mint solo atiende a quien inicia sesión con una cuenta. Cada solicitud usa luego un token ciego, así que el mint no puede vincular tus pagos con tu cuenta.
+1094	comisión del mint por ordenar
+1095	terminal de tienda
+1096	no es un ₿nombre@dominio
+1097	este nombre tiene más de un registro de pago, así que no se puede usar
+1098	no hay instrucciones de pago para este nombre
+1099	este dominio no está protegido por DNSSEC
+1100	las firmas DNS de este nombre no son válidas
+1101	demasiadas redirecciones para este nombre

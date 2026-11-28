@@ -29,6 +29,8 @@ Fixes ship to the live wallet at <https://random21m.github.io/blindsig/> as soon
 | Nostr relays | Only when you use Nostr features (payment requests, NWC, backup, discovery, Nostr wallet sync) | Yes, by not enabling them |
 | npub.cash | Only if you turn on the Lightning address | Yes |
 | LNURL services | Only when you pay or withdraw with an LNURL or Lightning address you entered | Yes, by not using them |
+| Cloudflare DNS-over-HTTPS (cloudflare-dns.com) | Only when you pay a ₿user@domain name (BIP-353), or a user@domain that isn't a Lightning address. The DNSSEC signatures are checked in the app, so Cloudflare isn't trusted for the answer, but it sees which name you looked up | Yes, by not using such names |
+| A mint's login provider | Only for mints that require an account (NUT-21), when you log in and when the login is renewed | Yes, by not using such mints |
 
 ## Known limits
 
@@ -39,6 +41,10 @@ Fixes ship to the live wallet at <https://random21m.github.io/blindsig/> as soon
 - Receiving nutzaps publishes a public note (kind 10019) tied to your nostr identity, listing your mints, your relays and a P2PK key used only for nutzaps. Anyone can see which mints you accept. Sent nutzaps are public events too: the amount, the mint and who you sent to are visible on the relays, though the ecash is locked so only the recipient can redeem it.
 - Nostr wallet sync (NIP-60) puts your ecash on your relays, encrypted (NIP-44) to your nostr identity. Anyone with that nostr key, and any app you give it to, can spend the ecash, so treat the key like your seed. Relays see when your wallet changes and roughly how big its events are, not what's in them. Relays can also drop data: the seed phrase and backup file are still your backup.
 - Ecash you send carries the mint's signature proofs (NUT-12 DLEQ) so the receiver can check it offline; turn this off under Settings → Privacy. The proofs include the blinding factor, so a receiver who shared them with the mint could let it link the token back to when it was issued.
+- ₿user@domain names (BIP-353) are only paid when their DNSSEC signatures check out all the way from the DNS root's published key, verified in the app (RSA/SHA-256 or SHA-512, ECDSA P-256/P-384, Ed25519/Ed448; SHA-1 and RSA keys under 1024 bits are refused). The checker is loaded only the first time a name is looked up.
+- Code-locked ecash (HTLC, NUT-14) uses a 12-character code (60 bits) from which the lock's preimage is derived. Anyone with both the token and the code can claim it, so send them by different routes.
+- For mints that require an account (NUT-21/22), the wallet keeps the login's refresh token and a few spare blind auth tokens with the rest of the wallet (encrypted with the PIN lock). The login token is only used to get blind tokens, so the mint can't tie individual requests to the account.
+- Tapping a shop terminal (Web NFC, Android Chrome) writes an ecash token to it after you confirm the payment. If that write fails the token stays in your history, where you can reclaim it.
 - Backup files are encrypted with AES-256-GCM under a key from your password (PBKDF2-SHA256, 600,000 rounds). The file holds the whole wallet, including the seed phrase, so its safety rests on the password: use a long one. Anyone with the file and the password can spend your ecash.
 - Mints are custodians. A mint can refuse to redeem ecash or go offline. Use small amounts and mints you trust.
 - GitHub Pages controls the hosting. If you want to remove that trust, build the site yourself (see the README) and host it on your own domain.

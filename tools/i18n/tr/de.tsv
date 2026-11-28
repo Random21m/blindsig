@@ -1040,3 +1040,63 @@
 1039	Dieser Signer kann Wallet-Daten nicht verschlüsseln. Nutze deinen Seed, einen nsec oder einen Signer mit NIP-44.
 1040	aus deiner Nostr-Wallet
 1041	in einer anderen Nostr-App ausgegeben
+1042	Code zum Entsperren
+1043	Oder ein Hash zum Sperren (für Swaps)
+1044	Zurück an das Terminal (NFC)
+1045	Code kopiert
+1046	Code kopieren
+1047	Es kann nur mit dem Code eingelöst werden. Bis dahin kannst du es im Verlauf zurückholen.
+1048	Anmelden
+1049	Abmelden
+1050	Anmeldung
+1051	Braucht einen Code
+1052	Nicht angemeldet
+1053	Anmeldung abgelaufen
+1054	✓ Angemeldet
+1055	Reserve-Tokens
+1056	Dieser Code entsperrt dieses Ecash nicht.
+1057	Diese Mint gibt nicht an, wie man sich anmeldet.
+1058	Diese Mint verlangt eine Anmeldung. Öffne ihre Details unter Mints und tippe auf Anmelden.
+1059	Die Anmeldeseite dieser Mint unterstützt keine Anmeldung aus einer anderen App (Geräte-Anmeldung).
+1060	Dieser Name verweist auf etwas, das blindsig nicht bezahlen kann.
+1061	Prüfe, dass die Anmeldeseite denselben Code zeigt. Wenn du dort fertig bist, komm hierher zurück.
+1062	Name wird geprüft…
+1063	Deine Mints werden geprüft…
+1064	Deine Mints sind nicht erreichbar.
+1065	Sperren (für eine Person oder mit einem Code)
+1066	Mit einem Code sperren (HTLC)
+1067	Nichts aufzuräumen.
+1068	Anmeldeseite öffnen
+1069	Wird gestartet…
+1070	Tauscht viele kleine Noten gegen möglichst wenige mit demselben Betrag. Tokens werden kürzer, und Mints mit Gebühr pro Note kosten später weniger. Die Mint berechnet ihre Gebühr einmal für den Tausch.
+1071	An ein Bezahlterminal halten (NFC)
+1072	Ecash aufräumen
+1073	Aufräumen
+1074	Warte auf deine Anmeldung
+1075	Wer den Token bekommt, braucht auch einen Code, den du auf anderem Weg teilst. Du kannst ihn jederzeit zurückholen, bis er eingelöst ist.
+1076	Dein Code
+1077	Ein Hash hat 64 Hexadezimalzeichen.
+1078	Gib den Code ein.
+1079	Sperre für eine Person oder mit einem Code, nicht beides.
+1080	Diese Mint unterstützt kein Sperren mit Code.
+1081	Halte dein Handy an das Terminal…
+1082	Angemeldet
+1083	Abgemeldet
+1084	An das Terminal gesendet. Prüfe, dass es die Zahlung anzeigt.
+1085	{0} Noten → {1}
+1086	Gebühr {0}
+1087	Aufgeräumt: {0} Noten → {1}, Gebühr {2}
+1088	Aufgeräumt: {0} Noten → {1}
+1089	✓ {0} mit DNSSEC geprüft
+1090	{0} verlangt, dass du dich mit deinem Konto anmeldest.
+1091	Gesperrt auf Hash
+1092	Sende den Code auf anderem Weg als den Token. Für andere Wallets lautet das Preimage
+1093	Diese Mint bedient nur angemeldete Konten. Jede Anfrage nutzt dann einen blinden Token, sodass die Mint deine Zahlungen nicht deinem Konto zuordnen kann.
+1094	Mint-Gebühr fürs Aufräumen
+1095	Ladenterminal
+1096	kein ₿name@domain
+1097	dieser Name hat mehr als einen Zahlungseintrag und kann daher nicht genutzt werden
+1098	keine Zahlungsanweisungen für diesen Namen
+1099	diese Domain ist nicht durch DNSSEC geschützt
+1100	die DNS-Signaturen für diesen Namen stimmen nicht
+1101	zu viele Weiterleitungen für diesen Namen
