@@ -2,6 +2,7 @@
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
   getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount, setGlobalRequestOptions,
+  verifyMintSignatures,
 } from '@cashu/cashu-ts';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { bech32 } from '@scure/base';
@@ -50,10 +51,29 @@ export function walletFor(url, unit = S.unit, seed = SEED, counters = counterSou
 }
 async function makeWallet(url, unit, seed, counters) {
   const w = new Wallet(url, { unit, bip39seed: seed, counterSource: counters });
-  await w.loadMint();
+  const c = (S.mintCache ||= {})[url];
+  // offline (or the mint is down): carry on with the keys we saved last time, so offline sends and
+  // checking the mint's signatures on ecash still work
+  if (c && navigator.onLine === false) { w.loadMintFromCache(c.info, c.keys); w.fromCache = true; return w; }
+  try { await w.loadMint(); } catch (e) { if (!c) throw e; w.loadMintFromCache(c.info, c.keys); w.fromCache = true; return w; }
+  rememberKeys(url, w);
   return w;
 }
+// a mint's public keys, saved for offline use. Only active keysets keep their keys, to stay small;
+// a keyset id is a hash of its keys, so saved keys never go stale.
+function rememberKeys(url, w) {
+  try {
+    const cache = w.keyChain.cache, info = w.getMintInfo().cache;
+    const keysets = cache.keysets.map((k) => (k.active ? k : { ...k, keys: undefined }));
+    const sig = keysets.map((k) => `${k.id}${k.active ? '+' : '-'}${k.keys ? 'k' : ''}`).join();
+    const old = (S.mintCache ||= {})[url];
+    if (old && old.sig === sig) return;
+    S.mintCache[url] = { sig, info, keys: { ...cache, keysets } }; save();
+  } catch (e) { console.warn('mint cache', e); }
+}
 export const dropWallets = () => wallets.clear();
+// wallets made from saved keys are swapped for live ones once we're back online
+if (typeof addEventListener === 'function') addEventListener('online', () => { for (const [k, p] of wallets) p.then((w) => w.fromCache && wallets.delete(k), () => {}); });
 
 async function infoSnapshot(w) {
   const info = w.getMintInfo(), c = info.cache || {};
@@ -219,6 +239,33 @@ export async function tokenLockInfo(t) {
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
 
+// NUT-12: did the mint really sign this ecash? Checked against the mint's public keys, which works
+// offline for mints whose keys we've saved. Only the mint can say whether it's already spent.
+// state: ok (every note checks out) | partial (some carry no proof) | none (no proofs included)
+//        | bad (a proof doesn't match: likely fake) | unknown (we don't have this mint's keys)
+export async function checkSignatures(t) {
+  let w;
+  try { w = await walletFor(t.mint, t.unit); } catch { return { state: 'unknown' }; }
+  let proofs;
+  try { proofs = w.decodeToken(t.str).proofs; } catch { return { state: 'unknown' }; }
+  const signed = proofs.filter((p) => p.dleq);
+  if (!signed.length) return { state: 'none', offline: !!w.fromCache };
+  for (const id of new Set(signed.map((p) => p.id))) {
+    try { await w.keyChain.ensureKeysetKeys(id); } catch {}
+    let ks; try { ks = w.keyChain.getKeyset(id); } catch {}
+    if (!ks || !ks.hasKeys) return { state: 'unknown', offline: !!w.fromCache };
+  }
+  const v = await verifyMintSignatures(signed, (id) => w.keyChain.getKeyset(id), { require: true });
+  if (v.invalid.length) return { state: 'bad', offline: !!w.fromCache };
+  return { state: signed.length === proofs.length ? 'ok' : 'partial', offline: !!w.fromCache };
+}
+// the same token without signature proofs: about half the size, for NFC cards with little room
+export async function compactToken(token) {
+  const t = parseToken(token);
+  const w = await walletFor(t.mint, t.unit);
+  return getEncodedToken(w.decodeToken(t.str), { removeDleq: true });
+}
+
 export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
@@ -232,7 +279,8 @@ export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, ke
   // never record a send unless the token really carries the amount
   if (!res.send.length || sum(res.send) < amount) throw new Error(offline ? 'no exact match for offline sending' : 'could not prepare the token');
   setProofs(url, res.keep, unit);
-  const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: true });
+  // with the mint's signature proofs (NUT-12) the receiver can check the ecash is real, even offline
+  const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: !S.settings.dleq });
   return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
 }
 export async function receiveEcash(t) {

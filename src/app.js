@@ -515,6 +515,15 @@ function restoreRun(urls, mnemonic, afterBackup) {
 }
 
 /* ================= receive ================= */
+// what the mint signature check (NUT-12) found, for the receive preview
+function sigLine(s) {
+  const off = s.offline ? ' <small class="dim">(checked offline)</small>' : '';
+  if (s.state === 'ok') return '✓ Signed by this mint' + off;
+  if (s.state === 'partial') return '<span class="warnt">Only part of it carries the mint’s signature</span>' + off;
+  if (s.state === 'bad') return '<span class="warnt">Doesn’t match the mint’s keys</span>';
+  if (s.state === 'none') return '<span class="dim">Not included. The mint checks it when you receive.</span>';
+  return '<span class="dim">Can’t check without this mint’s keys</span>';
+}
 function receiveSheet(tab = 'ecash', prefill = '') {
   if (needMint()) return;
   const k = C.currentP2pk();
@@ -563,11 +572,16 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       if (!ta.value.trim()) return;
       try { parsed = C.parseToken(ta.value); } catch { $('#prev', b).innerHTML = '<p class="warn">That isn’t a valid cashu token.</p>'; return; }
       const known = mintOf(parsed.mint), me = ++seq;
-      const draw = (lock) => {
+      let lock = null, sig = null;
+      const draw = () => {
         $('#prev', b).innerHTML = (isGiftMemo(parsed.memo) ? giftBanner(parsed) : '') + kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && !isGiftMemo(parsed.memo) && ['Memo', esc(parsed.memo)],
           lock && lock.locked && ['Lock', lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>'],
-          lock && lock.until && ['Claim by', `${esc(whenShort(lock.until))}<br><small class="dim">After that it goes back to the sender.</small>`]])
+          lock && lock.until && ['Claim by', `${esc(whenShort(lock.until))}<br><small class="dim">After that it goes back to the sender.</small>`],
+          sig && ['Signature', sigLine(sig)]])
+          + (sig && sig.state === 'bad' ? '<p class="warn">The mint’s signature on this ecash doesn’t check out. It may be fake. Don’t accept it as payment.</p>' : '')
           + (known ? '' : '<p class="warn">Unknown mint. Receiving adds it to your wallet. Only accept ecash from mints you trust.</p>');
+        // ecash that fails the signature check can't be parked for later: there'd be nothing to claim
+        $('#later', b).hidden = !!(sig && sig.state === 'bad');
       };
       draw();
       rcv.textContent = known ? 'Receive' : 'Trust mint and receive';
@@ -575,7 +589,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       $('#later', b).hidden = false;
       const targets = S.mints.filter((m) => m.url !== parsed.mint && (m.units || ['sat']).includes(parsed.unit));
       if (st.receiveSwaps && targets.length) { $('#swpbox', b).hidden = false; $('#swto', b).innerHTML = targets.map((m) => `<option value="${esc(m.url)}" ${m.url === S.active ? 'selected' : ''}>${esc(mintLabel(m))}</option>`).join(''); }
-      C.tokenLockInfo(parsed).then((lock) => { if (me === seq) { parsed.lockKeys = lock.keys; draw(lock); } }).catch(() => {});
+      C.tokenLockInfo(parsed).then((l) => { if (me === seq) { parsed.lockKeys = l.keys; lock = l; draw(); } }).catch(() => {});
+      C.checkSignatures(parsed).then((s) => { if (me === seq) { sig = s; draw(); } }).catch(() => {});
     };
     $('#pst', b).onclick = () => pasteInto(ta);
     $('#scn', b).onclick = () => startScan((t) => { ta.value = t; ta.oninput(); });
@@ -1494,6 +1509,7 @@ function removeMint(url, back) {
     $('#go', b).onclick = () => {
       S.mints = S.mints.filter((x) => x.url !== url);
       for (const k of Object.keys(S.proofs)) if (k.startsWith(url + '|')) delete S.proofs[k];
+      if (S.mintCache) delete S.mintCache[url];
       if (S.active === url) { S.active = S.mints[0]?.url || null; if (S.active) C.selectMint(S.active); }
       save(); render(); N.backupMints().catch(() => {}); mintsSheet();
     };
@@ -1688,10 +1704,11 @@ const SECTIONS = {
       ${toggle('t_hideHistory', 'Hide history', 'Fold your transactions away on the main screen for a clean look. Tap History to open it.', st.hideHistory)}
       ${toggle('t_hideAmounts', 'Hide amounts', 'Show •••• instead of your balance and payment amounts on the main screen. Tap the balance to switch.', st.hideAmounts)}
       ${toggle('t_websockets', 'Use WebSockets', 'Instant updates from mints that support it (NUT-17).', st.websockets)}
+      ${toggle('t_dleq', 'Include mint signatures', 'Put the mint’s signature proofs (NUT-12) in ecash you send, so the person you pay can check it’s real, even offline. Tokens get about twice as long.', st.dleq)}
       ${toggle('t_fiat', 'Get exchange rate from Coinbase', 'Show your balance in fiat.', st.fiat)}
       <label class="lbl" for="cur">Fiat currency</label>
       <select id="cur" class="field">${FIAT_CURRENCIES.map((c) => `<option ${c === st.fiatCur ? 'selected' : ''}>${c}</option>`).join('')}</select>`, (b) => {
-      bindToggles(b, ['hideHistory', 'hideAmounts', 'checkIncoming', 'checkStartup', 'checkAll', 'checkSent', 'websockets', 'fiat'], (k) => { if (k === 'fiat' && st.fiat) C.loadPrice().then(render); schedule(); });
+      bindToggles(b, ['hideHistory', 'hideAmounts', 'checkIncoming', 'checkStartup', 'checkAll', 'checkSent', 'websockets', 'dleq', 'fiat'], (k) => { if (k === 'fiat' && st.fiat) C.loadPrice().then(render); schedule(); });
       $('#cur', b).onchange = (e) => { st.fiatCur = e.target.value; save(); C.loadPrice().then(render); };
     }, { back });
   },
@@ -2066,6 +2083,8 @@ function wipeSheet() {
 /* ================= NFC ================= */
 const hasNfc = () => 'NDEFReader' in window;
 async function nfcWrite(token) {
+  // cards hold little: leave out the signature proofs (the phone that taps it is online anyway)
+  try { token = await C.compactToken(token); } catch {}
   let rec;
   if (st.nfcEncoding === 'url') rec = { recordType: 'url', data: location.origin + location.pathname + '#token=' + token };
   else if (st.nfcEncoding === 'binary') rec = { recordType: 'mime', mediaType: 'application/octet-stream', data: getEncodedTokenBinary(await decodeForBinary(token)) };
