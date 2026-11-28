@@ -751,6 +751,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       ${S.contacts?.length ? `<div class="cts" role="list" aria-label="Contacts">${[...S.contacts].sort((p, q) => (q.last || 0) - (p.last || 0)).slice(0, 8).map((c) => `<button role="listitem" class="ctc" data-id="${esc(c.id)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}${S.contacts.length > 8 ? '<button class="ctc more" id="ctAll">All contacts</button>' : ''}</div>` : ''}
       <textarea id="ln" rows="3" placeholder="Invoice, address, LNURL, offer, request or bitcoin address" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button></div>
+      ${hasNfc() ? '<button class="btn wide" id="tap">Tap a payment terminal (NFC)</button>' : ''}
       <div id="lnx"></div>
       <button class="btn primary wide" id="pay" disabled>Continue</button>
     </div>`, (b) => {
@@ -784,9 +785,16 @@ function sendSheet(tab = 'ecash', prefill = '') {
     $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
+    // a request read from a shop terminal (like Numo) over NFC: the token goes back the same way
+    let terminal = false;
+    const toTerminal = async (token) => {
+      toast('Hold your phone to the terminal…', 'warn');
+      await new window.NDEFReader().write({ records: [{ recordType: 'text', lang: 'en', data: token }] });
+      FX.buzz('sent');
+    };
     const setPay = (t, dis = false) => later(() => { pay.textContent = t; pay.disabled = dis; });
     ln.oninput = () => {
-      bipName = '';
+      bipName = ''; terminal = false;
       const v = ln.value.trim().replace(/^lightning:/i, '');
       stage = quote = meta = null; x.innerHTML = '';
       chainInfo = C.parseBitcoin(v);
@@ -851,7 +859,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const okMint = N.requestMintOk(req, S.active), fee = okMint ? N.requestFee(req, S.active) : 0;
         const alt = req.mints.find((u) => mintOf(u));
         const short = req.amount && req.amount + fee > bal(S.active);
-        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
+        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : terminal ? 'Back to the terminal (NFC)' : 'none']])
           + (req.unit !== S.unit ? `<p class="warn">This request is in ${esc(unitLabel(req.unit))}. Switch unit first.</p>` : '')
           + (okMint ? '' : `<p class="warn">The request only accepts ${esc(req.mints.map(host).join(', '))}.</p>${alt ? `<button class="btn wide" id="swm">Switch to ${esc(host(alt))}</button>` : ''}`)
           + (fee ? '<p class="dim small">This mint isn’t on the request’s list, so the recipient adds a fee to move the ecash to theirs.</p>' : '')
@@ -864,7 +872,8 @@ function sendSheet(tab = 'ecash', prefill = '') {
       if (stage === 'creqpay') {
         const a = req.amount || readAmt(b, 'ramt'); if (!a) return nope('Enter an amount.');
         if (!(await bigOk(a + (N.requestMintOk(req, S.active) ? N.requestFee(req, S.active) : 0), req.unit))) return;
-        const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
+        const h = await N.payRequest(req, a, terminal && !req.transport ? { deliver: toTerminal } : {});
+        render(); done(h, 'Sent'); if (terminal) toast('Sent to the terminal. Check that it shows the payment.'); return;
       }
       if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
       if (stage === 'bip353') return useName(v);
@@ -900,6 +909,16 @@ function sendSheet(tab = 'ecash', prefill = '') {
     });
     $('#pst', b).onclick = () => pasteInto(ln);
     $('#scn', b).onclick = () => startScan((t) => { ln.value = t; ln.oninput(); later(() => pay.click()); });
+    const tap = $('#tap', b);
+    if (tap) tap.onclick = () => {
+      toast('Hold your phone to the terminal…', 'warn');
+      nfcRead((t) => {
+        const v = t.trim(), info = C.parseBitcoin(v);
+        ln.value = info && (info.creq || info.lightning || info.lno) ? pickFromUri(info) : v;
+        ln.oninput(); terminal = N.isRequest(ln.value);
+        later(() => pay.click());
+      }, { any: true, quiet: true });
+    };
     $$('.ctc[data-id]', b).forEach((x) => (x.onclick = () => { const c = S.contacts.find((y) => y.id === x.dataset.id); if (!c) return; ln.value = c.to; ln.oninput(); later(() => pay.click()); }));
     const cta = $('#ctAll', b); if (cta) cta.onclick = () => contactsSheet(() => sendSheet('ln'));
     if (prefill) { ln.value = prefill; ln.oninput(); later(() => pay.click()); }

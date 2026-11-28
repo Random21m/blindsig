@@ -205,9 +205,10 @@ export function requestFee(r, url) {
   try { return r.pr.feesFor(url, meltMethodsOf(url, r.unit)).toNumber(); } catch { return 0; }
 }
 export function deleteRequest(id) { S.pr.requests = S.pr.requests.filter((r) => r.id !== id); save(); }
-// create the token and deliver it over the request's transport
-export async function payRequest(r, amount) {
-  if (!r.transport) throw new Error('this request has no way to deliver the payment');
+// create the token and deliver it over the request's transport, or with `deliver(token)` for a
+// request that has none (a shop terminal read over NFC takes the token back the same way)
+export async function payRequest(r, amount, { deliver } = {}) {
+  if (!r.transport && !deliver) throw new Error('this request has no way to deliver the payment');
   if (!requestMintOk(r, S.active)) throw new Error('select one of the mints the request accepts');
   if (r.unit !== S.unit) throw new Error(`the request is in ${r.unit}; switch unit first`);
   const fee = requestFee(r, S.active);
@@ -218,6 +219,7 @@ export async function payRequest(r, amount) {
   const rawMint = (r.pr.mints || []).find((m) => normUrl(m) === h.mint) || h.mint;
   const body = r.pr.encodePayload(rawMint, proofs, { unit: h.unit, memo: r.memo || undefined });
   try {
+    if (!r.transport) { await deliver(h.token); h.memo = r.memo || 'shop terminal'; save(); return h; }
     if (r.transport.type === 'post') {
       const res = await fetch(r.transport.target, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
       if (!res.ok) throw new Error('recipient returned ' + res.status);
