@@ -55,6 +55,7 @@ function niceErr(e) {
   if (/not enough|insufficient/i.test(m)) return 'Not enough balance, including fees.';
   if (/already spent|token already/i.test(m)) return 'That ecash was already claimed.';
   if (/outputs have already been signed/i.test(m)) return 'Counter clash. Bump keyset counters in Advanced settings.';
+  if (/blind auth|clear auth|auth token|authenticat/i.test(m)) return 'This mint needs you to log in. Open its details under Mints and tap Log in.';
   return m.length > 160 ? m.slice(0, 160) + '…' : m;
 }
 function withBusy(btn, fn) {
@@ -536,6 +537,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       <textarea id="tok" rows="4" placeholder="Paste a cashu token" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button>${st.nfcQuick && 'NDEFReader' in window ? '<button class="btn" id="nfc">NFC</button>' : ''}</div>
       <div id="prev"></div>
+      <input id="hcode" class="field" placeholder="Code to unlock it" autocomplete="off" autocapitalize="characters" spellcheck="false" hidden>
       <button class="btn primary wide" id="rcv" disabled>Receive</button>
       <div id="swpbox" hidden><label class="lbl" for="swto">Swap to mint</label><select id="swto" class="field"></select>
       <p class="dim small">This swap will incur Lightning network fees.</p><button class="btn wide" id="swp">Swap</button></div>
@@ -568,7 +570,7 @@ function receiveSheet(tab = 'ecash', prefill = '') {
     const ta = $('#tok', b), rcv = $('#rcv', b), swp = $('#swp', b);
     let parsed = null, seq = 0;
     ta.oninput = async () => {
-      parsed = null; rcv.disabled = true; $('#swpbox', b).hidden = true; $('#later', b).hidden = true; $('#prev', b).innerHTML = '';
+      parsed = null; rcv.disabled = true; $('#swpbox', b).hidden = true; $('#later', b).hidden = true; $('#prev', b).innerHTML = ''; $('#hcode', b).hidden = true;
       if (!ta.value.trim()) return;
       const raw = ta.value.trim().replace(/^lightning:/i, '');
       if (C.isLnurl(raw)) { $('#prev', b).innerHTML = '<p class="dim">Checking the LNURL…</p>'; return C.lnurlResolve(raw).then((m) => (m.tag === 'withdrawRequest' ? withdrawSheet(m) : ($('#prev', b).innerHTML = '<p class="warn">That LNURL is for paying, not receiving. Use Send.</p>'))).catch((e) => ($('#prev', b).innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`)); }
@@ -577,13 +579,14 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       let lock = null, sig = null;
       const draw = () => {
         $('#prev', b).innerHTML = (isGiftMemo(parsed.memo) ? giftBanner(parsed) : '') + kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && !isGiftMemo(parsed.memo) && ['Memo', esc(parsed.memo)],
-          lock && lock.locked && ['Lock', (lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>') + (lock.blinded ? '<br><small class="dim">Key hidden from the mint (P2BK)</small>' : '')],
+          lock && lock.htlc && ['Lock', 'Needs a code'],
+          lock && lock.locked && !lock.htlc && ['Lock', (lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>') + (lock.blinded ? '<br><small class="dim">Key hidden from the mint (P2BK)</small>' : '')],
           lock && lock.until && ['Claim by', `${esc(whenShort(lock.until))}<br><small class="dim">After that it goes back to the sender.</small>`],
           sig && ['Signature', sigLine(sig)]])
           + (sig && sig.state === 'bad' ? '<p class="warn">The mint’s signature on this ecash doesn’t check out. It may be fake. Don’t accept it as payment.</p>' : '')
           + (known ? '' : '<p class="warn">Unknown mint. Receiving adds it to your wallet. Only accept ecash from mints you trust.</p>');
         // ecash that fails the signature check can't be parked for later: there'd be nothing to claim
-        $('#later', b).hidden = !!(sig && sig.state === 'bad');
+        $('#later', b).hidden = !!(sig && sig.state === 'bad') || !!(lock && lock.htlc);
       };
       draw();
       rcv.textContent = known ? 'Receive' : 'Trust mint and receive';
@@ -591,13 +594,17 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       $('#later', b).hidden = false;
       const targets = S.mints.filter((m) => m.url !== parsed.mint && (m.units || ['sat']).includes(parsed.unit));
       if (st.receiveSwaps && targets.length) { $('#swpbox', b).hidden = false; $('#swto', b).innerHTML = targets.map((m) => `<option value="${esc(m.url)}" ${m.url === S.active ? 'selected' : ''}>${esc(mintLabel(m))}</option>`).join(''); }
-      C.tokenLockInfo(parsed).then((l) => { if (me === seq) { parsed.lockKeys = l.keys; lock = l; draw(); } }).catch(() => {});
+      C.tokenLockInfo(parsed).then((l) => { if (me === seq) { parsed.lockKeys = l.keys; lock = l; $('#hcode', b).hidden = !l.htlc; if (l.htlc) $('#swpbox', b).hidden = true; draw(); } }).catch(() => {});
       C.checkSignatures(parsed).then((s) => { if (me === seq) { sig = s; draw(); } }).catch(() => {});
     };
     $('#pst', b).onclick = () => pasteInto(ta);
     $('#scn', b).onclick = () => startScan((t) => { ta.value = t; ta.oninput(); });
     const nfc = $('#nfc', b); if (nfc) nfc.onclick = () => nfcRead((t) => { ta.value = t; ta.oninput(); });
-    rcv.onclick = withBusy(rcv, async () => done(await C.receiveEcash(parsed), 'Received'));
+    rcv.onclick = withBusy(rcv, async () => {
+      const hc = $('#hcode', b);
+      if (!hc.hidden && !hc.value.trim()) return nope('Enter the code.');
+      done(await C.receiveEcash(parsed, hc.hidden ? {} : { code: hc.value }), 'Received');
+    });
     swp.onclick = withBusy(swp, async () => done(await C.swapIncoming(parsed, $('#swto', b).value), 'Swapped in'));
     $('#later', b).onclick = () => {
       if (S.history.some((h) => h.kind === 'ecash-in' && h.token === parsed.str)) return toast('Ecash already in history', 'warn');
@@ -688,6 +695,12 @@ function liveView(h) {
   });
 }
 
+// from a bitcoin: URI with several ways to pay: ecash straight to their mint when our mint is one
+// they take, otherwise a BOLT12 offer, a Lightning invoice, a payment request, or on-chain
+function pickFromUri(info) {
+  if (info.creq) { try { const r = N.decodeRequest(info.creq); if (N.requestMintOk(r, S.active) && r.unit === S.unit) return info.creq; } catch {} }
+  return info.lno || info.lightning || info.creq || (info.address ? `bitcoin:${info.address}${info.sats ? `?amount=${(info.sats / 1e8).toFixed(8)}` : ''}` : '');
+}
 // LNURL-withdraw (LUD-03): a voucher, faucet or ATM pays sats into the active mint
 async function withdrawSheet(meta) {
   if (needMint()) return;
@@ -719,7 +732,10 @@ function sendSheet(tab = 'ecash', prefill = '') {
       ${amountField('amt', `Available: ${esc(fmt(have))}`)}
       <input id="memo" class="field" placeholder="Memo (optional)" maxlength="80" autocomplete="off">
       <label class="chk"><input type="checkbox" id="off"> <span>Send offline (exact amount only, no mint contact)</span></label>
-      <details class="more" id="lockBox"><summary>Lock to one person (P2PK)</summary>
+      <details class="more" id="lockBox"><summary>Lock it (to a person or with a code)</summary>
+        <label class="chk"><input type="checkbox" id="hlc"> <span>Lock with a code (HTLC)</span></label>
+        <p class="hint" id="hlcH">Whoever gets the token also needs a code, which you share another way. You can take it back any time until it’s claimed.</p>
+        <input id="hhash" class="field" placeholder="Or a hash to lock to (for swaps)" autocomplete="off" autocapitalize="off" spellcheck="false" hidden>
         ${keyContacts().length ? `<div class="cts" role="list" aria-label="Contacts">${keyContacts().map((c) => `<button type="button" role="listitem" class="ctc" data-k="${esc(c.npub)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}</div>` : ''}
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
         <p class="hint">Only the holder of the matching private key can redeem it.</p>
@@ -735,6 +751,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
       ${S.contacts?.length ? `<div class="cts" role="list" aria-label="Contacts">${[...S.contacts].sort((p, q) => (q.last || 0) - (p.last || 0)).slice(0, 8).map((c) => `<button role="listitem" class="ctc" data-id="${esc(c.id)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}${S.contacts.length > 8 ? '<button class="ctc more" id="ctAll">All contacts</button>' : ''}</div>` : ''}
       <textarea id="ln" rows="3" placeholder="Invoice, address, LNURL, offer, request or bitcoin address" spellcheck="false" autocapitalize="off"></textarea>
       <div class="btnrow"><button class="btn" id="pst">Paste</button><button class="btn" id="scn">Scan</button></div>
+      ${hasNfc() ? '<button class="btn wide" id="tap">Tap a payment terminal (NFC)</button>' : ''}
       <div id="lnx"></div>
       <button class="btn primary wide" id="pay" disabled>Continue</button>
     </div>`, (b) => {
@@ -745,35 +762,64 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const lockRaw = $('#lock', b).value.trim();
       const lockTo = lockRaw ? C.parsePubkey(lockRaw) : undefined;
       const offline = $('#off', b).checked;
+      const withCode = $('#hlc', b).checked, hashRaw = $('#hhash', b).value.trim();
+      if (withCode && hashRaw && !/^[0-9a-f]{64}$/i.test(hashRaw)) return nope('A hash is 64 hexadecimal characters.');
+      if (withCode && lockTo) return nope('Lock to a person or with a code, not both.');
+      if (withCode && offline) return nope('Locked ecash can’t be sent offline. Turn off offline mode.');
+      if (withCode && !(mintOf(S.active)?.info?.nuts || []).includes('14')) return nope('This mint doesn’t support locking with a code.');
       if (lockTo && offline) return nope('Locked ecash can’t be sent offline. Turn off offline mode.');
       if (lockTo && mintOf(S.active)?.info?.nut11 === false) return nope('This mint doesn’t support locked ecash.');
       if (!(await bigOk(a))) return;
-      const returnAfter = lockTo ? +($('#ret', b)?.value || 0) : 0;
+      const returnAfter = lockTo || withCode ? +($('#ret', b)?.value || 0) : 0;
+      const code = withCode && !hashRaw ? C.newHtlcCode() : undefined, hash = withCode && hashRaw ? hashRaw : undefined;
       let h;
       const blind = !!(lockTo && $('#blk', b).checked);
-      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline, blind }); }
+      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline, blind, code, hash }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
       render(); tokenView(h); C.watchSent(sentClaimed);
       FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
     $('#blk', b).onchange = (e) => { st.p2bk = e.target.checked; save(); };
+    $('#hlc', b).onchange = (e) => { $('#hhash', b).hidden = !e.target.checked; };
     $$('#lockBox .ctc', b).forEach((x) => (x.onclick = () => { $('#lock', b).value = x.dataset.k; $$('#lockBox .ctc', b).forEach((y) => y.classList.toggle('on', y === x)); }));
     $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
+    // a request read from a shop terminal (like Numo) over NFC: the token goes back the same way
+    let terminal = false;
+    const toTerminal = async (token) => {
+      toast('Hold your phone to the terminal…', 'warn');
+      await new window.NDEFReader().write({ records: [{ recordType: 'text', lang: 'en', data: token }] });
+      FX.buzz('sent');
+    };
     const setPay = (t, dis = false) => later(() => { pay.textContent = t; pay.disabled = dis; });
     ln.oninput = () => {
+      bipName = ''; terminal = false;
       const v = ln.value.trim().replace(/^lightning:/i, '');
       stage = quote = meta = null; x.innerHTML = '';
       chainInfo = C.parseBitcoin(v);
-      if (chainInfo && (chainInfo.lightning || chainInfo.lno)) { ln.value = chainInfo.lightning || chainInfo.lno; return ln.oninput(); }
-      if (chainInfo) { stage = 'chain'; label = chainInfo.address; }
+      if (chainInfo && (chainInfo.lightning || chainInfo.lno || chainInfo.creq)) { ln.value = pickFromUri(chainInfo); return ln.oninput(); }
+      if (C.isBip353(v)) { stage = 'bip353'; label = v; }
+      else if (chainInfo) { stage = 'chain'; label = chainInfo.address; }
       else if (C.isOffer(v)) { stage = 'offer'; label = 'BOLT12 offer'; }
       else if (N.isRequest(v)) { stage = 'creq'; label = 'payment request'; }
       else if (C.isInvoice(v)) { stage = 'invoice'; label = ''; }
       else if (C.isAddress(v) || C.isLnurl(v)) { stage = 'lnurl'; label = C.isAddress(v) ? v.toLowerCase() : 'LNURL'; }
       else if (isNpub(v)) { stage = 'npub'; label = 'nutzap'; }
       pay.textContent = 'Continue'; pay.disabled = !stage;
+    };
+    // a BIP-353 name, checked with DNSSEC: pay what it points at, and remember the name
+    let bipName = '';
+    const useName = async (name) => {
+      x.innerHTML = '<p class="dim">Checking the name…</p>';
+      const uri = await C.resolveName(name);
+      const info = C.parseBitcoin(uri);
+      if (!info) throw new Error('This name points to something blindsig can’t pay.');
+      const to = info.lightning || info.lno || info.creq ? pickFromUri(info) : uri;
+      ln.value = to; ln.oninput();
+      bipName = name.trim(); label = bipName;
+      toast(`✓ ${bipName} checked with DNSSEC`);
+      later(() => pay.click());
     };
     const showQuote = () => {
       const a = quote.amount.toNumber(), f = quote.fee_reserve.toNumber(), haveNow = bal(S.active);
@@ -813,7 +859,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const okMint = N.requestMintOk(req, S.active), fee = okMint ? N.requestFee(req, S.active) : 0;
         const alt = req.mints.find((u) => mintOf(u));
         const short = req.amount && req.amount + fee > bal(S.active);
-        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : 'none']])
+        x.innerHTML = kv([['Amount', req.amount ? `<b>${esc(fmt(req.amount, req.unit))}</b>` : 'Payer chooses'], fee && ['Fee from this mint', esc(fmt(fee, req.unit))], fee && req.amount && ['Total', `<b>${esc(fmt(req.amount + fee, req.unit))}</b>`], req.memo && ['For', `<span dir="auto">${esc(req.memo)}</span>`], ['Mints', req.mints.length ? esc(req.mints.map(host).join(', ')) + (req.strict ? '' : ' (preferred)') : 'Any'], req.lock && ['Locked to', esc(req.lock.slice(0, 14)) + '…'], ['Delivery', req.transport ? (req.transport.type === 'post' ? 'HTTP POST' : 'nostr') : terminal ? 'Back to the terminal (NFC)' : 'none']])
           + (req.unit !== S.unit ? `<p class="warn">This request is in ${esc(unitLabel(req.unit))}. Switch unit first.</p>` : '')
           + (okMint ? '' : `<p class="warn">The request only accepts ${esc(req.mints.map(host).join(', '))}.</p>${alt ? `<button class="btn wide" id="swm">Switch to ${esc(host(alt))}</button>` : ''}`)
           + (fee ? '<p class="dim small">This mint isn’t on the request’s list, so the recipient adds a fee to move the ecash to theirs.</p>' : '')
@@ -826,11 +872,18 @@ function sendSheet(tab = 'ecash', prefill = '') {
       if (stage === 'creqpay') {
         const a = req.amount || readAmt(b, 'ramt'); if (!a) return nope('Enter an amount.');
         if (!(await bigOk(a + (N.requestMintOk(req, S.active) ? N.requestFee(req, S.active) : 0), req.unit))) return;
-        const h = await N.payRequest(req, a); render(); done(h, 'Sent'); return;
+        const h = await N.payRequest(req, a, terminal && !req.transport ? { deliver: toTerminal } : {});
+        render(); done(h, 'Sent'); if (terminal) toast('Sent to the terminal. Check that it shows the payment.'); return;
       }
       if (stage === 'invoice') { method = 'bolt11'; invoice = v.toLowerCase(); quote = await C.quoteInvoice(invoice); return showQuote(); }
+      if (stage === 'bip353') return useName(v);
       if (stage === 'lnurl') {
-        meta = await C.lnurlResolve(v);
+        try { meta = await C.lnurlResolve(v); }
+        catch (e) {
+          // not a Lightning address: maybe it's a BIP-353 name without the ₿
+          if (C.isAddress(v)) { try { return await useName('₿' + v); } catch {} }
+          throw e;
+        }
         if (meta.tag === 'withdrawRequest') return withdrawSheet(meta);
         if (meta.tag !== 'payRequest') throw new Error('This LNURL isn’t for paying or withdrawing.');
         let desc = ''; try { desc = (JSON.parse(meta.metadata).find((e) => e[0] === 'text/plain') || [])[1] || ''; } catch {}
@@ -848,7 +901,7 @@ function sendSheet(tab = 'ecash', prefill = '') {
         const qa = Number(quote?.amount?.toNumber?.() ?? quote?.amount ?? 0) + Number(quote?.fee_reserve?.toNumber?.() ?? quote?.fee_reserve ?? 0);
         if (!(await bigOk(qa))) return;
         const h = await C.payInvoice(quote, label || undefined, S.active, S.unit, method, feeIndex);
-        const target = reusableTarget(ln.value.trim().replace(/^lightning:/i, ''));
+        const target = bipName || reusableTarget(ln.value.trim().replace(/^lightning:/i, ''));
         const known = target && S.contacts.find((c) => c.to.toLowerCase() === target.toLowerCase());
         if (known) { known.last = Date.now(); save(); }
         if (h.status === 'done') done(h, 'Paid', target && !known ? target : undefined); else { toast(method === 'onchain' ? 'Transaction submitted. It confirms on-chain.' : 'Payment in flight. It will settle.', 'warn'); render(); closeSheet(); }
@@ -856,6 +909,16 @@ function sendSheet(tab = 'ecash', prefill = '') {
     });
     $('#pst', b).onclick = () => pasteInto(ln);
     $('#scn', b).onclick = () => startScan((t) => { ln.value = t; ln.oninput(); later(() => pay.click()); });
+    const tap = $('#tap', b);
+    if (tap) tap.onclick = () => {
+      toast('Hold your phone to the terminal…', 'warn');
+      nfcRead((t) => {
+        const v = t.trim(), info = C.parseBitcoin(v);
+        ln.value = info && (info.creq || info.lightning || info.lno) ? pickFromUri(info) : v;
+        ln.oninput(); terminal = N.isRequest(ln.value);
+        later(() => pay.click());
+      }, { any: true, quiet: true });
+    };
     $$('.ctc[data-id]', b).forEach((x) => (x.onclick = () => { const c = S.contacts.find((y) => y.id === x.dataset.id); if (!c) return; ln.value = c.to; ln.oninput(); later(() => pay.click()); }));
     const cta = $('#ctAll', b); if (cta) cta.onclick = () => contactsSheet(() => sendSheet('ln'));
     if (prefill) { ln.value = prefill; ln.oninput(); later(() => pay.click()); }
@@ -895,12 +958,15 @@ function tokenView(h, fromLog) {
     <p class="big">${bigAmt(h.amount, h.unit)}</p>
     ${h.fee ? `<p class="dim small center">Includes ${esc(fmt(h.fee, h.unit))} mint fee</p>` : ''}
     ${h.lockTo ? `<p class="dim small center">Locked to ${esc(lockName(h.lockTo))}${h.blind ? ' · key hidden from the mint' : ''}</p>` : ''}
+    ${h.htlc?.code ? `<div class="addrcard"><small class="dim">Code to unlock it</small><b data-notr>${esc(h.htlc.code)}</b><div class="btnrow"><button class="btn" id="cpc">Copy code</button></div><small class="dim">Send the code another way than the token. For other wallets, the preimage is <code data-notr style="word-break:break-all">${esc(h.htlc.preimage)}</code></small></div>` : ''}
+    ${h.htlc && !h.htlc.code ? `<p class="dim small center">Locked to hash <code data-notr>${esc(h.htlc.hash.slice(0, 16))}…</code></p>` : ''}
     ${h.refundAt && h.status === 'pending' ? `<p class="okline small center">If it isn’t claimed by ${esc(whenShort(h.refundAt))}, it comes back to you.</p>` : ''}
     ${armor(h.token)}
     <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji" title="Copy as emoji"><span aria-hidden="true">🥜</span> Emoji</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
     ${'NDEFReader' in window ? '<button class="btn wide" id="nfw">Write to NFC card</button>' : ''}
     ${fromLog ? `<div class="btnrow"><button class="btn" id="chk">Check status</button>${!h.lockTo || (h.refundAt && h.refundAt <= Date.now()) ? '<button class="btn" id="rc">Reclaim</button>' : ''}</div>` : ''}
-    <p class="dim small center">${h.lockTo ? 'Only the person it’s locked to can claim it.' : 'Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.'}</p>`, (b) => {
+    <p class="dim small center">${h.lockTo ? 'Only the person it’s locked to can claim it.' : h.htlc ? 'It can only be claimed with the code. Until then you can reclaim it from your history.' : 'Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.'}</p>`, (b) => {
+    const cpc = $('#cpc', b); if (cpc) cpc.onclick = () => copy(h.htlc.code, 'Code copied');
     addNote(b, h);
     stop = qrToken($('#tq', b), h.token);
     onClose = () => stop();
@@ -1292,7 +1358,7 @@ function claimPending() {
   return true;
 }
 // an address worth saving as a contact: Lightning address, LNURL or BOLT12 offer (not one-time invoices)
-const reusableTarget = (v) => (C.isAddress(v) ? v.toLowerCase() : (C.isLnurl(v) && !/^(lnurlw|keyauth):/i.test(v)) || C.isOffer(v) ? v : '');
+const reusableTarget = (v) => (C.isBip353(v) ? v.trim().toLowerCase() : C.isAddress(v) ? v.toLowerCase() : (C.isLnurl(v) && !/^(lnurlw|keyauth):/i.test(v)) || C.isOffer(v) ? v : '');
 function done(h, verb, saveTo) {
   const out = h.kind.endsWith('out');
   sheet(verb, `<div class="okb" aria-hidden="true"><svg viewBox="0 0 84 84"><circle class="ring" cx="42" cy="42" r="38"/><circle class="disc" cx="42" cy="42" r="38"/><path class="tick" d="M26 43.5l10.5 10.5L58.5 31"/></svg></div>
@@ -1476,6 +1542,8 @@ function mintsSheet(first = false) {
     const ab = $('#ab', b);
     const add = withBusy(ab, async (u) => {
       const url = await C.addMint(u); C.selectMint(url); render(); toast('Mint added'); N.backupMints().catch(() => {}); if (N.nutzapsOn()) N.startNutzaps();
+      // a mint that needs an account: log in right away
+      if (C.mintNeedsAuth(url)) return loginSheet(url, () => (first ? mintsSheet(true) : mintDetails(url, () => mintsSheet())));
       if (first) mintsSheet(true); else closeSheet();
     });
     $('#add', b).onsubmit = (e) => { e.preventDefault(); const u = $('#mu', b).value.trim(); if (u) add(u); };
@@ -1489,6 +1557,23 @@ function mintsSheet(first = false) {
     if (fin) fin.onclick = () => { N.startAll(); if (restoring) restoreRun(S.mints.map((m) => m.url)); else { locked = false; closeSheet(); claimPending(); } };
   }, { locked: first });
 }
+// logging in to a mint that needs an account: the provider's page opens in another tab, we wait
+function loginSheet(url, back) {
+  const m = mintOf(url);
+  let dev = null, dead = false;
+  sheet('Log in', `<p>${esc(mintLabel(m))} needs you to log in with your account.</p>
+    <div id="lgx"><p class="dim">Starting…</p></div>`, (b) => {
+    onClose = () => { dead = true; try { dev?.cancel(); } catch {} };
+    C.loginStart(url).then((d) => {
+      dev = d; if (dead) return d.cancel();
+      $('#lgx', b).innerHTML = `<div class="addrcard"><small class="dim">Your code</small><b data-notr>${esc(d.code)}</b></div>
+        <a class="btn primary wide" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer">Open the login page</a>
+        <p class="wait">Waiting for you to log in<span class="cur">_</span></p>
+        <p class="dim small">Check that the login page shows the same code. When you’re done there, come back here.</p>`;
+      return d.wait().then(() => { if (dead) return; toast('Logged in'); render(); back ? back() : closeSheet(); });
+    }).catch((e) => { if (dead) return; const x = $('#lgx', b); if (x) x.innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`; });
+  }, back ? { back } : {});
+}
 function mintDetails(url, back) {
   const m = mintOf(url); if (!m) return;
   const i = m.info || {};
@@ -1499,6 +1584,7 @@ function mintDetails(url, back) {
     ${i.description ? `<p>${esc(i.description)}</p>` : ''}
     ${i.description_long ? `<details class="more"><summary>More about this mint</summary><p class="dim">${esc(i.description_long)}</p></details>` : ''}
     ${kv([...balances, ['Version', esc(i.version || '–')], ['Units', esc((m.units || ['sat']).join(', '))], ...((i.contact || []).map((c) => [esc(c.method), esc(c.info)]))])}
+    ${i.auth ? `<h3>Login</h3><p class="dim small">This mint only serves people who log in with an account. Each request then uses a blind token, so the mint can’t tie your payments to your account.</p><div id="lgn" class="dim">Checking…</div>` : ''}
     <label class="lbl" for="nick">Nickname</label>
     <div class="addm"><input id="nick" class="field" value="${esc(m.nick || '')}" placeholder="${esc(m.name || host(url))}" maxlength="40"><button class="btn" id="sv">Save</button></div>
     <h3>Supported features</h3>
@@ -1515,6 +1601,14 @@ function mintDetails(url, back) {
     const rf = $('#rf', b); rf.onclick = withBusy(rf, async () => { await C.refreshMint(url); mintDetails(url, back); });
     const use = $('#use', b); if (use) use.onclick = () => { C.selectMint(url); render(); closeSheet(); };
     $('#rm', b).onclick = () => removeMint(url, back);
+    if (i.auth) C.authStatus(url).then((a) => {
+      const el = $('#lgn', b); if (!el) return;
+      el.className = '';
+      el.innerHTML = kv([['Status', a.loggedIn ? '✓ Logged in' : a.expired ? '<span class="warnt">Login expired</span>' : 'Not logged in'], ['Spare tokens', String(a.tokens)]])
+        + (a.loggedIn ? '<button class="btn wide" id="lgo">Log out</button>' : '<button class="btn primary wide" id="lgi">Log in</button>');
+      const lgi = $('#lgi', b); if (lgi) lgi.onclick = () => loginSheet(url, () => mintDetails(url, back));
+      const lgo = $('#lgo', b); if (lgo) lgo.onclick = withBusy(lgo, async () => { await C.logout(url); toast('Logged out'); mintDetails(url, back); });
+    });
     if (st.auditor) C.auditInfo(url).then((a) => {
       const el = $('#aud', b); if (!el) return;
       if (!a) { el.innerHTML = `This mint isn’t audited yet. <a href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">${esc(host(st.auditorUrl))}</a>`; return; }
@@ -1543,6 +1637,7 @@ function removeMint(url, back) {
       S.mints = S.mints.filter((x) => x.url !== url);
       for (const k of Object.keys(S.proofs)) if (k.startsWith(url + '|')) delete S.proofs[k];
       if (S.mintCache) delete S.mintCache[url];
+      if (S.mintAuth) delete S.mintAuth[url];
       if (S.active === url) { S.active = S.mints[0]?.url || null; if (S.active) C.selectMint(S.active); }
       save(); render(); N.backupMints().catch(() => {}); mintsSheet();
     };
@@ -1793,6 +1888,8 @@ const SECTIONS = {
     sheet('Advanced', `<p class="dim">For troubleshooting. Read each description before using it.</p>
       <h3>Remove spent proofs</h3><p class="dim small">Ask your mints which ecash is already spent and remove it. Use if your balance looks wrong.</p>
       <button class="btn wide" id="sw">Remove spent proofs</button>
+      <h3>Tidy up ecash</h3><p class="dim small">Swap many small notes for the fewest that make up the same amount. Tokens get shorter, and mints that charge per note cost less later. The mint charges its fee once for the swap.</p>
+      <div id="tdy"><p class="dim small">Checking your mints…</p></div>
       <h3>Export active proofs</h3><p class="dim small">Copy the whole balance of the active mint and unit as one token.</p>
       <button class="btn wide" id="ex">Export active proofs</button>
       <h3>Keyset counters</h3><p class="dim small">Tap a keyset to bump its counter by 10. Fixes “outputs have already been signed” errors.</p>
@@ -1808,6 +1905,18 @@ const SECTIONS = {
       <button class="btn wide danger" id="wipe">Reset wallet data</button>`, (b) => {
       const sw = $('#sw', b); sw.onclick = withBusy(sw, async () => { const r = await C.sweepSpent(); render(); toast(r ? `Removed ${fmt(r)} of spent proofs` : 'All proofs are valid'); });
       $('#ex', b).onclick = () => exportSheet(true);
+      const tdy = () => C.tidyPlan().then((plan) => {
+        const el = $('#tdy', b); if (!el) return;
+        if (!plan.length) { el.innerHTML = '<p class="dim small">Nothing to tidy up.</p>'; return; }
+        el.innerHTML = `<ul class="keys">${plan.map((x, i) => `<li><button data-i="${i}"><span class="mt"><b>${esc(mintLabel(mintOf(x.url)))}</b><small>${esc(`${x.count} notes → ${x.after}`)} · ${esc(x.fee ? `fee ${fmt(x.fee, x.unit)}` : 'no fee')}</small></span><span>Tidy</span></button></li>`).join('')}</ul>`;
+        $$('#tdy button', b).forEach((bt) => (bt.onclick = withBusy(bt, async () => {
+          const x = plan[+bt.dataset.i];
+          const r = await C.tidy(x.url, x.unit); render();
+          toast(r.fee ? `Tidied up: ${r.before} notes → ${r.after}, fee ${fmt(r.fee, x.unit)}` : `Tidied up: ${r.before} notes → ${r.after}`);
+          tdy();
+        })));
+      }).catch(() => { const el = $('#tdy', b); if (el) el.innerHTML = '<p class="dim small">Couldn’t reach your mints.</p>'; });
+      tdy();
       $$('.kc', b).forEach((x) => (x.onclick = () => { S.counters[x.dataset.id] = (S.counters[x.dataset.id] || 0) + 10; save(); SECTIONS.advanced(); }));
       const rel = $('#rel', b); rel.onclick = withBusy(rel, async () => { const n = await C.releasePending(); render(); toast(n ? `Pending payments released: ${n}` : 'Nothing to release. Payments still in flight are left to settle.'); });
       $('#ns', b).onclick = newSeedSheet;
@@ -2212,7 +2321,7 @@ function stopScan() {
 function route(txt) {
   const t = txt.trim().replace(/^lightning:/i, '');
   if (/^(cashu:)?cashu[AB]/i.test(t) || /^web\+cashu:/i.test(t)) return receiveSheet('ecash', t);
-  if (C.isInvoice(t) || C.isAddress(t) || C.isLnurl(t) || N.isRequest(t) || C.isOffer(t) || C.parseBitcoin(t)) return sendSheet('ln', t);
+  if (C.isInvoice(t) || C.isAddress(t) || C.isBip353(t) || C.isLnurl(t) || N.isRequest(t) || C.isOffer(t) || C.parseBitcoin(t)) return sendSheet('ln', t);
   if (C.hasEmojiToken(t)) return receiveSheet('ecash', t);
   if (isNpub(t)) return nutzapSheet(t);
   if (/[#?]token=/.test(t)) { const m = t.match(/token=([^&]+)/); if (m) return receiveSheet('ecash', decodeURIComponent(m[1])); }
@@ -2353,6 +2462,25 @@ addEventListener('hashchange', () => {
   if (!t || !S.mnemonic) return;
   history.replaceState(null, '', location.pathname); route(decodeURIComponent(t));
 });
+// shared to blindsig from another app (Android share sheet): pick out the ecash, invoice or
+// address from whatever text came with it
+function fromShared(txt) {
+  const tok = txt.match(/cashu[AB][A-Za-z0-9_\-=+/]+/);
+  if (tok) return tok[0];
+  if (C.hasEmojiToken(txt)) return txt;
+  const words = txt.split(/\s+/).map((w) => w.replace(/^[<("']+|[>)"'.,;]+$/g, '')).filter(Boolean);
+  return words.find((w) => /^(lightning:|bitcoin:|lnbc|lntb|lnbcrt|lno1|lnurl|creq[ab]|npub1|nprofile1|₿)/i.test(w) || /[#?]token=/.test(w) || C.isAddress(w)) || txt.trim();
+}
+{
+  const q = new URLSearchParams(location.search);
+  const shared = [q.get('share_text'), q.get('share_url'), q.get('share_title')].filter(Boolean).join(' ');
+  if (shared) {
+    history.replaceState(null, '', location.pathname);
+    const v = fromShared(shared);
+    if (S.mnemonic) setTimeout(() => { if (!needMint()) route(v); }, 500);
+    else if (/^cashu[AB]/.test(v)) pendingToken = v;
+  }
+}
 // home-screen shortcuts (long-press the app icon on Android): Receive, Send, Scan
 const action = new URLSearchParams(location.search).get('action');
 if (action && S.mnemonic) {

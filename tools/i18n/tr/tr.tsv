@@ -1040,3 +1040,63 @@
 1039	Bu imzalayıcı cüzdan verisini şifreleyemiyor. Seed'ini, bir nsec'i ya da NIP-44 destekleyen bir imzalayıcıyı kullan.
 1040	Nostr cüzdanından
 1041	başka bir Nostr uygulamasında harcandı
+1042	Kilidi açma kodu
+1043	Ya da kilitlenecek bir hash (takaslar için)
+1044	Terminale geri (NFC)
+1045	Kod kopyalandı
+1046	Kodu kopyala
+1047	Yalnızca kodla alınabilir. O zamana kadar geçmişinden geri alabilirsin.
+1048	Giriş yap
+1049	Çıkış yap
+1050	Giriş
+1051	Kod gerekiyor
+1052	Giriş yapılmadı
+1053	Girişin süresi doldu
+1054	✓ Giriş yapıldı
+1055	Yedek token'lar
+1056	Bu kod bu ecash'in kilidini açmıyor.
+1057	Bu mint nasıl giriş yapılacağını belirtmiyor.
+1058	Bu mint giriş yapmanı istiyor. Mint'ler altında ayrıntılarını aç ve Giriş yap'a dokun.
+1059	Bu mint'in giriş sayfası başka bir uygulamadan girişi desteklemiyor (cihaz girişi).
+1060	Bu ad, blindsig'in ödeyemeyeceği bir şeye işaret ediyor.
+1061	Giriş sayfasının aynı kodu gösterdiğini kontrol et. Orada işin bitince buraya dön.
+1062	Ad kontrol ediliyor…
+1063	Mint'lerin kontrol ediliyor…
+1064	Mint'lerine ulaşılamadı.
+1065	Kilitle (bir kişiye ya da kodla)
+1066	Kodla kilitle (HTLC)
+1067	Toparlanacak bir şey yok.
+1068	Giriş sayfasını aç
+1069	Başlatılıyor…
+1070	Çok sayıda küçük notu aynı tutarı oluşturan en az notla değiştirir. Token'lar kısalır ve not başına ücret alan mint'ler sonra daha ucuza gelir. Mint takas için ücretini bir kez alır.
+1071	Ödeme terminaline dokundur (NFC)
+1072	Ecash'i toparla
+1073	Toparla
+1074	Giriş yapman bekleniyor
+1075	Token'ı alan kişinin ayrıca bir koda ihtiyacı var; kodu başka bir yolla paylaşırsın. Alınana kadar istediğin zaman geri alabilirsin.
+1076	Kodun
+1077	Bir hash 64 onaltılık karakterdir.
+1078	Kodu gir.
+1079	Bir kişiye ya da kodla kilitle, ikisine birden değil.
+1080	Bu mint kodla kilitlemeyi desteklemiyor.
+1081	Telefonunu terminale yaklaştır…
+1082	Giriş yapıldı
+1083	Çıkış yapıldı
+1084	Terminale gönderildi. Ödemeyi gösterdiğini kontrol et.
+1085	{0} not → {1}
+1086	ücret {0}
+1087	Toparlandı: {0} not → {1}, ücret {2}
+1088	Toparlandı: {0} not → {1}
+1089	✓ {0} DNSSEC ile doğrulandı
+1090	{0} hesabınla giriş yapmanı istiyor.
+1091	Hash'e kilitli
+1092	Kodu token'dan farklı bir yolla gönder. Diğer cüzdanlar için preimage:
+1093	Bu mint yalnızca hesabıyla giriş yapanlara hizmet veriyor. Her istek ardından kör bir token kullanır; böylece mint ödemelerini hesabınla ilişkilendiremez.
+1094	toparlama için mint ücreti
+1095	mağaza terminali
+1096	bir ₿ad@alan adı değil
+1097	bu adın birden fazla ödeme kaydı var, bu yüzden kullanılamaz
+1098	bu ad için ödeme talimatı yok
+1099	bu alan adı DNSSEC ile korunmuyor
+1100	bu adın DNS imzaları doğrulanmıyor
+1101	bu ad için çok fazla yönlendirme var

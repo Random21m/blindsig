@@ -1040,3 +1040,63 @@
 1039	Tento podepisovač neumí šifrovat data peněženky. Použijte svůj seed, nsec nebo podepisovač s podporou NIP-44.
 1040	z vaší Nostr peněženky
 1041	utraceno v jiné Nostr aplikaci
+1042	Kód k odemčení
+1043	Nebo hash, ke kterému zamknout (pro swapy)
+1044	Zpět do terminálu (NFC)
+1045	Kód zkopírován
+1046	Kopírovat kód
+1047	Lze ho převzít jen s kódem. Do té doby ho můžete vzít zpět z historie.
+1048	Přihlásit se
+1049	Odhlásit se
+1050	Přihlášení
+1051	Vyžaduje kód
+1052	Nepřihlášeno
+1053	Přihlášení vypršelo
+1054	✓ Přihlášeno
+1055	Rezervní tokeny
+1056	Tento kód tento ecash neodemkne.
+1057	Tento mint neuvádí, jak se přihlásit.
+1058	Tento mint vyžaduje přihlášení. Otevřete jeho podrobnosti v Mintech a klepněte na Přihlásit se.
+1059	Přihlašovací stránka tohoto mintu nepodporuje přihlášení z jiné aplikace (přihlášení zařízení).
+1060	Toto jméno vede na něco, co blindsig neumí zaplatit.
+1061	Zkontrolujte, že přihlašovací stránka ukazuje stejný kód. Až tam skončíte, vraťte se sem.
+1062	Ověřuji jméno…
+1063	Kontroluji vaše minty…
+1064	Vaše minty nejsou dostupné.
+1065	Zamknout (pro osobu nebo kódem)
+1066	Zamknout kódem (HTLC)
+1067	Není co uklízet.
+1068	Otevřít přihlašovací stránku
+1069	Spouštím…
+1070	Vymění mnoho malých bankovek za co nejméně se stejnou částkou. Tokeny se zkrátí a minty, které účtují poplatek za bankovku, budou později levnější. Mint si za výměnu jednou strhne poplatek.
+1071	Přiložit k platebnímu terminálu (NFC)
+1072	Uklidit ecash
+1073	Uklidit
+1074	Čekám, až se přihlásíte
+1075	Kdo token dostane, potřebuje i kód, který sdílíte jinou cestou. Dokud ho nikdo nepřevezme, můžete ho kdykoli vzít zpět.
+1076	Váš kód
+1077	Hash má 64 šestnáctkových znaků.
+1078	Zadejte kód.
+1079	Zamkněte pro osobu, nebo kódem, ne obojí.
+1080	Tento mint nepodporuje zamykání kódem.
+1081	Přiložte telefon k terminálu…
+1082	Přihlášeno
+1083	Odhlášeno
+1084	Odesláno do terminálu. Zkontrolujte, že platbu zobrazuje.
+1085	{0} bankovek → {1}
+1086	poplatek {0}
+1087	Uklizeno: {0} bankovek → {1}, poplatek {2}
+1088	Uklizeno: {0} bankovek → {1}
+1089	✓ {0} ověřeno pomocí DNSSEC
+1090	{0} vyžaduje přihlášení vaším účtem.
+1091	Zamčeno na hash
+1092	Kód pošlete jinou cestou než token. Pro jiné peněženky je preimage
+1093	Tento mint obsluhuje jen přihlášené účty. Každý požadavek pak použije slepý token, takže mint nemůže vaše platby spojit s vaším účtem.
+1094	poplatek mintu za úklid
+1095	terminál v obchodě
+1096	není ₿jméno@doména
+1097	toto jméno má víc než jeden platební záznam, takže ho nelze použít
+1098	pro toto jméno nejsou platební pokyny
+1099	tato doména není chráněna DNSSEC
+1100	DNS podpisy tohoto jména nesedí
+1101	příliš mnoho přesměrování pro toto jméno

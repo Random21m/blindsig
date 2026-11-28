@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.24.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.24.0">
+  <img src="https://img.shields.io/badge/version-1.25.0-72d99b?style=flat-square&labelColor=161512" alt="version 1.25.0">
   <img src="https://img.shields.io/badge/cashu--ts-4.14-72d99b?style=flat-square&labelColor=161512" alt="cashu-ts 4.14">
   <img src="https://img.shields.io/badge/PWA-installable-f2b763?style=flat-square&labelColor=161512" alt="installable PWA">
   <img src="https://img.shields.io/badge/languages-14-efe9dd?style=flat-square&labelColor=161512" alt="14 languages">
@@ -136,10 +136,12 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - Multiple mints and units (sat, usd, eur…), mint messages, nicknames, and moving funds between mints
 - A warning when one mint holds more than an amount you choose (100,000 sat by default), with a one-tap plan to spread the extra across your other mints. Turn on "Spread automatically" and it happens by itself while the app is open, skipping any move whose fee could be over 2%
 - Mint discovery and reviews over Nostr (NIP-87), auditor results, and mint-list backup (compatible with cashu.me)
+- Mints that require an account (NUT-21/22): log in once with the mint's login page, then each request uses a blind token so the mint can't tie your payments to your account
+- Tidy up ecash: swap many small notes for the fewest that make the same amount, for shorter tokens and lower fees later
 
 **Receive**
 
-- Ecash: paste, scan (including animated QR), NFC, or auto-paste from the clipboard (not on iPhone, where Safari asks before every paste)
+- Ecash: paste, scan (including animated QR), NFC, share from another app (Android), or auto-paste from the clipboard (not on iPhone, where Safari asks before every paste)
 - A check that the mint really signed the ecash (NUT-12 DLEQ), before you accept it. It works offline for mints you've used, and ecash that fails it can't be parked for later
 - Lightning invoices, BOLT12 offers you can reuse, and on-chain deposit addresses
 - LNURL-withdraw: scan a voucher, faucet or ATM code and the sats land in your mint
@@ -152,7 +154,9 @@ Green, white, amber and burnt orange, all on the same soft charcoal background. 
 - NFC cards and stickers (Android): load a card with ecash or a gift so any phone that taps it, iPhones included, opens the claim link; write your tip jar to a sticker; and the scanner reads cards too
 - Offline sending: exact-amount tokens made without contacting the mint, even right after opening the app (the mint's keys are saved)
 - Tokens carry the mint's signature proofs, so whoever you pay can check them offline (can be turned off for shorter tokens)
-- Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, and bitcoin addresses (BIP21 aware)
+- Lightning invoices, Lightning addresses, LNURL, BOLT12 offers, ₿user@domain names (BIP-353, checked with DNSSEC in the app), and bitcoin addresses and URIs (BIP-21/321)
+- Tap a shop terminal like Numo to pay (Android, Web NFC)
+- Lock with a code (HTLC, NUT-14): whoever gets the token also needs a code you send separately; take it back any time until it's claimed
 - Multinut payments across several mints (NUT-15), and P2PK-locked tokens to a pubkey, npub or contact, optionally with the key hidden from the mint (P2BK, NUT-28)
 - Time vault: lock sats away until a date you choose. Nobody can spend them before then, not even you; on the day they come back to your wallet by themselves. Vault keys are blinded, so the mint can't tell your vaults belong together
 - Sends that come back: lock ecash to one person, and if they don't claim it in time (an hour, a day, a week or 30 days) it returns to your wallet on its own

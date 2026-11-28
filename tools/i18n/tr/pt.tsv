@@ -1040,3 +1040,63 @@
 1039	Este assinador não consegue criptografar os dados da carteira. Use sua seed, um nsec ou um assinador com suporte a NIP-44.
 1040	da sua carteira Nostr
 1041	gasto em outro app Nostr
+1042	Código para desbloquear
+1043	Ou um hash para bloquear (para swaps)
+1044	De volta ao terminal (NFC)
+1045	Código copiado
+1046	Copiar código
+1047	Só pode ser resgatado com o código. Até lá você pode recuperá-lo pelo histórico.
+1048	Entrar
+1049	Sair
+1050	Login
+1051	Precisa de um código
+1052	Não conectado
+1053	Login expirado
+1054	✓ Conectado
+1055	Tokens de reserva
+1056	Esse código não desbloqueia este ecash.
+1057	Este mint não informa como entrar.
+1058	Este mint exige que você entre. Abra os detalhes dele em Mints e toque em Entrar.
+1059	A página de login deste mint não permite entrar a partir de outro app (login de dispositivo).
+1060	Este nome aponta para algo que o blindsig não consegue pagar.
+1061	Confira se a página de login mostra o mesmo código. Quando terminar lá, volte aqui.
+1062	Verificando o nome…
+1063	Verificando seus mints…
+1064	Não foi possível acessar seus mints.
+1065	Bloquear (para uma pessoa ou com um código)
+1066	Bloquear com um código (HTLC)
+1067	Nada para organizar.
+1068	Abrir a página de login
+1069	Iniciando…
+1070	Troque muitas notas pequenas pelo menor número que soma o mesmo valor. Os tokens ficam menores e mints que cobram por nota custam menos depois. O mint cobra a taxa uma vez pela troca.
+1071	Aproximar de um terminal de pagamento (NFC)
+1072	Organizar o ecash
+1073	Organizar
+1074	Aguardando você entrar
+1075	Quem receber o token também precisa de um código, que você compartilha por outro meio. Você pode recuperá-lo a qualquer momento até ser resgatado.
+1076	Seu código
+1077	Um hash tem 64 caracteres hexadecimais.
+1078	Digite o código.
+1079	Bloqueie para uma pessoa ou com um código, não os dois.
+1080	Este mint não suporta bloqueio com código.
+1081	Aproxime o celular do terminal…
+1082	Conectado
+1083	Desconectado
+1084	Enviado ao terminal. Confira se ele mostra o pagamento.
+1085	{0} notas → {1}
+1086	taxa {0}
+1087	Organizado: {0} notas → {1}, taxa {2}
+1088	Organizado: {0} notas → {1}
+1089	✓ {0} verificado com DNSSEC
+1090	{0} exige que você entre com sua conta.
+1091	Bloqueado ao hash
+1092	Envie o código por um meio diferente do token. Para outras carteiras, a pré-imagem é
+1093	Este mint só atende quem entra com uma conta. Cada solicitação usa então um token cego, então o mint não consegue ligar seus pagamentos à sua conta.
+1094	taxa do mint pela organização
+1095	terminal da loja
+1096	não é um ₿nome@domínio
+1097	este nome tem mais de um registro de pagamento, então não pode ser usado
+1098	não há instruções de pagamento para este nome
+1099	este domínio não é protegido por DNSSEC
+1100	as assinaturas DNS deste nome não conferem
+1101	redirecionamentos demais para este nome

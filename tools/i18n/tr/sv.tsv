@@ -1040,3 +1040,63 @@
 1039	Den här signeraren kan inte kryptera plånboksdata. Använd din seed, en nsec eller en signerare som stöder NIP-44.
 1040	från din Nostr-plånbok
 1041	spenderat i en annan Nostr-app
+1042	Kod för att låsa upp
+1043	Eller en hash att låsa till (för swappar)
+1044	Tillbaka till terminalen (NFC)
+1045	Koden kopierad
+1046	Kopiera kod
+1047	Den kan bara lösas in med koden. Tills dess kan du ta tillbaka den från historiken.
+1048	Logga in
+1049	Logga ut
+1050	Inloggning
+1051	Kräver en kod
+1052	Inte inloggad
+1053	Inloggningen har gått ut
+1054	✓ Inloggad
+1055	Reservtoken
+1056	Den koden låser inte upp denna ecash.
+1057	Denna mint anger inte hur man loggar in.
+1058	Denna mint kräver inloggning. Öppna dess detaljer under Mints och tryck Logga in.
+1059	Mintens inloggningssida stöder inte inloggning från en annan app (enhetsinloggning).
+1060	Namnet pekar på något som blindsig inte kan betala.
+1061	Kontrollera att inloggningssidan visar samma kod. När du är klar där, kom tillbaka hit.
+1062	Kontrollerar namnet…
+1063	Kontrollerar dina mints…
+1064	Kunde inte nå dina mints.
+1065	Lås den (till en person eller med en kod)
+1066	Lås med en kod (HTLC)
+1067	Inget att städa upp.
+1068	Öppna inloggningssidan
+1069	Startar…
+1070	Byter många små sedlar mot så få som möjligt med samma belopp. Token blir kortare och mints som tar avgift per sedel kostar mindre senare. Minten tar sin avgift en gång för bytet.
+1071	Håll mot en betalterminal (NFC)
+1072	Städa upp ecash
+1073	Städa
+1074	Väntar på att du loggar in
+1075	Den som får token behöver också en kod, som du delar på annat sätt. Du kan ta tillbaka den när som helst tills den lösts in.
+1076	Din kod
+1077	En hash är 64 hexadecimala tecken.
+1078	Ange koden.
+1079	Lås till en person eller med en kod, inte båda.
+1080	Denna mint stöder inte låsning med kod.
+1081	Håll telefonen mot terminalen…
+1082	Inloggad
+1083	Utloggad
+1084	Skickat till terminalen. Kontrollera att den visar betalningen.
+1085	{0} sedlar → {1}
+1086	avgift {0}
+1087	Städat: {0} sedlar → {1}, avgift {2}
+1088	Städat: {0} sedlar → {1}
+1089	✓ {0} kontrollerad med DNSSEC
+1090	{0} kräver att du loggar in med ditt konto.
+1091	Låst till hash
+1092	Skicka koden på annat sätt än token. För andra plånböcker är preimagen
+1093	Denna mint betjänar bara dem som loggar in med ett konto. Varje begäran använder sedan en blind token, så minten kan inte koppla dina betalningar till ditt konto.
+1094	mintens avgift för uppstädning
+1095	butiksterminal
+1096	inte ett ₿namn@domän
+1097	namnet har mer än en betalningspost och kan därför inte användas
+1098	inga betalningsinstruktioner för detta namn
+1099	domänen skyddas inte av DNSSEC
+1100	DNS-signaturerna för namnet stämmer inte
+1101	för många omdirigeringar för namnet
