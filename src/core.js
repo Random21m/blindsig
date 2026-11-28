@@ -2,7 +2,7 @@
 import {
   Wallet, getEncodedToken, getTokenMetadata, serializeProofs, deserializeProofs,
   getP2PKExpectedWitnessPubkeys, getPubKeyFromPrivKey, OutputData, Amount, setGlobalRequestOptions,
-  verifyMintSignatures, maybeDeriveP2BKPrivateKeys, createHTLCHash,
+  verifyMintSignatures, maybeDeriveP2BKPrivateKeys, createHTLCHash, AuthManager, OIDCAuth,
 } from '@cashu/cashu-ts';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { mnemonicToSeedSync } from '@scure/bip39';
@@ -53,8 +53,10 @@ export function walletFor(url, unit = S.unit, seed = SEED, counters = counterSou
   return wallets.get(key);
 }
 async function makeWallet(url, unit, seed, counters) {
-  const w = new Wallet(url, { unit, bip39seed: seed, counterSource: counters });
   const c = (S.mintCache ||= {})[url];
+  const auth = mintNeedsAuth(url) ? await authFor(url) : undefined;
+  const w = new Wallet(url, { unit, bip39seed: seed, counterSource: counters, ...(auth ? { authProvider: auth } : {}) });
+  w.authed = !!auth;
   // offline (or the mint is down): carry on with the keys we saved last time, so offline sends and
   // checking the mint's signatures on ecash still work
   if (c && navigator.onLine === false) { w.loadMintFromCache(c.info, c.keys); w.fromCache = true; return w; }
@@ -78,6 +80,66 @@ function rememberKeys(url, w) {
   } catch (e) { console.warn('mint cache', e); }
 }
 export const dropWallets = () => wallets.clear();
+const dropWalletsFor = (url) => { for (const k of [...wallets.keys()]) if (k.startsWith(url + '|')) wallets.delete(k); };
+
+/* ---------------- mint login (NUT-21 clear auth, NUT-22 blind auth) ---------------- */
+// Some mints only serve people who log in with an account (OpenID Connect). The login gives a
+// short-lived token, which the wallet uses only to fetch blind auth tokens; each protected request
+// spends one of those, so the mint can't tie requests to the account. We keep the login's refresh
+// token and the spare blind tokens, so a restart doesn't mean logging in again.
+const authMgrs = new Map();
+const authCfg = (url) => mintOf(url)?.info?.auth || null;
+export const mintNeedsAuth = (url) => !!authCfg(url);
+async function authFor(url) {
+  if (authMgrs.has(url)) return authMgrs.get(url);
+  const p = (async () => {
+    const rec = ((S.mintAuth ||= {})[url] ||= {});
+    const cfg = authCfg(url) || {};
+    const am = new AuthManager(url, { desiredPoolSize: 10, maxPerMint: 10 });
+    if (cfg.discovery) {
+      const oidc = new OIDCAuth(cfg.discovery, { clientId: cfg.client || 'cashu-client', onTokens: (t) => { if (t.refresh_token) rec.refresh = t.refresh_token; delete rec.expired; save(); } });
+      am.attachOIDC(oidc); am.oidc = oidc;
+      if (rec.refresh) { try { await oidc.refresh(rec.refresh); } catch (e) { console.warn('mint login refresh', e); rec.expired = true; save(); } }
+    }
+    if (rec.pool && rec.pool.length) { try { am.importPool(deserializeProofs(rec.pool), 'replace'); } catch {} }
+    return am;
+  })();
+  authMgrs.set(url, p); p.catch(() => authMgrs.delete(url));
+  return p;
+}
+// spare blind tokens are bearer tokens like ecash: keep them with the wallet
+function saveAuth() {
+  for (const [url, p] of authMgrs) p.then((am) => {
+    const rec = (S.mintAuth ||= {})[url]; if (!rec) return;
+    const pool = am.exportPool(), ser = pool.length ? serializeProofs(pool) : [];
+    if (JSON.stringify(ser) !== JSON.stringify(rec.pool || [])) { rec.pool = ser; save(); }
+  }, () => {});
+}
+if (typeof addEventListener === 'function') { setInterval(saveAuth, 5000); addEventListener('pagehide', saveAuth); }
+export async function authStatus(url) {
+  const rec = S.mintAuth?.[url] || {};
+  let tokens = Array.isArray(rec.pool) ? rec.pool.length : 0;
+  if (authMgrs.has(url)) { try { tokens = (await authMgrs.get(url)).poolSize; } catch {} }
+  return { loggedIn: !!rec.refresh && !rec.expired, expired: !!rec.expired, tokens };
+}
+// device login: show the code and link, then wait() until the person has logged in at the provider
+export async function loginStart(url) {
+  const am = await authFor(url);
+  if (!am.oidc) throw new Error('This mint doesn’t say how to log in.');
+  let d;
+  try { d = await am.oidc.startDeviceAuth(); }
+  catch (e) { throw new Error(/device/i.test(String(e?.message)) ? 'This mint’s login page doesn’t support signing in from another app (device login).' : e?.message || String(e)); }
+  return {
+    code: d.user_code, link: d.verification_uri_complete || d.verification_uri, cancel: d.cancel,
+    wait: async () => { await d.poll(); try { await am.ensure(3); } catch (e) { console.warn('blind auth tokens', e); } saveAuth(); },
+  };
+}
+export async function logout(url) {
+  const am = await authFor(url);
+  am.setCAT(undefined); am.importPool([], 'replace');
+  if (S.mintAuth) delete S.mintAuth[url];
+  save();
+}
 // wallets made from saved keys are swapped for live ones once we're back online
 if (typeof addEventListener === 'function') addEventListener('online', () => { for (const [k, p] of wallets) p.then((w) => w.fromCache && wallets.delete(k), () => {}); });
 
@@ -93,6 +155,7 @@ async function infoSnapshot(w) {
       contact: (c.contact || []).map((x) => ({ method: x.method, info: x.info })), icon_url: c.icon_url || '',
       version: c.version || '', nuts: Object.keys(c.nuts || {}), tos_url: c.tos_url || '', urls: c.urls || [],
       nut11: !!(c.nuts && c.nuts['11']), nut15: !!(c.nuts && c.nuts['15']), nut17: !!(c.nuts && c.nuts['17']),
+      auth: c.nuts && (c.nuts['21'] || c.nuts['22']) ? { discovery: c.nuts['21']?.openid_discovery || '', client: c.nuts['21']?.client_id || '', blind: !!c.nuts['22'] } : null,
       mintMethods: ((c.nuts && c.nuts['4'] && c.nuts['4'].methods) || []).map((x) => ({ method: x.method, unit: x.unit, min: x.min_amount ?? null, max: x.max_amount ?? null })),
       meltMethods: ((c.nuts && c.nuts['5'] && c.nuts['5'].methods) || []).map((x) => ({ method: x.method, unit: x.unit, min: x.min_amount ?? null, max: x.max_amount ?? null })),
     },
@@ -109,13 +172,15 @@ export async function addMint(url) {
   else S.mints.push({ url, nick: '', motdSeen: '', ...snap });
   if (!S.active) { S.active = url; S.unit = snap.units.includes('sat') ? 'sat' : snap.units[0]; }
   save();
+  // a mint that turns out to need a login: make its wallets again, with the login attached
+  if (snap.info.auth && !w.authed) dropWalletsFor(url);
   try { navigator.storage?.persist?.(); } catch {}
   return url;
 }
 export async function refreshMint(url) {
   const w = await walletFor(url, 'sat');
   try { await w.loadMint(); } catch {}
-  const m = mintOf(url); if (m) { Object.assign(m, await infoSnapshot(w)); save(); }
+  const m = mintOf(url); if (m) { Object.assign(m, await infoSnapshot(w)); save(); if (m.info.auth && !w.authed) dropWalletsFor(url); }
   return m;
 }
 export function selectMint(url) {

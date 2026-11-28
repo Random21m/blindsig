@@ -55,6 +55,7 @@ function niceErr(e) {
   if (/not enough|insufficient/i.test(m)) return 'Not enough balance, including fees.';
   if (/already spent|token already/i.test(m)) return 'That ecash was already claimed.';
   if (/outputs have already been signed/i.test(m)) return 'Counter clash. Bump keyset counters in Advanced settings.';
+  if (/blind auth|clear auth|auth token|authenticat/i.test(m)) return 'This mint needs you to log in. Open its details under Mints and tap Log in.';
   return m.length > 160 ? m.slice(0, 160) + '…' : m;
 }
 function withBusy(btn, fn) {
@@ -1522,6 +1523,8 @@ function mintsSheet(first = false) {
     const ab = $('#ab', b);
     const add = withBusy(ab, async (u) => {
       const url = await C.addMint(u); C.selectMint(url); render(); toast('Mint added'); N.backupMints().catch(() => {}); if (N.nutzapsOn()) N.startNutzaps();
+      // a mint that needs an account: log in right away
+      if (C.mintNeedsAuth(url)) return loginSheet(url, () => (first ? mintsSheet(true) : mintDetails(url, () => mintsSheet())));
       if (first) mintsSheet(true); else closeSheet();
     });
     $('#add', b).onsubmit = (e) => { e.preventDefault(); const u = $('#mu', b).value.trim(); if (u) add(u); };
@@ -1535,6 +1538,23 @@ function mintsSheet(first = false) {
     if (fin) fin.onclick = () => { N.startAll(); if (restoring) restoreRun(S.mints.map((m) => m.url)); else { locked = false; closeSheet(); claimPending(); } };
   }, { locked: first });
 }
+// logging in to a mint that needs an account: the provider's page opens in another tab, we wait
+function loginSheet(url, back) {
+  const m = mintOf(url);
+  let dev = null, dead = false;
+  sheet('Log in', `<p>${esc(mintLabel(m))} needs you to log in with your account.</p>
+    <div id="lgx"><p class="dim">Starting…</p></div>`, (b) => {
+    onClose = () => { dead = true; try { dev?.cancel(); } catch {} };
+    C.loginStart(url).then((d) => {
+      dev = d; if (dead) return d.cancel();
+      $('#lgx', b).innerHTML = `<div class="addrcard"><small class="dim">Your code</small><b data-notr>${esc(d.code)}</b></div>
+        <a class="btn primary wide" href="${esc(d.link)}" target="_blank" rel="noopener noreferrer">Open the login page</a>
+        <p class="wait">Waiting for you to log in<span class="cur">_</span></p>
+        <p class="dim small">Check that the login page shows the same code. When you’re done there, come back here.</p>`;
+      return d.wait().then(() => { if (dead) return; toast('Logged in'); render(); back ? back() : closeSheet(); });
+    }).catch((e) => { if (dead) return; const x = $('#lgx', b); if (x) x.innerHTML = `<p class="warn">${esc(niceErr(e))}</p>`; });
+  }, back ? { back } : {});
+}
 function mintDetails(url, back) {
   const m = mintOf(url); if (!m) return;
   const i = m.info || {};
@@ -1545,6 +1565,7 @@ function mintDetails(url, back) {
     ${i.description ? `<p>${esc(i.description)}</p>` : ''}
     ${i.description_long ? `<details class="more"><summary>More about this mint</summary><p class="dim">${esc(i.description_long)}</p></details>` : ''}
     ${kv([...balances, ['Version', esc(i.version || '–')], ['Units', esc((m.units || ['sat']).join(', '))], ...((i.contact || []).map((c) => [esc(c.method), esc(c.info)]))])}
+    ${i.auth ? `<h3>Login</h3><p class="dim small">This mint only serves people who log in with an account. Each request then uses a blind token, so the mint can’t tie your payments to your account.</p><div id="lgn" class="dim">Checking…</div>` : ''}
     <label class="lbl" for="nick">Nickname</label>
     <div class="addm"><input id="nick" class="field" value="${esc(m.nick || '')}" placeholder="${esc(m.name || host(url))}" maxlength="40"><button class="btn" id="sv">Save</button></div>
     <h3>Supported features</h3>
@@ -1561,6 +1582,14 @@ function mintDetails(url, back) {
     const rf = $('#rf', b); rf.onclick = withBusy(rf, async () => { await C.refreshMint(url); mintDetails(url, back); });
     const use = $('#use', b); if (use) use.onclick = () => { C.selectMint(url); render(); closeSheet(); };
     $('#rm', b).onclick = () => removeMint(url, back);
+    if (i.auth) C.authStatus(url).then((a) => {
+      const el = $('#lgn', b); if (!el) return;
+      el.className = '';
+      el.innerHTML = kv([['Status', a.loggedIn ? '✓ Logged in' : a.expired ? '<span class="warnt">Login expired</span>' : 'Not logged in'], ['Spare tokens', String(a.tokens)]])
+        + (a.loggedIn ? '<button class="btn wide" id="lgo">Log out</button>' : '<button class="btn primary wide" id="lgi">Log in</button>');
+      const lgi = $('#lgi', b); if (lgi) lgi.onclick = () => loginSheet(url, () => mintDetails(url, back));
+      const lgo = $('#lgo', b); if (lgo) lgo.onclick = withBusy(lgo, async () => { await C.logout(url); toast('Logged out'); mintDetails(url, back); });
+    });
     if (st.auditor) C.auditInfo(url).then((a) => {
       const el = $('#aud', b); if (!el) return;
       if (!a) { el.innerHTML = `This mint isn’t audited yet. <a href="${esc(st.auditorUrl)}" target="_blank" rel="noopener">${esc(host(st.auditorUrl))}</a>`; return; }
@@ -1589,6 +1618,7 @@ function removeMint(url, back) {
       S.mints = S.mints.filter((x) => x.url !== url);
       for (const k of Object.keys(S.proofs)) if (k.startsWith(url + '|')) delete S.proofs[k];
       if (S.mintCache) delete S.mintCache[url];
+      if (S.mintAuth) delete S.mintAuth[url];
       if (S.active === url) { S.active = S.mints[0]?.url || null; if (S.active) C.selectMint(S.active); }
       save(); render(); N.backupMints().catch(() => {}); mintsSheet();
     };
