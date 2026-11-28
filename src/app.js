@@ -11,7 +11,7 @@ import {
   S, save, VERSION, DEFAULT_SETTINGS, getProofs, bal, total, sum, mintOf, mintLabel, host, esc, fmt, fmtParts, unitLabel,
   toBase, isFiatUnit, fiatOf, FIAT_CURRENCIES, KEY, wipeStore, storageKind, pinOn, pinInfo, setPin, clearPin, setLockAfter, flushSave,
   decoyOn, inDecoy, freshState, setDecoy, editDecoy, clearDecoy, isMainPin, isDecoyPin,
-  encryptBackup, decryptBackup, replaceState,
+  encryptBackup, decryptBackup, replaceState, changedSettings, resetSettings,
 } from './store.js';
 import * as L from './lock.js';
 import { checkNow } from './update.js';
@@ -1716,8 +1716,28 @@ const MENU = [
   ['experimental', 'Experimental', 'Swaps, auditor, Multinut'],
   ['advanced', 'Advanced', 'Developer tools and wallet reset'],
   ['language', 'Language', 'Choose your language'],
+  ['reset', 'Reset settings', 'Put every setting back to its default'],
   ['about', 'About', 'Version and links'],
 ];
+// names and values for the "Reset settings" list, using the words each setting has on its own screen
+const SETTING_NAMES = {
+  theme: 'Theme', lang: 'Language', keypad: 'On-screen keypad', btcSymbol: 'Use ₿ symbol',
+  sounds: 'Sounds', soundsOnSilent: 'Play on silent', haptics: 'Vibration', motion: 'Animations',
+  hideAmounts: 'Hide amounts', hideHistory: 'Hide history', mintWarn: 'Warn me when one mint holds more than', autoSpread: 'Spread automatically',
+  fiat: 'Get exchange rate from Coinbase', fiatCur: 'Fiat currency',
+  checkIncoming: 'Check incoming invoice', checkStartup: 'Check pending on startup', checkAll: 'Check all invoices', checkSent: 'Check sent ecash',
+  websockets: 'Use WebSockets', dleq: 'Include mint signatures', autoPaste: 'Paste ecash automatically', receiveSwaps: 'Receive swaps',
+  auditor: 'Mint auditor', auditorUrl: 'Auditor URL', auditorApi: 'Auditor API URL', multinut: 'Multinut',
+  nfcEncoding: 'NFC encoding', nfcQuick: 'Quick access to NFC', p2pkQuick: 'P2PK · Quick access', p2bk: 'Hide the key from the mint (P2BK)',
+};
+function settingValue(k, v) {
+  if (typeof v === 'boolean') return `<span>${v ? 'On' : 'Off'}</span>`;
+  if (k === 'theme') return `<span>${esc({ green: 'Green', white: 'White', amber: 'Amber', orange: 'Burnt orange' }[v] || v)}</span>`;
+  if (k === 'lang') { const n = I18N.LANGS.find(([c]) => c === v); return n ? `<span data-notr>${esc(n[1])}</span>` : '<span>Phone’s language</span>'; }
+  if (k === 'mintWarn') return `<span>${v ? esc(fmt(v, 'sat')) : 'Don’t warn me'}</span>`;
+  if (k === 'nfcEncoding') return `<span>${esc({ text: 'Text', url: 'URL', binary: 'Binary' }[v] || v)}</span>`;
+  return `<code>${esc(v)}</code>`;
+}
 function settingsSheet() {
   sheet('Settings', `<ul class="menu">${MENU.map(([k, t, d]) => `<li><button data-k="${k}"><span class="mt"><b>${t}</b><small>${d}</small></span><span aria-hidden="true">›</span></button></li>`).join('')}</ul>`, (b) => {
     $$('.menu button', b).forEach((x) => (x.onclick = () => SECTIONS[x.dataset.k]()));
@@ -1931,6 +1951,25 @@ const SECTIONS = {
         document.body.appendChild(sc);
       };
       $('#wipe', b).onclick = wipeSheet;
+    }, { back });
+  },
+  reset() {
+    // a language picked by hand that's the phone's own isn't a change anyone would notice
+    const ch = changedSettings().filter((k) => !(k === 'lang' && st.lang === I18N.detect()));
+    const arrow = document.documentElement.dir === 'rtl' ? '←' : '→';
+    sheet('Reset settings', `<p class="dim">Put every setting back to how it was when you first opened blindsig. Handy when something looks or works differently and you can’t remember what you changed.</p>
+      <p class="okline">Your seed phrase, ecash, mints, contacts and history stay as they are. So do your PIN lock and big-send confirmation.</p>
+      ${ch.length ? `<h3>What will change</h3>${kv(ch.map((k) => [esc(SETTING_NAMES[k] || k), `${settingValue(k, st[k])} ${arrow} <b>${settingValue(k, DEFAULT_SETTINGS[k])}</b>`]))}` : '<p class="dim">Every setting is already at its default.</p>'}
+      <button class="btn primary wide" id="go" ${ch.length ? '' : 'disabled'}>Reset settings</button>`, (b) => {
+      $('#go', b).onclick = async () => {
+        const langWas = st.lang || I18N.detect();
+        resetSettings();
+        if (langWas !== I18N.detect()) await I18N.setLang(I18N.detect());
+        FX.setSession(); schedule(); render();
+        if (st.fiat) C.loadPrice().then(render);
+        toast('Settings are back to their defaults');
+        SECTIONS.reset();
+      };
     }, { back });
   },
   language() {

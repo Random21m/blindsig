@@ -1101,3 +1101,12 @@
 1100	as assinaturas DNS deste nome não conferem
 1101	redirecionamentos demais para este nome
 1102	Escolha quando ele volta para você se não for resgatado.
+1103	Ativada
+1104	Redefinir configurações
+1105	Volta cada configuração ao padrão
+1106	Volta cada configuração ao que era quando você abriu o blindsig pela primeira vez. Útil quando algo parece ou funciona diferente e você não lembra o que mudou.
+1107	Sua frase semente, ecash, mints, contatos e histórico continuam como estão. O bloqueio por PIN e a confirmação de envios grandes também.
+1108	O que vai mudar
+1109	Todas as configurações já estão no padrão.
+1110	As configurações voltaram ao padrão
+1111	Idioma do celular

@@ -1101,3 +1101,12 @@
 1100	bu adın DNS imzaları doğrulanmıyor
 1101	bu ad için çok fazla yönlendirme var
 1102	Alınmazsa ne zaman sana geri döneceğini seç.
+1103	Açık
+1104	Ayarları sıfırla
+1105	Tüm ayarları varsayılana döndür
+1106	Her ayarı blindsig’i ilk açtığınızdaki haline döndürür. Bir şey farklı görünüyor ya da çalışıyorsa ve neyi değiştirdiğinizi hatırlamıyorsanız işe yarar.
+1107	Seed ifadeniz, ecash, mint’ler, kişiler ve geçmiş olduğu gibi kalır. PIN kilidiniz ve büyük gönderim onayı da değişmez.
+1108	Neler değişecek
+1109	Tüm ayarlar zaten varsayılan.
+1110	Ayarlar varsayılana döndü
+1111	Telefonun dili

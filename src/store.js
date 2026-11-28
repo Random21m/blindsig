@@ -2,7 +2,7 @@
 import { serializeProofs, deserializeProofs, sumProofs } from '@cashu/cashu-ts';
 
 export const KEY = 'blindsig.v1';
-export const VERSION = '1.25.1';
+export const VERSION = '1.26.0';
 
 export const DEFAULT_SETTINGS = {
   theme: 'green', // green | white | amber | orange
@@ -294,6 +294,16 @@ export async function wipeStore() {
 }
 export const storageKind = () => (db ? 'IndexedDB' : 'localStorage');
 export const set = () => S.settings;
+// "Reset settings" puts preferences back to DEFAULT_SETTINGS. It leaves out the big-send PIN check
+// (turning it off would help whoever holds the unlocked phone), and it never touches the seed,
+// ecash, mints, contacts, history, or the PIN lock (which lives in the envelope, not in settings).
+export const RESET_KEEP = ['confirmOver'];
+export const changedSettings = () => Object.keys(DEFAULT_SETTINGS).filter((k) => !RESET_KEEP.includes(k) && S.settings[k] !== DEFAULT_SETTINGS[k]);
+// in place: app.js holds a reference to S.settings
+export function resetSettings() {
+  for (const k of Object.keys(DEFAULT_SETTINGS)) if (!RESET_KEEP.includes(k)) S.settings[k] = DEFAULT_SETTINGS[k];
+  save();
+}
 
 /* ---------- proofs ---------- */
 const pk = (url, unit) => `${url}|${unit}`;

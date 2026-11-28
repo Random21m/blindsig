@@ -1101,3 +1101,12 @@
 1100	DNS podpisy tohoto jména nesedí
 1101	příliš mnoho přesměrování pro toto jméno
 1102	Vyberte, kdy se vám vrátí, pokud ho nikdo nepřevezme.
+1103	Zapnuto
+1104	Obnovit nastavení
+1105	Vrátit všechna nastavení na výchozí
+1106	Vrátí každé nastavení tak, jak bylo při prvním otevření blindsig. Hodí se, když něco vypadá nebo funguje jinak a nepamatujete si, co jste změnili.
+1107	Seed fráze, ecash, minty, kontakty a historie zůstanou, jak jsou. Stejně tak zámek PINem a potvrzování velkých plateb.
+1108	Co se změní
+1109	Všechna nastavení už jsou výchozí.
+1110	Nastavení jsou zpět na výchozích hodnotách
+1111	Jazyk telefonu
