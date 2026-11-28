@@ -836,3 +836,20 @@
 835	Hediye alındı
 836	Bu hediye tek bir koda sığmayacak kadar çok küçük parçadan oluşuyor. Bunun yerine bağlantıyı gönder.
 837	Almak için bağlantıyı aç
+838	Tek bir kişiye kilitle (P2PK)
+839	Bu mint kilitli ecash'i desteklemiyor.
+840	Almazsa şu süreden sonra bana geri gönder
+841	1 saat
+842	1 gün
+843	1 hafta
+844	30 gün
+845	O zamana kadar yalnızca o kişi alabilir. Sonra otomatik olarak sana geri döner.
+846	Kilitli ecash çevrim dışı gönderilemez. Çevrim dışı modu kapat.
+847	Geri döndü
+848	Geri döndü: zamanında alınmadı
+849	{0} tarihine kadar alınmazsa sana geri döner.
+850	Yalnızca kilitlendiği kişi alabilir.
+851	Son alma
+852	Sonra gönderene geri döner.
+853	iadeler
+854	{0} sana geri döndü. Zamanında alınmadı.

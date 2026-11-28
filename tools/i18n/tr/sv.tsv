@@ -836,3 +836,20 @@
 835	Presenten inlöst
 836	Presenten har för många små delar för att få plats i en kod. Skicka länken i stället.
 837	Öppna länken för att lösa in
+838	Lås till en person (P2PK)
+839	Den här minten stöder inte låst ecash.
+840	Om de inte löser in den, skicka tillbaka till mig efter
+841	1 timme
+842	1 dag
+843	1 vecka
+844	30 dagar
+845	Fram till dess kan bara den personen lösa in den. Sedan kommer den tillbaka till dig automatiskt.
+846	Låst ecash kan inte skickas offline. Stäng av offlineläget.
+847	Kom tillbaka
+848	Kom tillbaka: inte inlöst i tid
+849	Om den inte löses in senast {0} kommer den tillbaka till dig.
+850	Bara personen den är låst till kan lösa in den.
+851	Lös in senast
+852	Därefter går den tillbaka till avsändaren.
+853	returer
+854	{0} kom tillbaka till dig. Den löstes inte in i tid.

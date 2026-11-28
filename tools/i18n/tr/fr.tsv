@@ -836,3 +836,20 @@
 835	Cadeau récupéré
 836	Ce cadeau contient trop de petites parties pour tenir dans un seul code. Envoyez plutôt le lien.
 837	Ouvrez le lien pour le récupérer
+838	Verrouiller pour une personne (P2PK)
+839	Ce mint ne prend pas en charge l’ecash verrouillé.
+840	S’il n’est pas récupéré, me le renvoyer après
+841	1 heure
+842	1 jour
+843	1 semaine
+844	30 jours
+845	D’ici là, seule cette personne peut le récupérer. Ensuite, il vous revient automatiquement.
+846	L’ecash verrouillé ne peut pas être envoyé hors ligne. Désactivez le mode hors ligne.
+847	Revenu
+848	Revenu : non récupéré à temps
+849	S’il n’est pas récupéré avant le {0}, il vous revient.
+850	Seule la personne à qui il est verrouillé peut le récupérer.
+851	À récupérer avant
+852	Ensuite, il retourne à l’expéditeur.
+853	retours
+854	{0} vous est revenu. Il n’a pas été récupéré à temps.

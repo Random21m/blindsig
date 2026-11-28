@@ -120,7 +120,7 @@ a{color:var(--ac)}
 .p-pending,.p-open{color:var(--warn);border-color:rgba(232,160,74,.45)}
 .p-failed{color:var(--err);border-color:rgba(236,138,114,.45)}
 .p-live{color:var(--ac);border-color:var(--ac-soft)}
-.s-expired,.s-failed,.s-reclaimed{opacity:.55}
+.s-expired,.s-failed,.s-reclaimed,.s-returned{opacity:.55}
 .empty{color:var(--dim);padding:24px 4px;margin:0}
 
 /* sheet */
@@ -300,7 +300,7 @@ details.more[open]{padding-bottom:14px}
 @media print{html.printing body>*:not(#printArea){display:none!important}html.printing #printArea{display:block}html.printing,html.printing body{background:#fff!important}#printArea img{display:block;width:5in;height:auto;margin:0 auto}@page{margin:.5in}}
 .pct{direction:ltr;display:flex;justify-content:space-between;margin:8px 0 14px;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.pcnow{animation:none}}
-.cts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.ctc{min-height:40px;max-width:100%;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font:500 14px var(--sans);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctc b{font-weight:500}.ctc.more{color:var(--dim)}.pinpad .pbio{display:block;max-width:300px;margin:4px auto 0}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
+.cts{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.ctc{min-height:40px;max-width:100%;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font:500 14px var(--sans);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctc b{font-weight:500}.ctc.more{color:var(--dim)}.ctc.on{border-color:var(--ac);color:var(--ac);background:var(--ac-soft)}.pinpad .pbio{display:block;max-width:300px;margin:4px auto 0}.pforget{text-align:start}.pforget p{margin:0 0 12px}.pforget .btn{margin-top:10px}
 @media (max-height:700px){.pinpad .pkp{grid-template-columns:repeat(3,64px);gap:10px 26px}.pinpad .pkp button{width:64px;height:64px;font-size:23px}.pinpad .ps{margin-bottom:10px}}
 .note{margin-top:18px}.note .lbl{margin-top:0}.note textarea{font:16px/1.45 var(--sans);word-break:normal;overflow-wrap:anywhere}.note .small{margin:6px 0 0}
 #chkAll{margin-top:10px}

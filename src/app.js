@@ -145,9 +145,13 @@ const KIND = {
   'ln-in': ['Received', 'Lightning'], 'ln-out': ['Sent', 'Lightning'], 'ecash-in': ['Received', 'Ecash'], 'ecash-out': ['Sent', 'Ecash'],
   'chain-in': ['Received', 'On-chain'], 'chain-out': ['Sent', 'On-chain'],
 };
+const RETURN_AFTER = [[0, 'Never'], [3600e3, '1 hour'], [864e5, '1 day'], [7 * 864e5, '1 week'], [30 * 864e5, '30 days']];
+// contacts saved with an npub can be picked as the person to lock ecash to
+const keyContacts = () => (S.contacts || []).map((c) => ({ ...c, npub: (String(c.to).match(/^(npub1[02-9ac-hj-np-z]+)(@|$)/i) || [])[1] })).filter((c) => c.npub);
+const whenShort = (ts) => new Date(ts).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const isGiftMemo = (m) => /^🎁/u.test(m || '');
 const kindOf = (h) => (h.gift || (h.kind === 'ecash-in' && isGiftMemo(h.memo)) ? [KIND[h.kind][0], 'Gift card'] : KIND[h.kind]);
-const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed' };
+const STATUS = { pending: 'Pending', done: '', claimed: '', reclaimed: 'Reclaimed', returned: 'Came back', expired: 'Expired', failed: 'Failed' };
 let logFilter = 'all', logLimit = 100;
 function stamp(ts) {
   const d = new Date(ts), s = (Date.now() - ts) / 1000;
@@ -553,7 +557,8 @@ function receiveSheet(tab = 'ecash', prefill = '') {
       const known = mintOf(parsed.mint), me = ++seq;
       const draw = (lock) => {
         $('#prev', b).innerHTML = (isGiftMemo(parsed.memo) ? giftBanner(parsed) : '') + kv([['Amount', `<b>${esc(fmt(parsed.amount, parsed.unit))}</b>`], ['Mint', esc(host(parsed.mint))], parsed.memo && !isGiftMemo(parsed.memo) && ['Memo', esc(parsed.memo)],
-          lock && lock.locked && ['Lock', lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>']])
+          lock && lock.locked && ['Lock', lock.mine ? '✓ Locked to your key' : '<span class="warnt">Locked to someone else</span>'],
+          lock && lock.until && ['Claim by', `${esc(whenShort(lock.until))}<br><small class="dim">After that it goes back to the sender.</small>`]])
           + (known ? '' : '<p class="warn">Unknown mint. Receiving adds it to your wallet. Only accept ecash from mints you trust.</p>');
       };
       draw();
@@ -661,9 +666,13 @@ function sendSheet(tab = 'ecash', prefill = '') {
       ${amountField('amt', `Available: ${esc(fmt(have))}`)}
       <input id="memo" class="field" placeholder="Memo (optional)" maxlength="80" autocomplete="off">
       <label class="chk"><input type="checkbox" id="off"> <span>Send offline (exact amount only, no mint contact)</span></label>
-      <details class="more"><summary>Lock to a public key (P2PK)</summary>
+      <details class="more" id="lockBox"><summary>Lock to one person (P2PK)</summary>
+        ${keyContacts().length ? `<div class="cts" role="list" aria-label="Contacts">${keyContacts().map((c) => `<button type="button" role="listitem" class="ctc" data-k="${esc(c.npub)}"><b dir="auto">${esc(c.name)}</b></button>`).join('')}</div>` : ''}
         <input id="lock" class="field" placeholder="Public key or npub" autocomplete="off" autocapitalize="off" spellcheck="false">
-        <p class="hint">Only the holder of the matching private key can redeem it.</p></details>
+        <p class="hint">Only the holder of the matching private key can redeem it.</p>
+        ${mintOf(S.active)?.info?.nut11 === false ? '<p class="warn small">This mint doesn’t support locked ecash.</p>' : `<label class="lbl" for="ret">If they don’t claim it, send it back to me after</label>
+        <select id="ret" class="field">${RETURN_AFTER.map(([v, l]) => `<option value="${v}" ${v === 864e5 ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <p class="hint">Until then only they can claim it. Afterwards it comes back to you automatically.</p>`}</details>
       <button class="btn primary wide" id="mk">Create token</button>
       <button class="btn wide" id="gft"><span aria-hidden="true">🎁</span> Make a gift card</button>
     </div>
@@ -681,13 +690,17 @@ function sendSheet(tab = 'ecash', prefill = '') {
       const lockRaw = $('#lock', b).value.trim();
       const lockTo = lockRaw ? C.parsePubkey(lockRaw) : undefined;
       const offline = $('#off', b).checked;
+      if (lockTo && offline) return nope('Locked ecash can’t be sent offline. Turn off offline mode.');
+      if (lockTo && mintOf(S.active)?.info?.nut11 === false) return nope('This mint doesn’t support locked ecash.');
       if (!(await bigOk(a))) return;
+      const returnAfter = lockTo ? +($('#ret', b)?.value || 0) : 0;
       let h;
-      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, offline }); }
+      try { h = await C.sendEcash(a, { memo: $('#memo', b).value.trim() || undefined, lockTo, returnAfter, offline }); }
       catch (e) { if (offline) throw new Error('No exact match for offline sending. Turn off offline mode or pick another amount.'); throw e; }
       render(); tokenView(h); C.watchSent(sentClaimed);
       FX.play('sent'); FX.buzz('sent'); // money leaving: the send sound, no confetti
     });
+    $$('#lockBox .ctc', b).forEach((x) => (x.onclick = () => { $('#lock', b).value = x.dataset.k; $$('#lockBox .ctc', b).forEach((y) => y.classList.toggle('on', y === x)); }));
     $('#gft', b).onclick = () => giftSheet(readAmt(b), $('#memo', b).value.trim());
     const ln = $('#ln', b), pay = $('#pay', b), x = $('#lnx', b);
     let stage = null, quote = null, meta = null, label = '', invoice = '', req = null, chainInfo = null, method = 'bolt11', feeIndex;
@@ -820,12 +833,13 @@ function tokenView(h, fromLog) {
   sheet('Ecash token', `<div class="qrwrap" id="tq"></div>
     <p class="big">${bigAmt(h.amount, h.unit)}</p>
     ${h.fee ? `<p class="dim small center">Includes ${esc(fmt(h.fee, h.unit))} mint fee</p>` : ''}
-    ${h.lockTo ? `<p class="dim small center">Locked to ${esc(h.lockTo.slice(0, 12))}…</p>` : ''}
+    ${h.lockTo ? `<p class="dim small center">Locked to ${esc(lockName(h.lockTo))}</p>` : ''}
+    ${h.refundAt && h.status === 'pending' ? `<p class="okline small center">If it isn’t claimed by ${esc(whenShort(h.refundAt))}, it comes back to you.</p>` : ''}
     ${armor(h.token)}
     <div class="btnrow"><button class="btn primary" id="cp">Copy</button><button class="btn" id="cl">Copy link</button><button class="btn" id="ce" aria-label="Copy as emoji" title="Copy as emoji"><span aria-hidden="true">🥜</span> Emoji</button>${navigator.share ? '<button class="btn" id="sh">Share</button>' : ''}</div>
     ${'NDEFReader' in window ? '<button class="btn wide" id="nfw">Write to NFC card</button>' : ''}
-    ${fromLog ? '<div class="btnrow"><button class="btn" id="chk">Check status</button><button class="btn" id="rc">Reclaim</button></div>' : ''}
-    <p class="dim small center">Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.</p>`, (b) => {
+    ${fromLog ? `<div class="btnrow"><button class="btn" id="chk">Check status</button>${!h.lockTo || (h.refundAt && h.refundAt <= Date.now()) ? '<button class="btn" id="rc">Reclaim</button>' : ''}</div>` : ''}
+    <p class="dim small center">${h.lockTo ? 'Only the person it’s locked to can claim it.' : 'Whoever holds this token can spend it. Until it’s claimed you can reclaim it from your history.'}</p>`, (b) => {
     addNote(b, h);
     stop = qrToken($('#tq', b), h.token);
     onClose = () => stop();
@@ -837,9 +851,14 @@ function tokenView(h, fromLog) {
     if (fromLog) {
       const chk = $('#chk', b), rc = $('#rc', b);
       chk.onclick = withBusy(chk, async () => { const s = await C.checkClaimed(h); toast(s === 'claimed' ? 'The token was claimed.' : 'Not claimed yet.', s === 'claimed' ? 'ok' : 'warn'); if (s === 'claimed') detail(h); });
-      rc.onclick = withBusy(rc, async () => { await C.reclaim(h); toast('Reclaimed into your wallet'); render(); detail(h); });
+      if (rc) rc.onclick = withBusy(rc, async () => { await C.reclaim(h); toast('Reclaimed into your wallet'); render(); detail(h); });
     }
   });
+}
+// a lock target shown as the contact's name when we know it
+function lockName(pub) {
+  const c = keyContacts().find((x) => { try { return C.parsePubkey(x.npub) === pub; } catch { return false; } });
+  return c ? c.name : pub.slice(0, 12) + '…';
 }
 /* ================= gift cards ================= */
 // the message rides in the token's memo ("🎁 Happy holidays! — Sam"), so any Cashu wallet shows it
@@ -972,6 +991,8 @@ function done(h, verb, saveTo) {
 }
 
 const sentClaimed = () => { render(); };
+// a locked send nobody claimed in time is back in the wallet
+const cameBack = (h) => { toast(`${fmt(h.amount, h.unit)} came back to you. It wasn’t claimed in time.`); FX.play('received'); render(); };
 
 /* ================= history detail ================= */
 // a private note on any transaction: kept with your history on this device (encrypted with the
@@ -1000,7 +1021,7 @@ function detail(h) {
     return;
   }
   const [verb, via] = kindOf(h);
-  const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
+  const stx = { pending: 'Pending', done: 'Complete', claimed: 'Claimed', reclaimed: 'Reclaimed', returned: 'Came back: not claimed in time', expired: 'Expired', failed: 'Failed, ecash returned' }[h.status];
   sheet(`${verb} · ${via}`, `<p class="big">${bigAmt(h.amount, h.unit, h.kind.endsWith('out') ? '−' : '+')}</p>
     ${kv([['Status', stx], h.kind === 'chain-out' && ['To', `<code>${esc(h.request)}</code>`], ['Mint', esc(host(h.mint))], ['Time', new Date(h.ts).toLocaleString()], h.fee && ['Fee', esc(fmt(h.fee, h.unit))], h.memo && h.memo !== h.request && ['Memo', `<span dir="auto">${esc(h.memo)}</span>`], h.preimage && ['Preimage', `<code>${esc(h.preimage)}</code>`], h.outpoint && ['Transaction', `<code>${esc(h.outpoint)}</code>`]])}
     ${h.request && h.kind !== 'chain-out' ? `<details class="more"><summary>${h.method === 'bolt12' ? 'Offer' : 'Invoice'}</summary><pre class="armor sm">${esc(h.request)}</pre><button class="btn wide" id="cpi">${h.method === 'bolt12' ? 'Copy offer' : 'Copy invoice'}</button></details>` : ''}
@@ -1234,7 +1255,7 @@ const SECTIONS = {
       <div class="btnrow"><button class="btn primary" id="gen">Generate key</button><button class="btn" id="imp">Import nsec</button></div>
       ${toggle('t_p2pkQuick', 'Quick access', 'Show your locking key in Receive.', st.p2pkQuick)}
       <h3>${`Keys: ${S.p2pk.length}`}</h3>
-      <ul class="keys">${S.p2pk.map((k) => `<li><button data-p="${esc(k.pub)}"><code>${esc(k.pub.slice(0, 20))}…${esc(k.pub.slice(-6))}</code>${k.used ? '<em class="pill">used</em>' : ''}</button></li>`).join('')}</ul>`, (b) => {
+      <ul class="keys">${S.p2pk.map((k) => `<li><button data-p="${esc(k.pub)}"><code>${esc(k.pub.slice(0, 20))}…${esc(k.pub.slice(-6))}</code>${k.refund ? '<em class="pill">returns</em>' : k.used ? '<em class="pill">used</em>' : ''}</button></li>`).join('')}</ul>`, (b) => {
       $('#gen', b).onclick = () => { C.newP2pkKey(); toast('Key generated'); SECTIONS.p2pk(); };
       $('#imp', b).onclick = () => importNsecSheet();
       bindToggles(b, ['p2pkQuick']);
@@ -1627,6 +1648,7 @@ function schedule() {
   if (st.checkAll) bg.push(setInterval(() => { if (!document.hidden) C.settleAll({ invoices: true, sent: false, all: true }).then(render); }, 60000));
   if (st.fiat) bg.push(setInterval(() => { if (!document.hidden) C.loadPrice().then((ch) => ch && render()); }, 30000));
   bg.push(setInterval(render, 60000));
+  bg.push(setInterval(() => { if (!document.hidden) C.returnDue(cameBack); }, 30000));
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -1727,13 +1749,14 @@ setTimeout(() => {
   else if (S.afterImport) { delete S.afterImport; save(); restoreRun(S.mints.map((m) => m.url), undefined, true); C.watchSent(sentClaimed); }
   else {
     if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render);
+    C.returnDue(cameBack);
     S.mints.forEach((m) => { if (!m.updated || Date.now() - m.updated > 6 * 3600e3) C.refreshMint(m.url).then(render).catch(() => {}); });
     C.watchSent(sentClaimed);
   }
   C.loadPrice().then(render);
   if (S.mnemonic) N.startAll();
 }, chan ? 350 : 0);
-document.addEventListener('visibilitychange', () => { if (!blocked && !document.hidden && S.mints.length && st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render); });
+document.addEventListener('visibilitychange', () => { if (!blocked && !document.hidden && S.mints.length) { if (st.checkStartup) C.settleAll({ invoices: true, sent: st.checkSent }).then(render); C.returnDue(cameBack); } });
 
 const incoming = (location.hash.match(/token=([^&]+)/) || [])[1] || new URLSearchParams(location.search).get('token');
 if (incoming && S.mnemonic) { history.replaceState(null, '', location.pathname); setTimeout(() => route(decodeURIComponent(incoming)), 500); }

@@ -836,5 +836,22 @@
 "I already have a wallet",
 "Gift claimed",
 "This gift has too many small parts to fit in one code. Send the link instead.",
-"Open the link to claim"
+"Open the link to claim",
+"Lock to one person (P2PK)",
+"This mint doesn’t support locked ecash.",
+"If they don’t claim it, send it back to me after",
+"1 hour",
+"1 day",
+"1 week",
+"30 days",
+"Until then only they can claim it. Afterwards it comes back to you automatically.",
+"Locked ecash can’t be sent offline. Turn off offline mode.",
+"Came back",
+"Came back: not claimed in time",
+"If it isn’t claimed by {0}, it comes back to you.",
+"Only the person it’s locked to can claim it.",
+"Claim by",
+"After that it goes back to the sender.",
+"returns",
+"{0} came back to you. It wasn’t claimed in time."
 ]

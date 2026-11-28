@@ -836,3 +836,20 @@
 835	Presente resgatado
 836	Este presente tem partes pequenas demais para caber em um código. Envie o link.
 837	Abra o link para resgatar
+838	Bloquear para uma pessoa (P2PK)
+839	Este mint não aceita ecash bloqueado.
+840	Se a pessoa não resgatar, devolver para mim depois de
+841	1 hora
+842	1 dia
+843	1 semana
+844	30 dias
+845	Até lá, só essa pessoa pode resgatar. Depois, ele volta para você automaticamente.
+846	Ecash bloqueado não pode ser enviado offline. Desative o modo offline.
+847	Voltou
+848	Voltou: não foi resgatado a tempo
+849	Se não for resgatado até {0}, ele volta para você.
+850	Só a pessoa para quem está bloqueado pode resgatá-lo.
+851	Resgatar até
+852	Depois disso, volta para quem enviou.
+853	devoluções
+854	{0} voltou para você. Não foi resgatado a tempo.

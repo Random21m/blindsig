@@ -836,3 +836,20 @@
 835	Geschenk eingelöst
 836	Dieses Geschenk besteht aus zu vielen kleinen Teilen für einen Code. Schick stattdessen den Link.
 837	Öffne den Link zum Einlösen
+838	Für eine Person sperren (P2PK)
+839	Diese Mint unterstützt kein gesperrtes Ecash.
+840	Wenn es nicht eingelöst wird, zurück an mich nach
+841	1 Stunde
+842	1 Tag
+843	1 Woche
+844	30 Tagen
+845	Bis dahin kann nur diese Person es einlösen. Danach kommt es automatisch zu dir zurück.
+846	Gesperrtes Ecash kann nicht offline gesendet werden. Schalte den Offline-Modus aus.
+847	Zurückgekommen
+848	Zurückgekommen: nicht rechtzeitig eingelöst
+849	Wird es bis {0} nicht eingelöst, kommt es zu dir zurück.
+850	Nur die Person, für die es gesperrt ist, kann es einlösen.
+851	Einlösen bis
+852	Danach geht es an den Absender zurück.
+853	Rückgaben
+854	{0} sind zu dir zurückgekommen. Sie wurden nicht rechtzeitig eingelöst.

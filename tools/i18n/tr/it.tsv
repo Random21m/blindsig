@@ -836,3 +836,20 @@
 835	Regalo riscosso
 836	Questo regalo ha troppe piccole parti per stare in un solo codice. Invia invece il link.
 837	Apri il link per riscuoterlo
+838	Blocca per una persona (P2PK)
+839	Questo mint non supporta ecash bloccati.
+840	Se non li riscuote, rimandali a me dopo
+841	1 ora
+842	1 giorno
+843	1 settimana
+844	30 giorni
+845	Fino ad allora solo quella persona può riscuoterli. Poi tornano a te automaticamente.
+846	Gli ecash bloccati non si possono inviare offline. Disattiva la modalità offline.
+847	Tornati
+848	Tornati: non riscossi in tempo
+849	Se non vengono riscossi entro {0}, tornano a te.
+850	Solo la persona a cui sono bloccati può riscuoterli.
+851	Riscuoti entro
+852	Dopo tornano a chi li ha inviati.
+853	rimborsi
+854	{0} sono tornati a te. Non sono stati riscossi in tempo.

@@ -836,3 +836,20 @@
 835	Dárek vyzvednut
 836	Tento dárek má příliš mnoho malých částí, aby se vešel do jednoho kódu. Pošlete raději odkaz.
 837	Otevřete odkaz a vyzvedněte si ho
+838	Zamknout pro jednoho člověka (P2PK)
+839	Tento mint zamčený ecash nepodporuje.
+840	Pokud si ho nevyzvedne, vrátit mi ho po
+841	1 hodině
+842	1 dni
+843	1 týdnu
+844	30 dnech
+845	Do té doby si ho může vyzvednout jen ten člověk. Potom se vám automaticky vrátí.
+846	Zamčený ecash nelze poslat offline. Vypněte offline režim.
+847	Vráceno
+848	Vráceno: nevyzvednuto včas
+849	Pokud si ho nikdo nevyzvedne do {0}, vrátí se vám.
+850	Vyzvednout si ho může jen ten, pro koho je zamčený.
+851	Vyzvednout do
+852	Potom se vrátí odesílateli.
+853	vrácení
+854	{0} se vám vrátilo. Nebylo vyzvednuto včas.

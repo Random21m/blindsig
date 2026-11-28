@@ -836,3 +836,20 @@
 835	Regalo reclamado
 836	Este regalo tiene demasiadas partes pequeñas para caber en un código. Envía el enlace en su lugar.
 837	Abre el enlace para reclamarlo
+838	Bloquear para una persona (P2PK)
+839	Este mint no admite ecash bloqueado.
+840	Si no lo reclama, devolvérmelo después de
+841	1 hora
+842	1 día
+843	1 semana
+844	30 días
+845	Hasta entonces solo esa persona puede reclamarlo. Después vuelve a ti automáticamente.
+846	El ecash bloqueado no se puede enviar sin conexión. Desactiva el modo sin conexión.
+847	Devuelto
+848	Devuelto: no se reclamó a tiempo
+849	Si no se reclama antes del {0}, vuelve a ti.
+850	Solo la persona a la que está bloqueado puede reclamarlo.
+851	Reclamar antes de
+852	Después vuelve a quien lo envió.
+853	devoluciones
+854	{0} ha vuelto a ti. No se reclamó a tiempo.

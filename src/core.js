@@ -66,7 +66,7 @@ async function infoSnapshot(w) {
       description: c.description || '', description_long: c.description_long || '', motd: c.motd || '',
       contact: (c.contact || []).map((x) => ({ method: x.method, info: x.info })), icon_url: c.icon_url || '',
       version: c.version || '', nuts: Object.keys(c.nuts || {}), tos_url: c.tos_url || '', urls: c.urls || [],
-      nut15: !!(c.nuts && c.nuts['15']), nut17: !!(c.nuts && c.nuts['17']),
+      nut11: !!(c.nuts && c.nuts['11']), nut15: !!(c.nuts && c.nuts['15']), nut17: !!(c.nuts && c.nuts['17']),
       mintMethods: ((c.nuts && c.nuts['4'] && c.nuts['4'].methods) || []).map((x) => ({ method: x.method, unit: x.unit, min: x.min_amount ?? null, max: x.max_amount ?? null })),
       meltMethods: ((c.nuts && c.nuts['5'] && c.nuts['5'].methods) || []).map((x) => ({ method: x.method, unit: x.unit, min: x.min_amount ?? null, max: x.max_amount ?? null })),
     },
@@ -201,27 +201,32 @@ export function parseToken(str) {
 export async function tokenLockInfo(t) {
   const w = await walletFor(t.mint, t.unit);
   const { proofs } = w.decodeToken(t.str);
-  const locks = new Set();
-  for (const p of proofs) { try { getP2PKExpectedWitnessPubkeys(p.secret).forEach((k) => locks.add(k)); } catch {} }
+  const locks = new Set(); let until = 0;
+  for (const p of proofs) {
+    try { getP2PKExpectedWitnessPubkeys(p.secret).forEach((k) => locks.add(k)); } catch {}
+    try { const [kind, d] = JSON.parse(p.secret); const lt = kind === 'P2PK' && (d.tags || []).find((t) => t[0] === 'locktime'); if (lt) until = Math.max(until, +lt[1] * 1000); } catch {}
+  }
   if (!locks.size) return { locked: false };
   const mine = S.p2pk.filter((k) => locks.has(k.pub) || locks.has('02' + k.pub.slice(2)) || locks.has('03' + k.pub.slice(2)));
-  return { locked: true, mine: mine.length > 0, keys: [...locks] };
+  return { locked: true, mine: mine.length > 0, keys: [...locks], until: until > Date.now() ? until : 0 };
 }
 const privkeys = () => S.p2pk.map((k) => k.priv);
 
-export async function sendEcash(amount, { memo, lockTo, offline, keysetId } = {}) {
+export async function sendEcash(amount, { memo, lockTo, returnAfter, offline, keysetId } = {}) {
   const url = S.active, unit = S.unit, w = await walletFor(url, unit);
   const before = bal(url, unit);
   if (amount > before) throw new Error('insufficient balance at this mint');
   let res;
+  // locked to someone, optionally with a way back: after the locktime our refund key can take it
+  const refundAt = lockTo && returnAfter > 0 ? Date.now() + returnAfter : 0;
   if (offline) res = await w.ops.send(amount, getProofs(url, unit)).offlineExactOnly(false).includeFees(false).run();
-  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo }).includeFees(true).run();
+  else if (lockTo) res = await w.ops.send(amount, getProofs(url, unit)).asP2PK({ pubkey: lockTo, ...(refundAt ? { locktime: Math.ceil(refundAt / 1000), refundKeys: [refundKey().pub] } : {}) }).includeFees(true).run();
   else res = await w.send(amount, getProofs(url, unit), { includeFees: true, ...(keysetId ? { keysetId } : {}) });
   // never record a send unless the token really carries the amount
   if (!res.send.length || sum(res.send) < amount) throw new Error(offline ? 'no exact match for offline sending' : 'could not prepare the token');
   setProofs(url, res.keep, unit);
   const token = getEncodedToken({ mint: url, proofs: res.send, unit, ...(memo ? { memo } : {}) }, { removeDleq: true });
-  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo });
+  return H({ kind: 'ecash-out', amount, unit, fee: Math.max(0, before - sum(res.keep) - amount), mint: url, status: 'pending', token, memo, lockTo, ...(refundAt && !offline ? { refundAt: Math.ceil(refundAt / 1000) * 1000 } : {}) });
 }
 export async function receiveEcash(t) {
   await addMint(t.mint);
@@ -470,7 +475,23 @@ export function parsePubkey(s) {
   if (/^[0-9a-f]{64}$/i.test(s)) return '02' + s.toLowerCase();
   throw new Error('not a valid public key or npub');
 }
-export const currentP2pk = () => S.p2pk.find((k) => !k.used) || S.p2pk[0] || null;
+// our own key for getting locked sends back: kept apart from the keys we hand out for receiving
+export function refundKey() {
+  let k = S.p2pk.find((x) => x.refund);
+  if (!k) { k = newP2pkKey(); k.refund = true; k.used = true; save(); }
+  return k;
+}
+// locked sends whose time is up and that nobody claimed: take them back
+export async function returnDue(onReturn) {
+  const due = S.history.filter((h) => h.kind === 'ecash-out' && h.status === 'pending' && h.refundAt && h.refundAt <= Date.now());
+  for (const h of due) {
+    try {
+      if ((await checkClaimed(h)) !== 'pending') continue;
+      await reclaim(h); h.status = 'returned'; save(); onReturn && onReturn(h);
+    } catch {}
+  }
+}
+export const currentP2pk = () => S.p2pk.find((k) => !k.used && !k.refund) || S.p2pk.find((k) => !k.refund) || null;
 
 /* ---------------- maintenance ---------------- */
 export async function sweepSpent(onlyActive = false) {
